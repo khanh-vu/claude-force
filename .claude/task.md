@@ -6,10 +6,34 @@
 
 ## Task: [Clear, Concise Title]
 
-**Created**: [YYYY-MM-DD]  
-**Owner**: [Your Name/Team]  
-**Priority**: [High/Medium/Low]  
+**Created**: [YYYY-MM-DD]
+**Owner**: [Your Name/Team]
+**Priority**: [High/Medium/Low]
 **Type**: [Feature/Bug Fix/Refactor/Documentation/Infrastructure]
+
+**Assigned Agent(s)**: [Agent name(s) - see agent selection guide below]
+**Suggested Workflow**: [Workflow name - or "Custom" with sequence]
+
+> **Agent Selection Guide**:
+> - **Architecture Tasks**: frontend-architect, backend-architect, database-architect, solution-architect
+> - **Implementation**: frontend-developer, python-expert, mobile-developer
+> - **Code Quality**: code-reviewer, refactoring-expert
+> - **Security**: security-specialist
+> - **Performance**: performance-optimizer
+> - **Testing**: qc-automation-expert
+> - **Bug Fixing**: bug-investigator
+> - **Documentation**: document-writer-expert, api-documenter
+> - **Infrastructure**: devops-architect, deployment-integration-expert
+> - **Guidance**: tech-lead-mentor, requirements-analyst
+>
+> **Common Workflows**:
+> - `full-stack-feature` - Complete feature with frontend & backend
+> - `frontend-only` - UI/UX feature
+> - `backend-only` - API or service feature
+> - `bug-fix` - Bug investigation and fix
+> - `code-review` - Code review and quality check
+> - `refactoring` - Code improvement
+> - `documentation` - Documentation generation
 
 ---
 
@@ -160,16 +184,35 @@ How we'll measure success:
 
 ## Workflow
 
-**Suggested agent sequence**:
+**Selected Workflow**: [Workflow name from header - or define custom below]
 
-1. **frontend-architect** - Define component architecture and routing
-2. **database-architect** - Design schema for products/categories
-3. **backend-architect** - Design API endpoints and caching
-4. **python-expert** - Create data import/processing scripts
-5. **ui-components-expert** - Build reusable product components
-6. **frontend-developer** - Implement catalog page
-7. **qc-automation-expert** - Create test suite
-8. **deployment-integration-expert** - Configure deployment
+**Agent Execution Sequence**:
+
+1. **[agent-name]** - [What this agent will do]
+   - Skills needed: [List relevant skills]
+   - Dependencies: [What must be complete first]
+   - Output: [What will be delivered]
+
+2. **[agent-name]** - [What this agent will do]
+   - Skills needed: [List relevant skills]
+   - Dependencies: [Previous agent's output]
+   - Output: [What will be delivered]
+
+[Continue for all agents in sequence...]
+
+**Example for Full-Stack Feature**:
+1. **requirements-analyst** - Clarify requirements and edge cases
+2. **frontend-architect** - Define component architecture and routing
+3. **database-architect** - Design schema and indexes
+4. **backend-architect** - Design API endpoints and data flow
+5. **security-specialist** - Review architecture for security issues
+6. **python-expert** - Implement backend services
+7. **ui-components-expert** - Build reusable UI components
+8. **frontend-developer** - Implement pages and integration
+9. **code-reviewer** - Review all code for quality
+10. **qc-automation-expert** - Create comprehensive test suite
+11. **performance-optimizer** - Optimize bottlenecks
+12. **deployment-integration-expert** - Configure deployment
 
 ---
 

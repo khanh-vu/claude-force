@@ -5,6 +5,9 @@
 **Priority**: High
 **Type**: Feature
 
+**Assigned Agent(s)**: Backend-focused workflow with security review
+**Suggested Workflow**: `backend-only` (enhanced with security-specialist*)
+
 ---
 
 ## Objective
