@@ -75,6 +75,24 @@
       "contract": "contracts/frontend-developer.contract",
       "domains": ["implementation", "frontend", "features", "react"],
       "priority": 2
+    },
+    "code-reviewer": {
+      "file": "agents/code-reviewer.md",
+      "contract": "contracts/code-reviewer.contract",
+      "domains": ["code-quality", "security", "performance", "testing", "best-practices"],
+      "priority": 1
+    },
+    "security-specialist": {
+      "file": "agents/security-specialist.md",
+      "contract": "contracts/security-specialist.contract",
+      "domains": ["security", "owasp", "authentication", "cryptography", "compliance", "threat-modeling"],
+      "priority": 1
+    },
+    "bug-investigator": {
+      "file": "agents/bug-investigator.md",
+      "contract": "contracts/bug-investigator.contract",
+      "domains": ["debugging", "root-cause-analysis", "incident-response", "diagnostics"],
+      "priority": 1
     }
   },
   
