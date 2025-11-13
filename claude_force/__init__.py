@@ -9,7 +9,13 @@ __version__ = "2.1.0"
 __author__ = "Claude Force Team"
 __license__ = "MIT"
 
-from .orchestrator import AgentOrchestrator
+from .orchestrator import AgentOrchestrator, AgentResult
 from .cli import main as cli_main
 
-__all__ = ["AgentOrchestrator", "cli_main"]
+# Optional: Semantic agent selection (requires sentence-transformers)
+try:
+    from .semantic_selector import SemanticAgentSelector, AgentMatch
+    __all__ = ["AgentOrchestrator", "AgentResult", "cli_main", "SemanticAgentSelector", "AgentMatch"]
+except ImportError:
+    # sentence-transformers not installed
+    __all__ = ["AgentOrchestrator", "AgentResult", "cli_main"]

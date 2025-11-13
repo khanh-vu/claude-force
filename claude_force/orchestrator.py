@@ -305,3 +305,86 @@ Continue from the previous agent's output. Original task: {task}
             "priority": agent_config.get("priority", 3),
             "description": description
         }
+
+    def recommend_agents(self, task: str, top_k: int = 3,
+                        min_confidence: float = 0.3) -> List[Dict[str, Any]]:
+        """
+        Recommend agents for a task using semantic similarity.
+
+        Uses embeddings-based matching for intelligent agent selection with
+        confidence scores. Requires sentence-transformers package.
+
+        Args:
+            task: Task description
+            top_k: Number of agents to recommend (default: 3)
+            min_confidence: Minimum confidence threshold 0-1 (default: 0.3)
+
+        Returns:
+            List of agent recommendations with confidence scores
+
+        Example:
+            recommendations = orchestrator.recommend_agents(
+                "Review authentication code for security issues",
+                top_k=3
+            )
+            for rec in recommendations:
+                print(f"{rec['agent']}: {rec['confidence']:.2f} - {rec['reasoning']}")
+
+        Raises:
+            ImportError: If sentence-transformers not installed
+        """
+        try:
+            from claude_force.semantic_selector import SemanticAgentSelector
+        except ImportError:
+            raise ImportError(
+                "Semantic agent selection requires sentence-transformers. "
+                "Install with: pip install sentence-transformers"
+            )
+
+        selector = SemanticAgentSelector(config_path=str(self.config_path))
+        matches = selector.select_agents(task, top_k=top_k, min_confidence=min_confidence)
+
+        return [
+            {
+                "agent": match.agent_name,
+                "confidence": round(match.confidence, 3),
+                "reasoning": match.reasoning,
+                "domains": match.domains,
+                "priority": match.priority
+            }
+            for match in matches
+        ]
+
+    def explain_agent_selection(self, task: str, agent_name: str) -> Dict[str, Any]:
+        """
+        Explain why a specific agent was or wasn't recommended for a task.
+
+        Args:
+            task: Task description
+            agent_name: Agent to explain
+
+        Returns:
+            Dictionary with explanation details
+
+        Example:
+            explanation = orchestrator.explain_agent_selection(
+                "Fix bug in login endpoint",
+                "bug-investigator"
+            )
+            print(f"Selected: {explanation['selected']}")
+            print(f"Rank: {explanation['rank']}")
+            print(f"Confidence: {explanation['confidence']}")
+
+        Raises:
+            ImportError: If sentence-transformers not installed
+        """
+        try:
+            from claude_force.semantic_selector import SemanticAgentSelector
+        except ImportError:
+            raise ImportError(
+                "Semantic agent selection requires sentence-transformers. "
+                "Install with: pip install sentence-transformers"
+            )
+
+        selector = SemanticAgentSelector(config_path=str(self.config_path))
+        return selector.explain_selection(task, agent_name)

@@ -76,6 +76,81 @@ def cmd_agent_info(args):
         sys.exit(1)
 
 
+def cmd_recommend(args):
+    """Recommend agents for a task using semantic similarity"""
+    try:
+        # Read task
+        task = args.task
+        if args.task_file:
+            with open(args.task_file, 'r') as f:
+                task = f.read()
+        elif not task and not sys.stdin.isatty():
+            task = sys.stdin.read()
+
+        if not task:
+            print("❌ Error: Task description required", file=sys.stderr)
+            print("   Provide with --task, --task-file, or via stdin")
+            sys.exit(1)
+
+        orchestrator = AgentOrchestrator(config_path=args.config)
+
+        print(f"\n🔍 Analyzing task (semantic matching)...\n")
+
+        # Get recommendations
+        recommendations = orchestrator.recommend_agents(
+            task,
+            top_k=args.top_k,
+            min_confidence=args.min_confidence
+        )
+
+        if not recommendations:
+            print("❌ No agents match this task with sufficient confidence")
+            print(f"   Try lowering --min-confidence (current: {args.min_confidence})")
+            sys.exit(1)
+
+        # Display recommendations
+        print(f"📊 Top {len(recommendations)} Agent Recommendations:\n")
+        for i, rec in enumerate(recommendations, 1):
+            confidence_pct = rec['confidence'] * 100
+            bar_length = int(confidence_pct / 5)  # 0-20 chars
+            bar = "█" * bar_length + "░" * (20 - bar_length)
+
+            print(f"{i}. {rec['agent']}")
+            print(f"   Confidence: {bar} {confidence_pct:.1f}%")
+            print(f"   Reasoning: {rec['reasoning']}")
+            print(f"   Domains: {', '.join(rec['domains'])}")
+            print()
+
+        # Explain top choice if requested
+        if args.explain and recommendations:
+            top_agent = recommendations[0]['agent']
+            print(f"\n💡 Detailed Explanation for '{top_agent}':\n")
+            explanation = orchestrator.explain_agent_selection(task, top_agent)
+            print(f"Selected: {'Yes' if explanation['selected'] else 'No'}")
+            print(f"Rank: {explanation.get('rank', 'N/A')}")
+            print(f"Confidence: {explanation.get('confidence', 0):.3f}")
+            print(f"Reasoning: {explanation.get('reasoning', 'N/A')}")
+
+            if 'all_candidates' in explanation:
+                print(f"\nAll Candidates:")
+                for candidate in explanation['all_candidates']:
+                    print(f"  • {candidate['agent']}: {candidate['confidence']:.3f}")
+
+        # JSON output if requested
+        if args.json:
+            import json
+            print("\n" + json.dumps(recommendations, indent=2))
+
+    except ImportError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        print("\n💡 To use semantic agent selection, install sentence-transformers:")
+        print("   pip install sentence-transformers")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_run_agent(args):
     """Run a single agent"""
     try:
@@ -222,6 +297,9 @@ Examples:
   # List all agents
   claude-force list agents
 
+  # Recommend agents for a task (semantic matching)
+  claude-force recommend --task "Fix authentication bug in login endpoint"
+
   # Run a single agent
   claude-force run agent code-reviewer --task "Review this code: def foo(): pass"
 
@@ -262,6 +340,16 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     info_parser = subparsers.add_parser("info", help="Show agent information")
     info_parser.add_argument("agent", help="Agent name")
     info_parser.set_defaults(func=cmd_agent_info)
+
+    # Recommend command
+    recommend_parser = subparsers.add_parser("recommend", help="Recommend agents for a task (semantic matching)")
+    recommend_parser.add_argument("--task", help="Task description")
+    recommend_parser.add_argument("--task-file", help="Read task from file")
+    recommend_parser.add_argument("--top-k", type=int, default=3, help="Number of recommendations (default: 3)")
+    recommend_parser.add_argument("--min-confidence", type=float, default=0.3, help="Minimum confidence threshold 0-1 (default: 0.3)")
+    recommend_parser.add_argument("--explain", action="store_true", help="Explain top recommendation")
+    recommend_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    recommend_parser.set_defaults(func=cmd_recommend)
 
     # Run command
     run_parser = subparsers.add_parser("run", help="Run agent or workflow")

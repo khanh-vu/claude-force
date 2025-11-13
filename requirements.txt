@@ -4,6 +4,10 @@
 # Core
 anthropic>=0.40.0          # Anthropic Claude API client
 
+# Semantic agent selection (optional but recommended)
+sentence-transformers>=2.2.2  # For embeddings-based agent matching
+numpy>=1.24.0              # Required for vector operations
+
 # For development/testing (optional)
 pytest>=8.0.0              # Testing framework
 pytest-cov>=4.1.0          # Test coverage
