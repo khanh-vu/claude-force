@@ -243,6 +243,51 @@ cd tests/
 pytest -v
 ```
 
+## 📊 Benchmarks & Demo
+
+The system includes comprehensive benchmarks to demonstrate capabilities and measure performance:
+
+### Quick Start
+
+```bash
+# Run all benchmarks
+python3 benchmarks/scripts/run_all.py
+
+# Generate interactive dashboard
+python3 benchmarks/scripts/generate_dashboard.py
+
+# View dashboard
+open benchmarks/reports/dashboard/index.html
+```
+
+### What's Included
+
+1. **Real-World Scenarios** (`benchmarks/scenarios/`)
+   - **Simple**: Add API endpoint, fix bugs, update docs (3 scenarios)
+   - **Medium**: User authentication, multi-agent features (1 scenario)
+   - **Complex**: Full-stack applications (coming soon)
+
+2. **Performance Metrics** (`benchmarks/metrics/`)
+   - Agent selection speed and accuracy
+   - Task completion times
+   - Quality scores (test coverage, security, code quality)
+
+3. **Interactive Dashboard** (`benchmarks/reports/dashboard/`)
+   - Visual performance metrics
+   - Accuracy distribution
+   - Scenario catalog
+   - Detailed test results
+
+### Example Results
+
+Recent benchmark run (15 agents, 6 workflows, 9 skills):
+- **Agent Selection Accuracy**: 75% average
+- **Selection Time**: 0.01ms average
+- **Scenarios Available**: 4 (3 simple, 1 medium)
+- **System Coverage**: 100% agents in workflows
+
+See `benchmarks/README.md` for detailed documentation.
+
 ## 📚 Documentation
 
 - **commands.md**: Common operations and shortcuts
