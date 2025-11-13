@@ -44,6 +44,65 @@ nano .claude/task.md
 cat .claude/work.md
 ```
 
+### Using Slash Commands (Claude Code)
+
+This system includes custom slash commands for easier interaction:
+
+```bash
+/new-task                    # Create new task from template
+/run-agent frontend-architect    # Run specific agent
+/run-workflow full-stack-feature # Execute complete workflow
+/validate-output             # Validate work.md quality
+/status                      # Show current progress
+```
+
+### Configuration
+
+Customize system behavior by copying `.env.example`:
+
+```bash
+cp .claude/.env.example .claude/.env
+nano .claude/.env
+
+# Configure settings like:
+# - Validation mode (strict/normal/permissive)
+# - Auto-validation
+# - Quality gates
+# - Logging level
+```
+
+## 🆕 New Features
+
+### Examples Directory
+Learn by example with sample tasks and outputs:
+- `claude/examples/task-examples/` - Sample task specifications
+- `.claude/examples/output-examples/` - Expected agent outputs
+- Copy examples as templates for your own tasks
+
+### Slash Commands
+Four custom commands for streamlined workflows:
+- `/run-agent` - Execute agent with full governance
+- `/run-workflow` - Run multi-agent workflows
+- `/validate-output` - Check quality gates
+- `/status` - Show session progress
+- `/new-task` - Create task from template
+
+### SessionStart Hook
+Automatic initialization when Claude Code session starts:
+- Verifies system structure
+- Creates missing files
+- Displays welcome message
+- Shows current status
+- Provides quick start guidance
+
+### Environment Configuration
+`.env.example` with 50+ configurable settings:
+- Validation strictness
+- Quality gate thresholds
+- Logging preferences
+- Governance rules
+- Performance tuning
+
 ## 📊 System Components
 
 ### Agents (12)
@@ -92,15 +151,44 @@ cat .claude/work.md
 .claude/
 ├── README.md                    # System overview
 ├── claude.json                  # Router configuration
+├── task.md                      # Task template
+├── work.md                      # Agent output (auto-generated)
+├── scorecard.md                 # Quality checklist
+├── commands.md                  # Commands reference
+├── workflows.md                 # Workflow patterns
+├── .env.example                 # Configuration template
+├── .gitignore                   # Git ignore rules
+│
 ├── agents/                      # 12 agent definitions
 ├── contracts/                   # 12 formal contracts
+│
 ├── hooks/                       # Governance system
+│   ├── README.md
 │   ├── pre-run.md              # Pre-execution checks
 │   ├── post-run.md             # Post-execution validation
+│   ├── session-start.md        # Session initialization
 │   └── validators/             # 6 quality validators
+│
+├── commands/                    # Slash commands (NEW)
+│   ├── run-agent.md
+│   ├── run-workflow.md
+│   ├── validate-output.md
+│   ├── status.md
+│   └── new-task.md
+│
+├── examples/                    # Examples (NEW)
+│   ├── README.md
+│   ├── task-examples/          # Sample tasks
+│   └── output-examples/        # Sample outputs
+│
 ├── skills/                      # Skills integration
+│   └── README.md
+│
 ├── macros/                      # Reusable blocks
+│   └── boot.md
+│
 └── tasks/                       # Context tracking
+    └── context_session_1.md
 ```
 
 ## 🎓 Usage Examples

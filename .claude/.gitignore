@@ -1,0 +1,65 @@
+# Agent Work Output
+# This file gets overwritten by each agent execution
+work.md
+
+# Session Context Files (can be regenerated)
+# Uncomment if you don't want to track session state
+# tasks/context_session_*.md
+
+# Environment Configuration
+.env
+.env.local
+.env.*.local
+
+# Logs and Debugging
+*.log
+debug.txt
+agent-trace.txt
+
+# Temporary Files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE/Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python Cache (if using Python validators)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node Modules (if using JS/TS validators)
+node_modules/
+
+# Coverage Reports (if running tests)
+.coverage
+htmlcov/
+coverage/
+*.cover
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# OS Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Optional: Archive Directory (for old work outputs)
+archives/
+
+# Optional: Experimental Features
+experiments/
