@@ -263,6 +263,93 @@ def cmd_run_workflow(args):
         sys.exit(1)
 
 
+def cmd_metrics(args):
+    """Show performance metrics"""
+    try:
+        orchestrator = AgentOrchestrator(config_path=args.config)
+
+        if not orchestrator.tracker:
+            print("❌ Performance tracking is not enabled", file=sys.stderr)
+            sys.exit(1)
+
+        print("\n" + "=" * 70)
+        print("PERFORMANCE METRICS")
+        print("=" * 70 + "\n")
+
+        # Summary
+        if args.command == "summary":
+            summary = orchestrator.get_performance_summary(hours=args.hours)
+
+            print(f"Time Period: {summary.get('time_period', 'all time')}\n")
+            print(f"Total Executions:     {summary['total_executions']}")
+            print(f"Successful:           {summary['successful_executions']}")
+            print(f"Failed:               {summary['failed_executions']}")
+            print(f"Success Rate:         {summary['success_rate']:.1%}\n")
+
+            print(f"Total Tokens:         {summary['total_tokens']:,}")
+            print(f"  Input Tokens:       {summary['total_input_tokens']:,}")
+            print(f"  Output Tokens:      {summary['total_output_tokens']:,}\n")
+
+            print(f"Total Cost:           ${summary['total_cost']:.4f}")
+            print(f"Avg Cost/Execution:   ${summary['avg_cost_per_execution']:.4f}")
+            print(f"Avg Execution Time:   {summary['avg_execution_time_ms']:.0f}ms")
+
+        # Per-agent stats
+        elif args.command == "agents":
+            stats = orchestrator.get_agent_performance()
+
+            if not stats:
+                print("No agent executions recorded yet")
+                return
+
+            print("Per-Agent Statistics:\n")
+            print(f"{'Agent':<30} {'Runs':>6} {'Success':>8} {'Avg Time':>10} {'Cost':>10}")
+            print("-" * 70)
+
+            for agent, data in sorted(stats.items(), key=lambda x: x[1]['total_cost'], reverse=True):
+                success_rate = f"{data['success_rate']:.1%}"
+                avg_time = f"{data['avg_execution_time_ms']:.0f}ms"
+                cost = f"${data['total_cost']:.4f}"
+
+                print(f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}")
+
+        # Cost breakdown
+        elif args.command == "costs":
+            costs = orchestrator.get_cost_breakdown()
+
+            print(f"Total Cost: ${costs['total']:.4f}\n")
+
+            print("By Agent:")
+            for agent, cost in list(costs['by_agent'].items())[:10]:
+                pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+                bar_length = int(pct / 2)  # 0-50 chars
+                bar = "█" * bar_length
+
+                print(f"  {agent:<30} ${cost:>8.4f} {bar} {pct:.1f}%")
+
+            if len(costs['by_agent']) > 10:
+                print(f"  ... and {len(costs['by_agent']) - 10} more agents")
+
+            print("\nBy Model:")
+            for model, cost in costs['by_model'].items():
+                pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+                print(f"  {model:<40} ${cost:>8.4f} ({pct:.1f}%)")
+
+        # Export
+        elif args.command == "export":
+            orchestrator.export_performance_metrics(args.output, args.format)
+            print(f"✅ Metrics exported to: {args.output}")
+
+        print("\n" + "=" * 70)
+
+    except RuntimeError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_init(args):
     """Initialize a new claude-force project"""
     try:
@@ -308,6 +395,11 @@ Examples:
 
   # Get agent information
   claude-force info code-reviewer
+
+  # View performance metrics
+  claude-force metrics summary
+  claude-force metrics agents
+  claude-force metrics costs
 
 For more information: https://github.com/YOUR_USERNAME/claude-force
         """
@@ -375,6 +467,29 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     run_workflow_parser.add_argument("--output", "-o", help="Save results to file (JSON)")
     run_workflow_parser.add_argument("--no-pass-output", action="store_true", help="Don't pass output between agents")
     run_workflow_parser.set_defaults(func=cmd_run_workflow)
+
+    # Metrics command
+    metrics_parser = subparsers.add_parser("metrics", help="Show performance metrics")
+    metrics_subparsers = metrics_parser.add_subparsers(dest="command")
+
+    # Metrics summary
+    summary_parser = metrics_subparsers.add_parser("summary", help="Show summary statistics")
+    summary_parser.add_argument("--hours", type=int, help="Only last N hours (default: all time)")
+    summary_parser.set_defaults(func=cmd_metrics)
+
+    # Metrics per agent
+    agents_parser = metrics_subparsers.add_parser("agents", help="Show per-agent statistics")
+    agents_parser.set_defaults(func=cmd_metrics)
+
+    # Cost breakdown
+    costs_parser = metrics_subparsers.add_parser("costs", help="Show cost breakdown")
+    costs_parser.set_defaults(func=cmd_metrics)
+
+    # Export metrics
+    export_parser = metrics_subparsers.add_parser("export", help="Export metrics to file")
+    export_parser.add_argument("output", help="Output file path")
+    export_parser.add_argument("--format", choices=["json", "csv"], default="json", help="Export format")
+    export_parser.set_defaults(func=cmd_metrics)
 
     # Init command
     init_parser = subparsers.add_parser("init", help="Initialize a new claude-force project")
