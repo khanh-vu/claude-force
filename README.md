@@ -28,18 +28,74 @@ A comprehensive Claude multi-agent system featuring:
 git clone https://github.com/YOUR_USERNAME/claude-force.git
 cd claude-force
 
+# Install the package
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e .
+
+# Set your API key
+export ANTHROPIC_API_KEY='your-api-key-here'
+
 # Verify installation
+claude-force --help
 python3 -m pytest test_claude_system.py -v
 # ✅ Expected: 26 passed
 ```
 
-### First Task
+See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions.
+
+### Quick Usage (CLI)
+
+```bash
+# List all available agents
+claude-force list agents
+
+# Run a single agent
+claude-force run agent code-reviewer --task "Review the code in src/app.py"
+
+# Run from a file
+claude-force run agent frontend-architect --task-file .claude/task.md
+
+# Execute a workflow
+claude-force run workflow full-stack-feature --task "Build user dashboard"
+
+# Get agent information
+claude-force info python-expert
+```
+
+### Quick Usage (Python API)
+
+```python
+from claude_force import AgentOrchestrator
+
+# Initialize orchestrator
+orchestrator = AgentOrchestrator()
+
+# Run a single agent
+result = orchestrator.run_agent(
+    agent_name='code-reviewer',
+    task='Review the authentication logic'
+)
+
+if result.success:
+    print(result.output)
+else:
+    print(f"Error: {result.errors}")
+
+# Run a workflow
+results = orchestrator.run_workflow(
+    workflow_name='full-stack-feature',
+    task='Build user profile page'
+)
+```
+
+### First Task (Claude Code)
 
 ```bash
 # 1. Edit your task
 nano .claude/task.md
 
-# 2. Run an agent (in Claude)
+# 2. Run an agent (in Claude Code)
 "Run the frontend-architect agent on this task"
 
 # 3. Review output
@@ -73,9 +129,22 @@ nano .claude/.env
 # - Logging level
 ```
 
-## 🆕 New Features
+## 🆕 New in v2.1.0 - Now Fully Executable! 🎉
 
-### Agent Skills Documentation
+### Executable Python Package
+**The system is now a fully installable, executable Python package:**
+- 🐍 **pip installable** - `pip install -e .`
+- 🖥️ **CLI tool** - `claude-force` command for terminal usage
+- 📦 **Python API** - Import and use programmatically
+- ⚙️ **Complete CI/CD** - GitHub Actions with testing, linting, security scanning
+- 📚 **Installation guide** - [INSTALLATION.md](INSTALLATION.md) with setup instructions
+- 🔌 **VS Code integration** - [examples/vscode_integration.md](examples/vscode_integration.md)
+
+**Transition: From Design Document to Usable Product**
+- v2.0.0 provided excellent architecture and documentation (25,000+ lines)
+- v2.1.0 makes it **actually executable** - you can now run agents from CLI or Python!
+
+### Agent Skills Documentation (v2.0.0)
 **ALL 15 agents now have comprehensive skills documentation:**
 - Detailed expertise maps for each agent
 - "When to Use" and "When NOT to Use" sections
@@ -87,13 +156,13 @@ nano .claude/.env
 
 See [AGENT_SKILLS_MATRIX.md](.claude/AGENT_SKILLS_MATRIX.md) for the complete reference.
 
-### 3 Critical New Agents
+### 3 Critical New Agents (v2.0.0)
 Added essential agents for daily development:
 1. **code-reviewer** - Pre-commit code quality, security, and performance review
 2. **security-specialist** - OWASP Top 10, threat modeling, compliance assessment
 3. **bug-investigator** - Root cause analysis, debugging, incident response
 
-### Examples Directory
+### Examples Directory (v2.0.0)
 Learn by example with sample tasks and outputs:
 - `.claude/examples/task-examples/` - Sample task specifications
 - `.claude/examples/output-examples/` - Expected agent outputs
@@ -566,9 +635,10 @@ If you find this system useful, please star the repository!
 
 ---
 
-**Version**: 1.0.0  
-**Status**: Production-Ready ✅  
-**Tests**: 26/26 Passing ✅  
+**Version**: 2.1.0
+**Status**: Production-Ready ✅
+**Tests**: 26/26 Passing ✅
+**Executable**: Yes (pip installable + CLI) ✅
 **Documentation**: Complete ✅
 
 Built with ❤️ for Claude by Anthropic

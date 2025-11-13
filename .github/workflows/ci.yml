@@ -1,0 +1,171 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Run tests
+      run: |
+        pytest test_claude_system.py -v --cov=claude_force --cov-report=xml --cov-report=term
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black pylint mypy
+
+    - name: Check code formatting (black)
+      run: |
+        black --check claude_force/
+
+    - name: Lint code (pylint)
+      run: |
+        pylint claude_force/ || true  # Don't fail on warnings
+
+    - name: Type check (mypy)
+      run: |
+        mypy claude_force/ || true  # Don't fail on type issues
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+
+    - name: Run bandit security linter
+      run: |
+        bandit -r claude_force/ -f json -o bandit-report.json || true
+        cat bandit-report.json
+
+    - name: Check dependencies for vulnerabilities
+      run: |
+        safety check || true
+
+  benchmarks:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: Run benchmarks
+      run: |
+        python3 benchmarks/scripts/run_all.py
+
+    - name: Generate visual report
+      run: |
+        python3 benchmarks/scripts/generate_visual_report.py
+
+    - name: Generate dashboard
+      run: |
+        python3 benchmarks/scripts/generate_dashboard.py
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results
+        path: |
+          benchmarks/reports/results/*.json
+          benchmarks/reports/dashboard/*.html
+
+  package:
+    name: Test Package Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: |
+        python -m build
+
+    - name: Check package
+      run: |
+        twine check dist/*
+
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package
+        path: dist/
