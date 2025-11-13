@@ -36,28 +36,36 @@ Each workflow defines:
    - Designs API endpoints, services, authentication
    - **Hands off**: OpenAPI spec, error taxonomy
 
-4. **python-expert**
+4. **security-specialist**
+   - Reviews architecture for security vulnerabilities, threat modeling
+   - **Hands off**: Security requirements, threat analysis
+
+5. **python-expert**
    - Creates utilities, data processing, ETL scripts
    - **Hands off**: Python modules, CLI tools, tests
 
-5. **ui-components-expert**
+6. **ui-components-expert**
    - Builds reusable React components
    - **Hands off**: TSX components, props, examples
 
-6. **frontend-developer**
+7. **frontend-developer**
    - Implements feature using components and API
    - **Hands off**: Feature implementation, integration tests
 
-7. **qc-automation-expert**
+8. **qc-automation-expert**
    - Creates automated tests for the feature
    - **Hands off**: Test suites, coverage reports
 
-8. **deployment-integration-expert**
-   - Configures deployment and CI/CD
-   - **Hands off**: Deploy configs, environment setup
+9. **code-reviewer**
+   - Reviews code quality, security, performance, best practices
+   - **Hands off**: Code review report, refactoring recommendations
 
-**Duration**: 8 agent runs  
-**Output**: Production-ready feature
+10. **deployment-integration-expert**
+    - Configures deployment and CI/CD
+    - **Hands off**: Deploy configs, environment setup
+
+**Duration**: 10 agent runs
+**Output**: Production-ready, security-reviewed feature
 
 ---
 
@@ -85,8 +93,12 @@ Each workflow defines:
    - Creates component tests and E2E tests
    - **Hands off**: Test suites
 
-**Duration**: 4 agent runs  
-**Output**: Tested frontend feature
+5. **code-reviewer**
+   - Reviews code quality, accessibility, performance
+   - **Hands off**: Code review report, improvements
+
+**Duration**: 5 agent runs
+**Output**: Tested, reviewed frontend feature
 
 ---
 
@@ -106,49 +118,82 @@ Each workflow defines:
    - Schema changes, migrations, performance tuning
    - **Hands off**: DDL, indexes, query patterns
 
-3. **python-expert**
+3. **security-specialist**
+   - Reviews API security, authentication, authorization
+   - **Hands off**: Security requirements, vulnerability assessment
+
+4. **python-expert**
    - Implements business logic, services, utilities
    - **Hands off**: Python code, CLI, tests
 
-4. **qc-automation-expert**
+5. **qc-automation-expert**
    - Creates API tests, integration tests
    - **Hands off**: Test suites, test data
 
-**Duration**: 4 agent runs  
-**Output**: Tested API endpoints
+6. **code-reviewer**
+   - Reviews code quality, security implementation, performance
+   - **Hands off**: Code review report, security validation
+
+**Duration**: 6 agent runs
+**Output**: Secure, tested API endpoints
 
 ---
 
 ### 4. Infrastructure & Deployment
 
-**Goal**: Set up infrastructure, containerization, and deployment pipeline.
+**Goal**: Set up infrastructure, containerization, and deployment pipeline with security hardening.
 
-**Use Case**: New project setup, infrastructure migration, deployment optimization.
+**Use Case**: New project setup, infrastructure migration, deployment optimization, cloud infrastructure setup.
 
 **Agents & Order**:
 
 1. **devops-architect**
-   - Infrastructure design, containerization strategy
-   - **Hands off**: Architecture, IaC approach
+   - Infrastructure design, containerization strategy, Kubernetes architecture
+   - **Hands off**: IaC architecture, container orchestration design
 
-2. **deployment-integration-expert**
-   - Platform-specific configuration (Vercel, AWS, etc.)
-   - **Hands off**: Deploy configs, environment variables
+2. **google-cloud-expert**
+   - GCP services configuration, Cloud Run, Firestore, IAM
+   - **Hands off**: Cloud configs, resource definitions
 
-3. **google-cloud-expert** (if using GCP)
-   - GCP services configuration
-   - **Hands off**: Cloud Run, Firestore, IAM configs
+3. **deployment-integration-expert**
+   - Platform-specific configuration, CI/CD pipelines
+   - **Hands off**: Deploy configs, environment variables, workflows
 
-4. **qc-automation-expert**
-   - Smoke tests, deployment verification
-   - **Hands off**: Deployment test suite
+4. **security-specialist**
+   - Infrastructure security review, IAM policies, secrets management
+   - **Hands off**: Security hardening checklist, compliance requirements
 
-**Duration**: 3-4 agent runs  
-**Output**: Deployment pipeline ready
+**Duration**: 4 agent runs
+**Output**: Secure, production-ready infrastructure
 
 ---
 
-### 5. Documentation Creation
+### 5. Bug Fix & Investigation
+
+**Goal**: Investigate, fix, and validate bug fixes with comprehensive testing.
+
+**Use Case**: Production issues, bug reports, performance problems, intermittent failures.
+
+**Agents & Order**:
+
+1. **bug-investigator**
+   - Root cause analysis, log analysis, debugging, reproduction steps
+   - **Hands off**: Bug analysis report, reproduction steps, proposed fix
+
+2. **code-reviewer**
+   - Review proposed fix for quality, side effects, test coverage
+   - **Hands off**: Fix validation, refactoring recommendations
+
+3. **qc-automation-expert**
+   - Create regression tests, verify fix, update test suite
+   - **Hands off**: Test cases, verification report
+
+**Duration**: 3 agent runs
+**Output**: Verified bug fix with regression tests
+
+---
+
+### 6. Documentation Creation
 
 **Goal**: Create comprehensive documentation for a project or feature.
 
@@ -164,12 +209,12 @@ Each workflow defines:
    - API reference documentation
    - **Hands off**: OpenAPI/Swagger docs, examples
 
-**Duration**: 2 agent runs  
+**Duration**: 2 agent runs
 **Output**: Complete documentation
 
 ---
 
-### 6. Testing & Quality Assurance
+### 7. Testing & Quality Assurance
 
 **Goal**: Comprehensive test coverage for existing code.
 
@@ -196,7 +241,7 @@ Each workflow defines:
 
 ## Advanced Workflows
 
-### 7. Microservices Creation
+### 8. Microservices Creation
 
 **Goal**: Design and implement a new microservice.
 
@@ -204,18 +249,20 @@ Each workflow defines:
 
 1. **backend-architect** - Service boundaries, API contracts
 2. **database-architect** - Service-specific database design
-3. **python-expert** - Service implementation
-4. **devops-architect** - Containerization, service mesh
-5. **deployment-integration-expert** - Kubernetes manifests
-6. **qc-automation-expert** - Service tests, contract tests
-7. **api-documenter** - Service documentation
+3. **security-specialist** - Service security, authentication
+4. **python-expert** - Service implementation
+5. **devops-architect** - Containerization, service mesh
+6. **deployment-integration-expert** - Kubernetes manifests
+7. **qc-automation-expert** - Service tests, contract tests
+8. **code-reviewer** - Code quality, security validation
+9. **api-documenter** - Service documentation
 
-**Duration**: 7 agent runs  
-**Output**: Deployed microservice
+**Duration**: 9 agent runs
+**Output**: Production-ready, secure microservice
 
 ---
 
-### 8. Database Migration
+### 9. Database Migration
 
 **Goal**: Migrate database schema or data.
 
@@ -227,12 +274,12 @@ Each workflow defines:
 4. **qc-automation-expert** - Migration testing, rollback tests
 5. **document-writer-expert** - Migration runbook
 
-**Duration**: 5 agent runs  
+**Duration**: 5 agent runs
 **Output**: Safe migration path
 
 ---
 
-### 9. Performance Optimization
+### 10. Performance Optimization
 
 **Goal**: Improve application performance.
 
@@ -244,26 +291,30 @@ Each workflow defines:
 4. **qc-automation-expert** - Performance testing, benchmarks
 5. **document-writer-expert** - Performance analysis report
 
-**Duration**: 5 agent runs  
+**Duration**: 5 agent runs
 **Output**: Optimized application
 
 ---
 
-### 10. Security Hardening
+### 11. Security Hardening
 
-**Goal**: Improve application security.
+**Goal**: Comprehensive security review and hardening.
+
+**Use Case**: Pre-launch security audit, compliance requirements, security incident response.
 
 **Agents & Order**:
 
-1. **backend-architect** - Security assessment, threat model
-2. **database-architect** - Data encryption, access controls
-3. **python-expert** or **frontend-developer** - Implement security measures
-4. **devops-architect** - Infrastructure security
-5. **qc-automation-expert** - Security testing, penetration tests
-6. **document-writer-expert** - Security documentation
+1. **security-specialist** - Threat modeling, vulnerability assessment, compliance review
+2. **backend-architect** - Secure architecture review, authentication design
+3. **database-architect** - Data encryption, access controls, SQL injection prevention
+4. **python-expert** or **frontend-developer** - Implement security measures
+5. **devops-architect** - Infrastructure security, container hardening
+6. **code-reviewer** - Security code review, vulnerability validation
+7. **qc-automation-expert** - Security testing, penetration tests
+8. **document-writer-expert** - Security documentation, incident response plan
 
-**Duration**: 6 agent runs  
-**Output**: Hardened application
+**Duration**: 8 agent runs
+**Output**: Hardened, compliance-ready application
 
 ---
 
@@ -338,9 +389,10 @@ New Project?
 │  └─ No → Full Stack → Infrastructure
 │
 Existing Code?
-├─ Bug Fix? → Single Agent (relevant expert)
-├─ Refactor? → Architecture Agent → Implementation Agent → QA
+├─ Bug Fix? → Bug Fix & Investigation Workflow
+├─ Refactor? → Architecture Agent → Implementation Agent → Code Reviewer → QA
 ├─ Testing? → QA Workflow
+├─ Security Issue? → Security Hardening Workflow
 └─ Documentation? → Documentation Workflow
 ```
 
