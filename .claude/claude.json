@@ -1,0 +1,154 @@
+{
+  "version": "1.0.0",
+  "name": "Claude Multi-Agent System",
+  "description": "Orchestration system for specialized development agents",
+  
+  "agents": {
+    "frontend-architect": {
+      "file": "agents/frontend-architect.md",
+      "contract": "contracts/frontend-architect.contract",
+      "domains": ["architecture", "frontend", "nextjs", "react", "routing"],
+      "priority": 1
+    },
+    "backend-architect": {
+      "file": "agents/backend-architect.md",
+      "contract": "contracts/backend-architect.contract",
+      "domains": ["architecture", "backend", "api", "services"],
+      "priority": 1
+    },
+    "python-expert": {
+      "file": "agents/python-expert.md",
+      "contract": "contracts/python-expert.contract",
+      "domains": ["python", "scripting", "automation", "cli"],
+      "priority": 2
+    },
+    "database-architect": {
+      "file": "agents/database-architect.md",
+      "contract": "contracts/database-architect.contract",
+      "domains": ["database", "schema", "sql", "migrations"],
+      "priority": 1
+    },
+    "ui-components-expert": {
+      "file": "agents/ui-components-expert.md",
+      "contract": "contracts/ui-components-expert.contract",
+      "domains": ["components", "react", "typescript", "design-system"],
+      "priority": 2
+    },
+    "deployment-integration-expert": {
+      "file": "agents/deployment-integration-expert.md",
+      "contract": "contracts/deployment-integration-expert.contract",
+      "domains": ["deployment", "ci-cd", "vercel", "configuration"],
+      "priority": 3
+    },
+    "devops-architect": {
+      "file": "agents/devops-architect.md",
+      "contract": "contracts/devops-architect.contract",
+      "domains": ["infrastructure", "docker", "kubernetes", "iac"],
+      "priority": 2
+    },
+    "google-cloud-expert": {
+      "file": "agents/google-cloud-expert.md",
+      "contract": "contracts/google-cloud-expert.contract",
+      "domains": ["gcp", "cloud-run", "firestore", "cloud-functions"],
+      "priority": 2
+    },
+    "qc-automation-expert": {
+      "file": "agents/qc-automation-expert.md",
+      "contract": "contracts/qc-automation-expert.contract",
+      "domains": ["testing", "qa", "playwright", "jest", "automation"],
+      "priority": 3
+    },
+    "document-writer-expert": {
+      "file": "agents/document-writer-expert.md",
+      "contract": "contracts/document-writer-expert.contract",
+      "domains": ["documentation", "technical-writing", "markdown"],
+      "priority": 3
+    },
+    "api-documenter": {
+      "file": "agents/api-documenter.md",
+      "contract": "contracts/api-documenter.contract",
+      "domains": ["api-docs", "openapi", "swagger", "documentation"],
+      "priority": 3
+    },
+    "frontend-developer": {
+      "file": "agents/frontend-developer.md",
+      "contract": "contracts/frontend-developer.contract",
+      "domains": ["implementation", "frontend", "features", "react"],
+      "priority": 2
+    }
+  },
+  
+  "workflows": {
+    "full-stack-feature": [
+      "frontend-architect",
+      "database-architect",
+      "backend-architect",
+      "python-expert",
+      "ui-components-expert",
+      "frontend-developer",
+      "qc-automation-expert",
+      "deployment-integration-expert"
+    ],
+    "frontend-only": [
+      "frontend-architect",
+      "ui-components-expert",
+      "frontend-developer",
+      "qc-automation-expert"
+    ],
+    "backend-only": [
+      "backend-architect",
+      "database-architect",
+      "python-expert",
+      "qc-automation-expert"
+    ],
+    "documentation": [
+      "document-writer-expert",
+      "api-documenter"
+    ]
+  },
+  
+  "governance": {
+    "hooks_enabled": true,
+    "pre_run_required": true,
+    "post_run_validation": true,
+    "validators": [
+      "scorecard-validator",
+      "write-zone-guard",
+      "secret-scan",
+      "diff-discipline",
+      "format-lint",
+      "hierarchy-governance"
+    ]
+  },
+  
+  "skills_integration": {
+    "enabled": true,
+    "skills_path": "skills/",
+    "available_skills": [
+      "docx",
+      "xlsx",
+      "pptx",
+      "pdf"
+    ]
+  },
+  
+  "paths": {
+    "task": "task.md",
+    "work": "work.md",
+    "scorecard": "scorecard.md",
+    "context": "tasks/context_session_1.md",
+    "agents": "agents/",
+    "contracts": "contracts/",
+    "hooks": "hooks/",
+    "macros": "macros/",
+    "skills": "skills/"
+  },
+  
+  "rules": {
+    "task_md_readonly": true,
+    "require_write_zone_update": true,
+    "no_secrets_in_output": true,
+    "minimal_diffs_only": true,
+    "scorecard_must_pass": true
+  }
+}
