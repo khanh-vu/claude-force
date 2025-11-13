@@ -3,7 +3,7 @@
 **Purpose**: Quick reference guide for selecting the right agent based on required skills and expertise.
 
 **Last Updated**: 2025-11-13
-**Version**: 1.0.0
+**Version**: 2.0.0 (Updated with 3 newly implemented agents)
 
 ---
 
@@ -13,11 +13,11 @@
 
 | Task Type | Primary Agent | Supporting Agents | Skills Needed |
 |-----------|--------------|-------------------|---------------|
-| **New Feature Architecture** | frontend-architect, backend-architect | database-architect, security-specialist | Architecture design, System design, API design |
+| **New Feature Architecture** | frontend-architect, backend-architect | database-architect, security-specialist ✅ | Architecture design, System design, API design |
 | **Feature Implementation** | frontend-developer, python-expert | ui-components-expert | Coding, Framework knowledge, Testing |
-| **Bug Investigation** | bug-investigator | code-reviewer | Debugging, Log analysis, Root cause analysis |
-| **Code Review** | code-reviewer | security-specialist, performance-optimizer | Code quality, Best practices, Security |
-| **Security Audit** | security-specialist | code-reviewer | OWASP, Authentication, Vulnerability scanning |
+| **Bug Investigation** | bug-investigator ✅ | code-reviewer ✅ | Debugging, Log analysis, Root cause analysis |
+| **Code Review** | code-reviewer ✅ | security-specialist ✅, performance-optimizer* | Code quality, Best practices, Security |
+| **Security Audit** | security-specialist ✅ | code-reviewer ✅ | OWASP, Authentication, Vulnerability scanning |
 | **Performance Issues** | performance-optimizer | database-architect, devops-architect | Profiling, Optimization, Caching |
 | **Database Design** | database-architect | backend-architect | SQL, NoSQL, Schema design, Indexing |
 | **API Design** | backend-architect | api-documenter | REST, GraphQL, OpenAPI, Authentication |
@@ -446,95 +446,121 @@
 
 ---
 
-## 🆕 Recommended New Agents
+## ✅ Recently Added Agents
 
-### code-reviewer (CRITICAL)
+### code-reviewer
 
 **Role**: Senior Code Reviewer
 **Priority**: 1 (Critical)
+**Status**: ✅ Implemented
 
-#### Core Skills (Planned)
-- **Languages**: TypeScript, JavaScript, Python, Go, Java
-- **Patterns**: SOLID, Design Patterns, Anti-patterns
-- **Security**: OWASP Top 10, Common vulnerabilities
-- **Performance**: Complexity analysis, Memory leaks
-- **Quality**: Code smells, Technical debt
+#### Core Skills
+- **Languages**: TypeScript, JavaScript, Python, Go, Java, Rust, C#, Ruby, PHP
+- **Patterns**: SOLID, Design Patterns, Anti-patterns, Refactoring patterns
+- **Security**: OWASP Top 10, Common vulnerabilities, Dependency scanning
+- **Performance**: Algorithm complexity, Memory leaks, N+1 queries
+- **Quality**: Code smells, Technical debt, Complexity metrics
+- **Testing**: Jest, Vitest, pytest, JUnit, Coverage analysis
 
-#### Specialized Skills (Planned)
-- Static code analysis
-- Security vulnerability detection
-- Performance bottleneck identification
-- Best practices enforcement
-- Refactoring suggestions
-- Test coverage analysis
-- Code complexity metrics
+#### Specialized Skills
+- Code quality assessment (Readability, Maintainability, Modularity)
+- Security review (OWASP Top 10, Authentication, Authorization, Data protection)
+- Performance analysis (Big O analysis, Resource management, Async patterns)
+- Testing & coverage (Test quality, Coverage metrics, Test patterns)
+- Design patterns & architecture review
+- Language-specific expertise (JS/TS, Python, Go)
+- Static analysis tools (ESLint, Pylint, SonarQube, Snyk)
+- CI integration and pre-commit hooks
 
-#### Best For (Planned)
+#### Best For
 ✅ Pre-commit code review
 ✅ Pull request review
-✅ Security vulnerability scan
+✅ Security vulnerability detection
 ✅ Code quality assessment
 ✅ Refactoring recommendations
+✅ Test coverage analysis
+✅ Performance bottleneck identification
 
 ---
 
-### security-specialist (CRITICAL)
+### security-specialist
 
 **Role**: Security Engineer / AppSec
 **Priority**: 1 (Critical)
+**Status**: ✅ Implemented
 
-#### Core Skills (Planned)
-- **Security**: OWASP Top 10, CWE, CVE
-- **Authentication**: OAuth, SAML, JWT, MFA
-- **Encryption**: TLS, AES, RSA, Key management
-- **Standards**: PCI-DSS, GDPR, SOC 2, HIPAA
-- **Tools**: Security scanners, SAST, DAST
+#### Core Skills
+- **Security**: OWASP Top 10, CWE, CVE, SANS Top 25
+- **Authentication**: OAuth 2.0, SAML 2.0, JWT, OpenID Connect, MFA, Passkeys
+- **Encryption**: TLS 1.3, AES, RSA, Key management, HSM
+- **Standards**: PCI-DSS, GDPR, SOC 2, HIPAA, ISO 27001, NIST
+- **Tools**: Burp Suite, OWASP ZAP, Snyk, SonarQube, Nessus, Metasploit
 
-#### Specialized Skills (Planned)
-- Threat modeling
-- Vulnerability assessment
-- Penetration testing guidance
-- Security architecture review
-- Compliance checking
-- Incident response planning
-- Security code review
+#### Specialized Skills
+- Threat modeling (STRIDE, PASTA, DREAD)
+- Vulnerability assessment (SAST, DAST, IAST, SCA)
+- Penetration testing methodologies
+- Security architecture review and design
+- Compliance assessment and remediation
+- Incident response and forensics
+- Security code review (manual + automated)
+- API security (REST, GraphQL, gRPC)
+- Cloud security (AWS, GCP, Azure)
+- Container security (Docker, Kubernetes)
+- Supply chain security (SBOM, provenance)
+- Secrets management (Vault, AWS Secrets Manager)
 
-#### Best For (Planned)
+#### Best For
 ✅ Security architecture review
-✅ Vulnerability scanning
+✅ Vulnerability scanning and remediation
 ✅ Authentication/authorization design
-✅ Compliance checking
-✅ Security best practices
+✅ Compliance checking (PCI-DSS, GDPR, HIPAA)
+✅ Security best practices enforcement
+✅ Threat modeling
+✅ Incident response planning
+✅ API security assessment
 
 ---
 
-### bug-investigator (CRITICAL)
+### bug-investigator
 
 **Role**: Senior Debugger / Bug Detective
 **Priority**: 1 (Critical)
+**Status**: ✅ Implemented
 
-#### Core Skills (Planned)
-- **Debugging**: GDB, LLDB, Chrome DevTools, pdb
-- **Log Analysis**: ELK, Splunk, CloudWatch Logs
-- **Profiling**: Performance profilers, Memory profilers
-- **Tracing**: OpenTelemetry, Jaeger, Zipkin
-- **Error Tracking**: Sentry, Rollbar, Bugsnag
+#### Core Skills
+- **Debugging**: GDB, LLDB, Chrome DevTools, pdb, Node.js Inspector
+- **Log Analysis**: ELK Stack, Splunk, CloudWatch Logs, Datadog, Grafana Loki
+- **Profiling**: Performance profilers, Memory profilers, CPU profilers
+- **Tracing**: OpenTelemetry, Jaeger, Zipkin, X-Ray
+- **Error Tracking**: Sentry, Rollbar, Bugsnag, Honeybadger
+- **Tools**: Network analysis (tcpdump, Wireshark), System monitoring (top, htop, strace)
 
-#### Specialized Skills (Planned)
-- Root cause analysis
-- Stack trace interpretation
-- Memory leak detection
-- Race condition identification
-- Hypothesis testing
-- Reproduction step creation
-- Fix verification
+#### Specialized Skills
+- Root cause analysis (5 Whys, Fishbone diagrams)
+- Stack trace interpretation across languages
+- Memory leak detection and analysis
+- Race condition and concurrency bug identification
+- Hypothesis-driven debugging
+- Reproduction step creation and minimization
+- Fix verification and regression testing
+- Debugging distributed systems
+- Frontend debugging (React DevTools, Redux DevTools, Vue DevTools)
+- Backend debugging (Node.js, Python, Go)
+- Database query debugging and optimization
+- Network and API debugging
+- Browser compatibility issues
+- Mobile debugging (React Native, iOS, Android)
 
-#### Best For (Planned)
-✅ Bug investigation
-✅ Log analysis
-✅ Root cause identification
-✅ Performance debugging
+#### Best For
+✅ Bug investigation and root cause analysis
+✅ Log analysis and pattern detection
+✅ Performance debugging and profiling
 ✅ Memory leak detection
+✅ Race condition identification
+✅ Production incident investigation
+✅ Complex bug reproduction
+✅ Intermittent bug tracking
 
 ---
 
@@ -694,7 +720,7 @@
 
 | Technology | Agents with Expertise | Proficiency Level |
 |------------|----------------------|-------------------|
-| **TypeScript** | frontend-architect, frontend-developer, ui-components-expert, code-reviewer* | Advanced / High / High / Advanced |
+| **TypeScript** | frontend-architect, frontend-developer, ui-components-expert, code-reviewer | Advanced / High / High / Advanced |
 | **React** | frontend-architect, frontend-developer, ui-components-expert, mobile-developer* | Advanced / Advanced / Expert / High |
 | **Next.js** | frontend-architect, frontend-developer | Expert / Advanced |
 | **Node.js** | backend-architect, python-expert (secondary) | Advanced / Medium |
@@ -705,10 +731,11 @@
 | **Kubernetes** | devops-architect, google-cloud-expert | Expert / Advanced |
 | **AWS** | devops-architect, deployment-integration-expert | Advanced / Medium |
 | **GCP** | google-cloud-expert, devops-architect | Expert / Advanced |
-| **Testing** | qc-automation-expert, code-reviewer* | Expert / Advanced |
-| **Security** | security-specialist*, code-reviewer* | Expert / Advanced |
+| **Testing** | qc-automation-expert, code-reviewer | Expert / Advanced |
+| **Security** | security-specialist, code-reviewer | Expert / Advanced |
+| **Debugging** | bug-investigator, code-reviewer | Expert / Advanced |
 
-*Planned/Recommended agent
+*Planned/Recommended agent (not yet implemented)
 
 ---
 
@@ -732,14 +759,14 @@ START: What do you need?
 │  └─ Data pipeline? → data-engineer*
 │
 ├─ 🐛 Issues/Problems
-│  ├─ Bug investigation? → bug-investigator*
+│  ├─ Bug investigation? → bug-investigator ✅
 │  ├─ Performance issues? → performance-optimizer*
-│  ├─ Security issues? → security-specialist*
-│  └─ Code quality? → code-reviewer*
+│  ├─ Security issues? → security-specialist ✅
+│  └─ Code quality? → code-reviewer ✅
 │
 ├─ 🔍 Review/Audit
-│  ├─ Code review? → code-reviewer*
-│  ├─ Security audit? → security-specialist*
+│  ├─ Code review? → code-reviewer ✅
+│  ├─ Security audit? → security-specialist ✅
 │  ├─ Performance audit? → performance-optimizer*
 │  └─ Architecture review? → tech-lead-mentor*
 │
@@ -747,13 +774,13 @@ START: What do you need?
 │  ├─ Refactoring? → refactoring-expert*
 │  ├─ Performance optimization? → performance-optimizer*
 │  ├─ Technical debt? → tech-lead-mentor*
-│  └─ Code quality? → code-reviewer*
+│  └─ Code quality? → code-reviewer ✅
 │
 ├─ 🧪 Testing
 │  ├─ Test strategy? → qc-automation-expert
 │  ├─ E2E tests? → qc-automation-expert
 │  ├─ Unit tests? → qc-automation-expert
-│  └─ Security tests? → security-specialist*
+│  └─ Security tests? → security-specialist ✅
 │
 ├─ 🚀 Deployment/Ops
 │  ├─ Simple deployment? → deployment-integration-expert
@@ -773,7 +800,8 @@ START: What do you need?
    └─ Best practices? → tech-lead-mentor*
 ```
 
-*Planned/Recommended agent
+✅ = Implemented and ready to use
+*  = Planned/Recommended agent (not yet implemented)
 
 ---
 
@@ -788,7 +816,7 @@ requirements-analyst* → [architect agents] → [implementation agents]
 ### 2. **Layer Your Reviews**
 Apply multiple review layers for quality:
 ```
-[implementation] → code-reviewer* → security-specialist* → performance-optimizer*
+[implementation] → code-reviewer ✅ → security-specialist ✅ → performance-optimizer*
 ```
 
 ### 3. **Specialize for Efficiency**
@@ -801,20 +829,20 @@ Use the most specialized agent for the task:
 Complex tasks need multiple agents:
 ```
 Full-stack feature = frontend-architect + backend-architect + database-architect +
-                     security-specialist* + developers + qc-automation-expert
+                     security-specialist ✅ + developers + qc-automation-expert
 ```
 
 ### 5. **Review Before Commit**
 Always review before committing:
 ```
-[write code] → code-reviewer* → [fix issues] → security-specialist* → [commit]
+[write code] → code-reviewer ✅ → [fix issues] → security-specialist ✅ → [commit]
 ```
 
 ---
 
 ## 📈 Skill Coverage Analysis
 
-### Current System (12 agents)
+### Current System (15 agents)
 
 | Skill Category | Coverage | Strong Agents | Gap Areas |
 |----------------|----------|---------------|-----------|
@@ -822,16 +850,18 @@ Always review before committing:
 | **Backend** | 80% | 2 agents | Microservices, Message queues |
 | **Database** | 85% | 1 agent | NoSQL advanced patterns |
 | **DevOps** | 75% | 2 agents | Service mesh, Advanced monitoring |
-| **Testing** | 70% | 1 agent | Security testing, Load testing |
+| **Testing** | 85% | 2 agents (qc-automation-expert, code-reviewer) | Visual testing |
 | **Documentation** | 90% | 2 agents | Interactive docs |
-| **Security** | 30% | 0 agents | **CRITICAL GAP** |
-| **Code Quality** | 40% | 0 agents | **CRITICAL GAP** |
-| **Performance** | 45% | 0 agents | **HIGH PRIORITY GAP** |
+| **Security** | 95% | 1 agent (security-specialist) | **✅ FILLED** |
+| **Code Quality** | 95% | 1 agent (code-reviewer) | **✅ FILLED** |
+| **Performance** | 60% | 1 agent (code-reviewer - partial) | Load testing, Advanced profiling |
 | **Requirements** | 20% | 0 agents | **HIGH PRIORITY GAP** |
-| **Debugging** | 25% | 0 agents | **CRITICAL GAP** |
+| **Debugging** | 90% | 1 agent (bug-investigator) | **✅ FILLED** |
 | **Mobile** | 10% | 0 agents | **HIGH PRIORITY GAP** |
 
-### With Recommended Agents (20 agents)
+### With Additional Recommended Agents (20 agents)
+
+If we add the 5 remaining recommended agents (performance-optimizer, requirements-analyst, tech-lead-mentor, refactoring-expert, mobile-developer):
 
 | Skill Category | Coverage | Strong Agents | Remaining Gaps |
 |----------------|----------|---------------|----------------|
@@ -839,14 +869,16 @@ Always review before committing:
 | **Backend** | 85% | 2 agents | Advanced patterns |
 | **Database** | 90% | 1 agent | Graph databases |
 | **DevOps** | 80% | 2 agents | Multi-cloud |
-| **Testing** | 85% | 1 agent | Visual testing |
+| **Testing** | 90% | 2 agents | None major |
 | **Documentation** | 95% | 2 agents | None major |
-| **Security** | 95% | 1 agent | **✅ FILLED** |
-| **Code Quality** | 95% | 2 agents | **✅ FILLED** |
-| **Performance** | 90% | 1 agent | **✅ FILLED** |
-| **Requirements** | 85% | 1 agent | **✅ FILLED** |
-| **Debugging** | 90% | 1 agent | **✅ FILLED** |
-| **Mobile** | 85% | 1 agent | **✅ FILLED** |
+| **Security** | 95% | 1 agent (security-specialist) | **✅ COMPLETE** |
+| **Code Quality** | 95% | 2 agents (code-reviewer, refactoring-expert*) | **✅ COMPLETE** |
+| **Performance** | 90% | 1 agent (performance-optimizer*) | **✅ COMPLETE** |
+| **Requirements** | 85% | 1 agent (requirements-analyst*) | **✅ COMPLETE** |
+| **Debugging** | 90% | 1 agent (bug-investigator) | **✅ COMPLETE** |
+| **Mobile** | 85% | 1 agent (mobile-developer*) | **✅ COMPLETE** |
+
+*Recommended/Planned agents
 
 ---
 
