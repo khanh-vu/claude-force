@@ -1,0 +1,12 @@
+# Claude-Force Requirements
+# Production dependencies
+
+# Core
+anthropic>=0.40.0          # Anthropic Claude API client
+
+# For development/testing (optional)
+pytest>=8.0.0              # Testing framework
+pytest-cov>=4.1.0          # Test coverage
+black>=24.0.0              # Code formatting
+pylint>=3.0.0              # Code linting
+mypy>=1.8.0                # Type checking

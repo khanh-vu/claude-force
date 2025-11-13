@@ -57,11 +57,22 @@ def generate_visual_report(results_path: str = "benchmarks/reports/results/compl
     results_file = Path(results_path)
     if not results_file.exists():
         print(f"❌ Results file not found: {results_path}")
-        return
+        print(f"   Expected path: {results_file.absolute()}")
+        print("   Run 'python3 benchmarks/scripts/run_all.py' first to generate results.")
+        return False
 
-    with open(results_file) as f:
-        results = json.load(f)
+    try:
+        with open(results_file) as f:
+            results = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ Error: Invalid JSON in results file: {e}")
+        print(f"   File: {results_path}")
+        return False
+    except Exception as e:
+        print(f"❌ Error reading results file: {e}")
+        return False
 
+    # Safely extract data with defaults
     summary = results.get("summary", {})
     agent_selection = summary.get("agent_selection", {})
     scenarios = summary.get("scenarios_available", {})
@@ -178,10 +189,24 @@ def generate_visual_report(results_path: str = "benchmarks/reports/results/compl
     print("📁 Full results: benchmarks/reports/results/complete_benchmark.json")
     print("=" * 80 + "\n")
 
+    return True
+
 
 def main():
     """Main entry point"""
-    generate_visual_report()
+    import sys
+
+    try:
+        success = generate_visual_report()
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Interrupted by user")
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n❌ Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,13 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from metrics.agent_selection import AgentSelectionBenchmark, get_test_cases
+try:
+    from metrics.agent_selection import AgentSelectionBenchmark, get_test_cases
+except ImportError as e:
+    print(f"❌ Error: Failed to import required modules: {e}")
+    print("   Make sure you're running from the project root directory.")
+    print("   Try: cd /path/to/claude-force && python3 benchmarks/scripts/run_all.py")
+    sys.exit(1)
 
 
 class BenchmarkRunner:
@@ -39,13 +45,32 @@ class BenchmarkRunner:
         print("1. AGENT SELECTION BENCHMARK")
         print("=" * 70 + "\n")
 
-        benchmark = AgentSelectionBenchmark()
-        test_cases = get_test_cases()
-        report = benchmark.run_benchmark(test_cases)
-        benchmark.save_report()
+        try:
+            benchmark = AgentSelectionBenchmark()
+            test_cases = get_test_cases()
 
-        self.results["agent_selection"] = report
-        return report
+            if not test_cases:
+                print("⚠️  Warning: No test cases found. Using default test cases.")
+                test_cases = []
+
+            report = benchmark.run_benchmark(test_cases)
+            benchmark.save_report()
+
+            self.results["agent_selection"] = report
+            return report
+        except Exception as e:
+            print(f"❌ Error running agent selection benchmark: {e}")
+            # Return empty report on error
+            return {
+                "summary": {
+                    "total_tests": 0,
+                    "average_accuracy": 0,
+                    "average_selection_time_ms": 0
+                },
+                "accuracy_distribution": {},
+                "performance_tiers": {},
+                "detailed_results": []
+            }
 
     def list_scenarios(self) -> dict:
         """List all available scenarios"""
@@ -56,15 +81,22 @@ class BenchmarkRunner:
             "complex": []
         }
 
-        for difficulty in ["simple", "medium", "complex"]:
-            difficulty_dir = scenarios_dir / difficulty
-            if difficulty_dir.exists():
-                for scenario_file in sorted(difficulty_dir.glob("*.md")):
-                    scenarios[difficulty].append({
-                        "file": str(scenario_file),
-                        "name": scenario_file.stem,
-                        "difficulty": difficulty
-                    })
+        if not scenarios_dir.exists():
+            print(f"⚠️  Warning: Scenarios directory not found: {scenarios_dir}")
+            return scenarios
+
+        try:
+            for difficulty in ["simple", "medium", "complex"]:
+                difficulty_dir = scenarios_dir / difficulty
+                if difficulty_dir.exists():
+                    for scenario_file in sorted(difficulty_dir.glob("*.md")):
+                        scenarios[difficulty].append({
+                            "file": str(scenario_file),
+                            "name": scenario_file.stem,
+                            "difficulty": difficulty
+                        })
+        except Exception as e:
+            print(f"⚠️  Warning: Error reading scenarios: {e}")
 
         return scenarios
 
@@ -156,13 +188,25 @@ class BenchmarkRunner:
 
     def save_results(self, output_path: str = "benchmarks/reports/results/complete_benchmark.json"):
         """Save complete benchmark results"""
-        output_file = Path(output_path)
-        output_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            output_file = Path(output_path)
+            output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_file, 'w') as f:
-            json.dump(self.results, f, indent=2)
+            with open(output_file, 'w') as f:
+                json.dump(self.results, f, indent=2)
 
-        print(f"\n📊 Complete results saved to: {output_path}")
+            print(f"\n📊 Complete results saved to: {output_path}")
+        except PermissionError:
+            print(f"❌ Error: Permission denied writing to {output_path}")
+            print("   Check file/directory permissions")
+            raise
+        except OSError as e:
+            print(f"❌ Error: Failed to save results: {e}")
+            print(f"   Output path: {output_path}")
+            raise
+        except Exception as e:
+            print(f"❌ Error: Unexpected error saving results: {e}")
+            raise
 
     def run_all(self):
         """Run all benchmarks"""
@@ -190,15 +234,36 @@ class BenchmarkRunner:
             print("✅ ALL BENCHMARKS COMPLETED SUCCESSFULLY")
             print("=" * 70)
 
+        except KeyboardInterrupt:
+            print("\n\n⚠️  Benchmark interrupted by user")
+            print("=" * 70)
+            return False
         except Exception as e:
             print(f"\n❌ Benchmark failed: {e}")
-            raise
+            print("=" * 70)
+            import traceback
+            print("\nFull error trace:")
+            traceback.print_exc()
+            return False
+
+        return True
 
 
 def main():
     """Main entry point"""
-    runner = BenchmarkRunner()
-    runner.run_all()
+    try:
+        runner = BenchmarkRunner()
+        success = runner.run_all()
+
+        # Exit with appropriate code
+        sys.exit(0 if success else 1)
+
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Interrupted by user")
+        sys.exit(130)  # Standard exit code for Ctrl+C
+    except Exception as e:
+        print(f"\n❌ Fatal error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

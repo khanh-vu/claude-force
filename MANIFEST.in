@@ -1,0 +1,23 @@
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include QUICK_START.md
+include BUILD_DOCUMENTATION.md
+include DEMO_GUIDE.md
+
+# Include configuration examples
+graft .claude
+prune .claude/tasks
+
+# Include benchmarks
+graft benchmarks
+prune benchmarks/reports
+
+# Exclude development files
+exclude .gitignore
+exclude .env.example
+exclude test_claude_system.py
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store

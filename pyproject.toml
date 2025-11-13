@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-force"
+version = "2.1.0"
+description = "Multi-Agent Orchestration System for Claude"
+readme = "README.md"
+authors = [
+    {name = "Claude Force Team"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["claude", "anthropic", "ai", "agents", "multi-agent", "orchestration"]
+dependencies = [
+    "anthropic>=0.40.0",
+]
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "pylint>=3.0.0",
+    "mypy>=1.8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_USERNAME/claude-force"
+Documentation = "https://github.com/YOUR_USERNAME/claude-force/blob/main/README.md"
+Repository = "https://github.com/YOUR_USERNAME/claude-force"
+Issues = "https://github.com/YOUR_USERNAME/claude-force/issues"
+
+[project.scripts]
+claude-force = "claude_force.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["claude_force*"]
+exclude = ["tests*", "benchmarks*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.pylint.messages_control]
+max-line-length = 100
+disable = ["C0103", "C0114", "C0115", "C0116"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=claude_force --cov-report=html --cov-report=term"
