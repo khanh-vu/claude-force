@@ -101,22 +101,38 @@
       "frontend-architect",
       "database-architect",
       "backend-architect",
+      "security-specialist",
       "python-expert",
       "ui-components-expert",
       "frontend-developer",
       "qc-automation-expert",
+      "code-reviewer",
       "deployment-integration-expert"
     ],
     "frontend-only": [
       "frontend-architect",
       "ui-components-expert",
       "frontend-developer",
-      "qc-automation-expert"
+      "qc-automation-expert",
+      "code-reviewer"
     ],
     "backend-only": [
       "backend-architect",
       "database-architect",
+      "security-specialist",
       "python-expert",
+      "qc-automation-expert",
+      "code-reviewer"
+    ],
+    "infrastructure": [
+      "devops-architect",
+      "google-cloud-expert",
+      "deployment-integration-expert",
+      "security-specialist"
+    ],
+    "bug-fix": [
+      "bug-investigator",
+      "code-reviewer",
       "qc-automation-expert"
     ],
     "documentation": [
