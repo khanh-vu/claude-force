@@ -6,7 +6,7 @@ A complete, production-ready Claude multi-agent orchestration system with full g
 
 ## 📊 System Statistics
 
-### Agents: 12
+### Agents: 15
 - ✅ frontend-architect
 - ✅ backend-architect
 - ✅ python-expert
@@ -19,8 +19,11 @@ A complete, production-ready Claude multi-agent orchestration system with full g
 - ✅ document-writer-expert
 - ✅ api-documenter
 - ✅ frontend-developer
+- ✅ code-reviewer (NEW)
+- ✅ security-specialist (NEW)
+- ✅ bug-investigator (NEW)
 
-### Contracts: 12
+### Contracts: 15
 Each agent has a formal contract defining:
 - Scope of authority
 - Core responsibilities
@@ -39,20 +42,36 @@ Governance validators for quality control:
 - ✅ format-lint (ensures proper formatting)
 - ✅ hierarchy-governance (enforces agent boundaries)
 
-### Workflows: 4
+### Workflows: 6
 Pre-defined multi-agent workflows:
-- ✅ full-stack-feature (8 agents)
-- ✅ frontend-only (4 agents)
-- ✅ backend-only (4 agents)
+- ✅ full-stack-feature (10 agents)
+- ✅ frontend-only (5 agents)
+- ✅ backend-only (6 agents)
+- ✅ infrastructure (4 agents) (NEW)
+- ✅ bug-fix (3 agents) (NEW)
 - ✅ documentation (2 agents)
 
-### Skills Integration: Complete
+### Skills Integration: 9 Skills Complete
+**Built-in Claude Skills (4)**:
 - ✅ DOCX (Word documents)
 - ✅ XLSX (Spreadsheets)
 - ✅ PPTX (Presentations)
 - ✅ PDF (PDF processing)
-- ✅ Integration patterns documented
-- ✅ Usage examples provided
+
+**Custom Development Skills (5)** (NEW):
+- ✅ test-generation (Unit, integration, E2E testing patterns)
+- ✅ code-review (OWASP Top 10, SOLID principles, code smells)
+- ✅ api-design (RESTful patterns, authentication, OpenAPI)
+- ✅ dockerfile (Multi-stage builds, security hardening)
+- ✅ git-workflow (Commit conventions, branching strategies)
+
+### Benchmarks: 4 Scenarios (NEW)
+Real-world benchmark scenarios with performance metrics:
+- ✅ 3 simple scenarios (5-10 minutes each)
+- ✅ 1 medium scenario (15-25 minutes)
+- ✅ Interactive HTML dashboard
+- ✅ Visual terminal reports with ASCII charts
+- ✅ Screenshot and recording guides
 
 ### Testing: 26 Unit Tests (All Passing ✅)
 - System structure tests (3)

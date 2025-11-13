@@ -14,8 +14,9 @@ A comprehensive Claude multi-agent system featuring:
 - **Comprehensive Skills Documentation** - Detailed expertise maps for precise agent selection
 - **Formal Contracts** - Clear boundaries and responsibilities for each agent
 - **6-Layer Governance** - Quality gates, validation, and compliance enforcement
-- **Skills Integration** - Create DOCX, XLSX, PPTX, and PDF files
-- **Pre-Built Workflows** - Full-stack, frontend-only, backend-only, and documentation workflows
+- **9 Integrated Skills** - Built-in skills (DOCX, XLSX, PPTX, PDF) + Custom development skills (testing, code review, API design, Docker, Git)
+- **6 Pre-Built Workflows** - Full-stack, frontend, backend, infrastructure, bug-fix, and documentation workflows
+- **Comprehensive Benchmarks** - 4 real-world scenarios with performance metrics and interactive dashboard
 - **100% Test Coverage** - 26 comprehensive unit tests (all passing)
 
 ## 🚀 Quick Start
@@ -153,12 +154,14 @@ Automatic initialization when Claude Code session starts:
 | **document-writer-expert** | Technical documentation | README files, user guides |
 | **api-documenter** | API documentation | OpenAPI specs, Postman collections |
 
-### Workflows (4)
+### Workflows (6)
 
-1. **full-stack-feature** - Complete feature from architecture to deployment (8 agents)
-2. **frontend-only** - Frontend-focused development (4 agents)
-3. **backend-only** - Backend API development (4 agents)
-4. **documentation** - Documentation generation (2 agents)
+1. **full-stack-feature** - Complete feature from architecture to deployment (10 agents)
+2. **frontend-only** - Frontend-focused development (5 agents)
+3. **backend-only** - Backend API development (6 agents)
+4. **infrastructure** - Infrastructure and deployment setup (4 agents)
+5. **bug-fix** - Bug investigation and resolution (3 agents)
+6. **documentation** - Documentation generation (2 agents)
 
 ### Governance (6 Validators)
 
@@ -169,12 +172,20 @@ Automatic initialization when Claude Code session starts:
 - ✅ **format-lint** - Validates output format
 - ✅ **hierarchy-governance** - Enforces agent boundaries
 
-### Skills Integration
+### Skills Integration (9 Skills)
 
+**Built-in Claude Skills (4)**:
 - 📄 **DOCX** - Create and edit Word documents
 - 📊 **XLSX** - Create and analyze spreadsheets
 - 📽️ **PPTX** - Generate presentations
 - 📕 **PDF** - Process and create PDFs
+
+**Custom Development Skills (5)**:
+- 🧪 **test-generation** - Unit, integration, and E2E testing patterns
+- 🔍 **code-review** - OWASP Top 10, SOLID principles, code smells
+- 🔌 **api-design** - RESTful patterns, authentication, OpenAPI
+- 🐳 **dockerfile** - Multi-stage builds, security hardening
+- 🔀 **git-workflow** - Commit conventions, branching strategies
 
 ## 📁 Directory Structure
 
@@ -212,14 +223,39 @@ Automatic initialization when Claude Code session starts:
 │   ├── task-examples/          # Sample tasks
 │   └── output-examples/        # Sample outputs
 │
-├── skills/                      # Skills integration
-│   └── README.md
+├── skills/                      # Skills integration (9 skills)
+│   ├── README.md
+│   ├── test-generation/        # Custom testing skill
+│   ├── code-review/            # Custom review skill
+│   ├── api-design/             # Custom API skill
+│   ├── dockerfile/             # Custom Docker skill
+│   └── git-workflow/           # Custom Git skill
 │
 ├── macros/                      # Reusable blocks
 │   └── boot.md
 │
 └── tasks/                       # Context tracking
     └── context_session_1.md
+
+benchmarks/                      # Benchmark system (NEW)
+├── README.md                    # Complete documentation
+├── DEMO_GUIDE.md               # Quick demo guide
+├── scenarios/                   # Real-world scenarios
+│   ├── simple/                 # 3 basic scenarios
+│   ├── medium/                 # 1 multi-agent scenario
+│   └── complex/                # Coming soon
+├── metrics/                     # Performance measurement
+│   └── agent_selection.py
+├── scripts/                     # Automation
+│   ├── run_all.py
+│   ├── generate_visual_report.py
+│   ├── generate_dashboard.py
+│   └── demo_runner.sh
+├── screenshots/                 # Capture guidelines
+│   └── README.md
+└── reports/                     # Generated results
+    ├── dashboard/              # HTML dashboard
+    └── results/                # JSON reports
 ```
 
 ## 🎓 Usage Examples
@@ -286,6 +322,67 @@ python3 -m pytest test_claude_system.py --cov=.claude --cov-report=html
 
 **Total: 26 tests, 100% passing ✅**
 
+## 📊 Benchmarks & Demo
+
+The system includes a comprehensive benchmark suite demonstrating real-world capabilities with performance metrics.
+
+### Quick Start
+
+```bash
+# Run all benchmarks
+python3 benchmarks/scripts/run_all.py
+
+# Generate visual terminal report
+python3 benchmarks/scripts/generate_visual_report.py
+
+# Generate interactive HTML dashboard
+python3 benchmarks/scripts/generate_dashboard.py
+
+# Run automated demo (perfect for recordings)
+./benchmarks/scripts/demo_runner.sh
+```
+
+### Available Scenarios
+
+**Simple (3 scenarios, 5-10 minutes each)**:
+- Add health check API endpoint
+- Fix email validation bug
+- Update API documentation
+
+**Medium (1 scenario, 15-25 minutes)**:
+- User authentication with JWT (4-5 agents, full security review)
+
+**Complex (coming soon)**:
+- Full-stack microservice with testing and deployment
+
+### Performance Metrics
+
+Recent benchmark results:
+- **Agent Selection Accuracy**: 75% average
+- **Selection Speed**: 0.01ms average
+- **Scenarios Available**: 4 (3 simple, 1 medium)
+- **System Coverage**: 100% agents in workflows
+
+### Interactive Dashboard
+
+The HTML dashboard (`benchmarks/reports/dashboard/index.html`) provides:
+- Executive summary with key metrics
+- Agent selection performance charts
+- Accuracy distribution breakdown
+- Scenario catalog with status
+- Detailed test results table
+
+### Screenshots & Recordings
+
+Complete guides for creating professional demos:
+- `DEMO_GUIDE.md` - Quick 30-second demo guide
+- `benchmarks/screenshots/README.md` - Detailed capture instructions
+- `benchmarks/scripts/README.md` - Tool recommendations and workflows
+
+**Recommended tools**: asciinema (terminal), Kap (macOS), Peek (Linux), OBS Studio (cross-platform)
+
+See [benchmarks/README.md](benchmarks/README.md) for complete documentation.
+
 ## 🔧 Configuration
 
 ### Agent Configuration (`claude.json`)
@@ -331,11 +428,24 @@ python3 -m pytest test_claude_system.py --cov=.claude --cov-report=html
 
 ## 📚 Documentation
 
+### Core Documentation
 - **[QUICK_START.md](QUICK_START.md)** - Get started in 5 minutes
 - **[BUILD_DOCUMENTATION.md](BUILD_DOCUMENTATION.md)** - Complete reference
-- **[.claude/README.md](.claude/README.md)** - System overview
-- **[.claude/workflows.md](.claude/workflows.md)** - Workflow patterns
-- **[.claude/skills/README.md](.claude/skills/README.md)** - Skills integration guide
+- **[.claude/README.md](.claude/README.md)** - System overview and usage
+
+### Agent & Skills
+- **[.claude/AGENT_SKILLS_MATRIX.md](.claude/AGENT_SKILLS_MATRIX.md)** - Complete skills reference
+- **[.claude/workflows.md](.claude/workflows.md)** - Multi-agent workflow patterns
+- **[.claude/skills/README.md](.claude/skills/README.md)** - Skills integration (9 skills)
+
+### Examples & Guides
+- **[.claude/examples/README.md](.claude/examples/README.md)** - Sample tasks and outputs
+- **[DEMO_GUIDE.md](DEMO_GUIDE.md)** - Quick demo and screenshot guide
+
+### Benchmarks
+- **[benchmarks/README.md](benchmarks/README.md)** - Complete benchmark documentation
+- **[benchmarks/screenshots/README.md](benchmarks/screenshots/README.md)** - Screenshot guidelines
+- **[benchmarks/scripts/README.md](benchmarks/scripts/README.md)** - Script reference
 
 ## 🎯 Key Features
 
@@ -416,12 +526,15 @@ file_read("/mnt/skills/public/docx/SKILL.md")
 
 ## 📊 Statistics
 
-- **Total Files**: 50+
-- **Total Documentation**: ~18,000 lines
-- **Agents**: 15 complete agents
+- **Total Files**: 70+
+- **Total Documentation**: ~25,000 lines
+- **Agents**: 15 specialized agents
 - **Contracts**: 15 formal contracts
+- **Skills**: 9 integrated skills (4 built-in + 5 custom)
+- **Workflows**: 6 pre-built workflows
 - **Validators**: 6 governance validators
-- **Workflows**: 4 pre-built workflows
+- **Benchmarks**: 4 real-world scenarios
+- **Slash Commands**: 5 custom commands
 - **Tests**: 26 (100% passing)
 - **Test Coverage**: 100% of critical paths
 
