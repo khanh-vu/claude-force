@@ -3,9 +3,15 @@ Claude-Force: Multi-Agent Orchestration System for Claude
 
 A production-ready framework for orchestrating multiple specialized Claude agents
 with formal contracts, governance, and quality gates.
+
+P1 Enhancements:
+- Semantic agent selection with embeddings
+- Performance tracking and analytics
+- GitHub Actions integration
+- REST API server
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.0-p1"
 __author__ = "Claude Force Team"
 __license__ = "MIT"
 
