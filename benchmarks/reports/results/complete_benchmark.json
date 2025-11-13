@@ -1,0 +1,223 @@
+{
+  "metadata": {
+    "generated_at": "2025-11-13T12:39:00.314088",
+    "benchmark_version": "1.0.0"
+  },
+  "agent_selection": {
+    "summary": {
+      "total_tests": 10,
+      "average_accuracy": 0.75,
+      "average_selection_time_ms": 0.01,
+      "total_time_ms": 0.07
+    },
+    "accuracy_distribution": {
+      "high (>= 80%)": 3,
+      "medium (50-79%)": 7,
+      "low (< 50%)": 0
+    },
+    "performance_tiers": {
+      "fast (< 1ms)": 10,
+      "normal (1-10ms)": 0,
+      "slow (>= 10ms)": 0
+    },
+    "detailed_results": [
+      {
+        "task_description": "Add a health check endpoint to the API",
+        "expected_agents": [
+          "backend-architect"
+        ],
+        "selected_agents": [
+          "backend-architect",
+          "api-documenter"
+        ],
+        "selection_time_ms": 0.027991000024485402,
+        "accuracy": 0.5,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Fix bug in email validation that rejects valid emails with plus signs",
+        "expected_agents": [
+          "bug-investigator",
+          "code-reviewer"
+        ],
+        "selected_agents": [
+          "bug-investigator",
+          "code-reviewer"
+        ],
+        "selection_time_ms": 0.006427999778679805,
+        "accuracy": 1.0,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Update API documentation for new /health endpoint",
+        "expected_agents": [
+          "api-documenter",
+          "document-writer-expert"
+        ],
+        "selected_agents": [
+          "backend-architect",
+          "api-documenter",
+          "document-writer-expert"
+        ],
+        "selection_time_ms": 0.0047789999371161684,
+        "accuracy": 0.6666666666666666,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Implement JWT-based user authentication with registration and login",
+        "expected_agents": [
+          "backend-architect",
+          "database-architect",
+          "security-specialist"
+        ],
+        "selected_agents": [
+          "backend-architect",
+          "security-specialist"
+        ],
+        "selection_time_ms": 0.005336999947758159,
+        "accuracy": 0.6666666666666666,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Create a React component for user profile with form validation",
+        "expected_agents": [
+          "frontend-architect",
+          "ui-components-expert",
+          "frontend-developer"
+        ],
+        "selected_agents": [
+          "frontend-architect",
+          "ui-components-expert",
+          "frontend-developer"
+        ],
+        "selection_time_ms": 0.004912000122203608,
+        "accuracy": 1.0,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Add database schema for orders with relationships to users and products",
+        "expected_agents": [
+          "database-architect"
+        ],
+        "selected_agents": [
+          "database-architect"
+        ],
+        "selection_time_ms": 0.003917999947589124,
+        "accuracy": 1.0,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Build a complete user authentication system with frontend, backend, database, and security review",
+        "expected_agents": [
+          "frontend-architect",
+          "backend-architect",
+          "database-architect",
+          "security-specialist"
+        ],
+        "selected_agents": [
+          "database-architect",
+          "frontend-architect",
+          "ui-components-expert",
+          "security-specialist",
+          "backend-architect",
+          "code-reviewer"
+        ],
+        "selection_time_ms": 0.005849999979545828,
+        "accuracy": 0.6666666666666666,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Create Dockerfile for production deployment with multi-stage build and security hardening",
+        "expected_agents": [
+          "devops-architect",
+          "security-specialist"
+        ],
+        "selected_agents": [
+          "security-specialist",
+          "deployment-integration-expert",
+          "devops-architect"
+        ],
+        "selection_time_ms": 0.004423000063979998,
+        "accuracy": 0.6666666666666666,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Review pull request for security vulnerabilities, code quality, and test coverage",
+        "expected_agents": [
+          "code-reviewer",
+          "security-specialist"
+        ],
+        "selected_agents": [
+          "qc-automation-expert",
+          "security-specialist",
+          "code-reviewer"
+        ],
+        "selection_time_ms": 0.003974000037487713,
+        "accuracy": 0.6666666666666666,
+        "timestamp": "2025-11-13 12:39:00"
+      },
+      {
+        "task_description": "Investigate production bug causing intermittent 500 errors in payment processing",
+        "expected_agents": [
+          "bug-investigator",
+          "backend-architect",
+          "code-reviewer"
+        ],
+        "selected_agents": [
+          "bug-investigator",
+          "code-reviewer"
+        ],
+        "selection_time_ms": 0.004081999804839143,
+        "accuracy": 0.6666666666666666,
+        "timestamp": "2025-11-13 12:39:00"
+      }
+    ]
+  },
+  "scenarios": {
+    "simple": [
+      {
+        "name": "01_add_health_endpoint",
+        "file": "benchmarks/scenarios/simple/01_add_health_endpoint.md",
+        "status": "available"
+      },
+      {
+        "name": "02_fix_validation_bug",
+        "file": "benchmarks/scenarios/simple/02_fix_validation_bug.md",
+        "status": "available"
+      },
+      {
+        "name": "03_update_api_docs",
+        "file": "benchmarks/scenarios/simple/03_update_api_docs.md",
+        "status": "available"
+      }
+    ],
+    "medium": [
+      {
+        "name": "01_user_authentication",
+        "file": "benchmarks/scenarios/medium/01_user_authentication.md",
+        "status": "available"
+      }
+    ],
+    "complex": []
+  },
+  "summary": {
+    "benchmark_date": "2025-11-13T12:39:00.314071",
+    "total_duration_seconds": 0.0,
+    "agent_selection": {
+      "tests_run": 10,
+      "average_accuracy": 0.75,
+      "average_time_ms": 0.01
+    },
+    "scenarios_available": {
+      "simple": 3,
+      "medium": 1,
+      "complex": 0,
+      "total": 4
+    },
+    "system_info": {
+      "agents_configured": 15,
+      "workflows_configured": 6,
+      "skills_available": 9
+    }
+  }
+}
