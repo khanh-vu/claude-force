@@ -363,14 +363,23 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
     results_file = Path(results_path)
     if not results_file.exists():
         print(f"❌ Results file not found: {results_path}")
-        print("Run 'python benchmarks/scripts/run_all.py' first to generate results.")
-        return
+        print(f"   Expected path: {results_file.absolute()}")
+        print("   Run 'python3 benchmarks/scripts/run_all.py' first to generate results.")
+        return False
 
     # Load results
-    with open(results_file) as f:
-        results = json.load(f)
+    try:
+        with open(results_file) as f:
+            results = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ Error: Invalid JSON in results file: {e}")
+        print(f"   File: {results_path}")
+        return False
+    except Exception as e:
+        print(f"❌ Error reading results file: {e}")
+        return False
 
-    # Extract data
+    # Extract data with defaults
     summary = results.get("summary", {})
     agent_selection = summary.get("agent_selection", {})
     scenarios = summary.get("scenarios_available", {})
@@ -460,20 +469,47 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
     )
 
     # Save dashboard
-    output_file = Path(output_path)
-    output_file.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_file, 'w') as f:
-        f.write(html)
+        with open(output_file, 'w') as f:
+            f.write(html)
 
-    print(f"✅ Dashboard generated: {output_path}")
-    print(f"📊 Open in browser: file://{output_file.absolute()}")
+        print(f"✅ Dashboard generated: {output_path}")
+        print(f"📊 Open in browser: file://{output_file.absolute()}")
+        return True
+
+    except PermissionError:
+        print(f"❌ Error: Permission denied writing to {output_path}")
+        print("   Check file/directory permissions")
+        return False
+    except OSError as e:
+        print(f"❌ Error: Failed to save dashboard: {e}")
+        print(f"   Output path: {output_path}")
+        return False
+    except Exception as e:
+        print(f"❌ Error: Unexpected error saving dashboard: {e}")
+        return False
 
 
 def main():
     """Main entry point"""
+    import sys
+
     print("Generating benchmark dashboard...")
-    generate_dashboard()
+
+    try:
+        success = generate_dashboard()
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Interrupted by user")
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n❌ Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
