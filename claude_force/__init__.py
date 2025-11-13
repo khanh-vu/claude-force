@@ -17,11 +17,19 @@ __license__ = "MIT"
 
 from .orchestrator import AgentOrchestrator, AgentResult
 from .cli import main as cli_main
+from .mcp_server import MCPServer, MCPCapability, MCPRequest, MCPResponse
 
 # Optional: Semantic agent selection (requires sentence-transformers)
 try:
     from .semantic_selector import SemanticAgentSelector, AgentMatch
-    __all__ = ["AgentOrchestrator", "AgentResult", "cli_main", "SemanticAgentSelector", "AgentMatch"]
+    __all__ = [
+        "AgentOrchestrator", "AgentResult", "cli_main",
+        "SemanticAgentSelector", "AgentMatch",
+        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse"
+    ]
 except ImportError:
     # sentence-transformers not installed
-    __all__ = ["AgentOrchestrator", "AgentResult", "cli_main"]
+    __all__ = [
+        "AgentOrchestrator", "AgentResult", "cli_main",
+        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse"
+    ]

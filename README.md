@@ -189,6 +189,17 @@ nano .claude/.env
 - Python client library included
 - Example: [examples/api-server/](examples/api-server/)
 
+#### 5. 🔌 MCP Server & Headless Mode
+**Model Context Protocol server for Claude Code integration:**
+- MCP (Model Context Protocol) server for ecosystem integration
+- Exposes all agents, workflows, and capabilities via standard protocol
+- HTTP/JSON protocol for universal compatibility
+- Integration with Claude Code and MCP-compatible clients
+- Complete headless mode documentation for programmatic usage
+- Python API, CLI, REST API, MCP, and GitHub Actions modes
+- Example: [examples/mcp/](examples/mcp/)
+- Documentation: [docs/HEADLESS_MODE.md](docs/HEADLESS_MODE.md)
+
 **Get Started with P1:**
 ```bash
 # Install with optional dependencies
@@ -200,8 +211,11 @@ claude-force recommend --task "Review authentication for SQL injection"
 # View performance metrics
 claude-force metrics summary
 
-# Start API server
+# Start REST API server
 cd examples/api-server && uvicorn api_server:app --reload
+
+# Start MCP server (for Claude Code integration)
+python -m claude_force.mcp_server --port 8080
 ```
 
 ### Agent Skills Documentation (v2.0.0)
