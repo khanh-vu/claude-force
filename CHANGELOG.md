@@ -134,6 +134,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Troubleshooting guide
   - Integration examples (web apps, microservices)
 
+#### 5. MCP Server & Headless Mode Integration
+- **`claude_force/mcp_server.py` (450+ lines)** - Model Context Protocol server
+  - MCP (Model Context Protocol) server for Claude Code ecosystem integration
+  - Exposes all agents, workflows, and capabilities via standard protocol
+  - HTTP/JSON protocol for universal compatibility
+  - Capability discovery endpoint (`/capabilities`)
+  - Execute endpoint for agent/workflow execution (`/execute`)
+  - Health check and server info endpoints
+  - Integration with AgentOrchestrator
+  - Background thread support (non-blocking mode)
+  - CORS support for web clients
+
+- **Example**: `examples/mcp/mcp_client_example.py`
+  - Complete MCP client implementation
+  - Health check and capability listing
+  - Agent execution via MCP protocol
+  - Workflow execution
+  - Agent recommendations via MCP
+  - Performance metrics retrieval
+  - Request/response examples
+
+- **Documentation**: `examples/mcp/README.md`
+  - MCP protocol specification
+  - Server setup and configuration
+  - Python client usage
+  - JavaScript/TypeScript client examples
+  - Claude Code integration guide
+  - Docker deployment
+  - Security best practices
+  - Troubleshooting guide
+
+- **Documentation**: `docs/HEADLESS_MODE.md` (comprehensive guide)
+  - Python API usage patterns
+  - CLI automation examples
+  - REST API integration
+  - MCP server integration
+  - GitHub Actions patterns
+  - Web application integration (Flask, FastAPI)
+  - Jupyter notebooks usage
+  - AWS Lambda deployment
+  - Docker containerization
+  - Performance optimization
+  - Monitoring and observability
+  - Security best practices
+
 ### Changed
 
 #### Orchestrator Enhancements
@@ -177,14 +222,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Statistics
 
 **P1 Enhancement Totals**:
-- **New Python Modules**: 2 (semantic_selector.py, performance_tracker.py)
-- **New Examples**: 5 (2 Python, 3 GitHub Actions, 1 API server with client)
-- **Lines of Code**: ~3,500+ (Python modules + examples)
-- **Documentation**: ~5,000 lines (README files and guides)
-- **Total Files Added**: 15+
-- **CLI Commands**: 2 new (recommend, metrics)
-- **API Endpoints**: 15+ (REST API server)
+- **New Python Modules**: 3 (semantic_selector.py, performance_tracker.py, mcp_server.py)
+- **New Examples**: 6 (2 Python, 3 GitHub Actions, 1 API server with client, 1 MCP client)
+- **Lines of Code**: ~4,400+ (Python modules + examples)
+- **Documentation**: ~9,000 lines (README files and comprehensive guides)
+- **Total Files Added**: 19+
+- **CLI Commands**: 2 new (recommend, metrics) + MCP server CLI
+- **REST API Endpoints**: 15+ (REST API server)
+- **MCP Server Endpoints**: 3 (capabilities, execute, health)
 - **GitHub Actions Workflows**: 3 (review, security, docs)
+- **Headless Modes**: 5 (Python API, CLI, REST API, MCP, GitHub Actions)
 
 **Updated Version Totals**:
 - **Total Files**: 85+ (was 80+)
