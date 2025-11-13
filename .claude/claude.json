@@ -162,7 +162,12 @@
       "docx",
       "xlsx",
       "pptx",
-      "pdf"
+      "pdf",
+      "test-generation",
+      "code-review",
+      "api-design",
+      "dockerfile",
+      "git-workflow"
     ]
   },
   

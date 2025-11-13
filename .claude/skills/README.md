@@ -360,9 +360,169 @@ with pd.ExcelWriter(output_file) as writer:
 # [View analysis](computer:///mnt/user-data/outputs/sales-analysis.xlsx)
 ```
 
+---
+
+## Custom Development Skills
+
+In addition to Claude's built-in skills, this system includes custom skills for software development best practices:
+
+### 1. Test Generation
+**Location**: `.claude/skills/test-generation/SKILL.md`
+
+**Capabilities**:
+- Unit test patterns (Jest, Vitest, pytest, JUnit)
+- Integration testing strategies
+- E2E test creation (Playwright, Cypress)
+- Mock and stub patterns
+- Test data generation
+- Coverage strategies
+
+**When to Use**:
+- Writing test suites
+- Improving test coverage
+- Learning testing patterns
+- Setting up test frameworks
+
+**Usage in Agents**:
+```python
+# qc-automation-expert agent
+file_read(".claude/skills/test-generation/SKILL.md")
+# Then implement tests following documented patterns
+```
+
+### 2. Code Review
+**Location**: `.claude/skills/code-review/SKILL.md`
+
+**Capabilities**:
+- Code review checklists
+- Security vulnerability detection (OWASP Top 10)
+- Performance issue identification
+- SOLID principles validation
+- Code smell detection
+- Language-specific best practices
+
+**When to Use**:
+- Reviewing pull requests
+- Pre-commit code checks
+- Security audits
+- Quality assessments
+
+**Usage in Agents**:
+```python
+# code-reviewer agent
+file_read(".claude/skills/code-review/SKILL.md")
+# Apply checklist and patterns for comprehensive review
+```
+
+### 3. API Design
+**Location**: `.claude/skills/api-design/SKILL.md`
+
+**Capabilities**:
+- RESTful API patterns
+- HTTP methods and status codes
+- Request/response formatting
+- API versioning strategies
+- Authentication patterns (JWT, API Keys)
+- Rate limiting and CORS
+- OpenAPI/Swagger documentation
+
+**When to Use**:
+- Designing new APIs
+- Reviewing API endpoints
+- Documenting APIs
+- API security review
+
+**Usage in Agents**:
+```python
+# backend-architect or api-documenter agent
+file_read(".claude/skills/api-design/SKILL.md")
+# Design APIs following REST best practices
+```
+
+### 4. Dockerfile
+**Location**: `.claude/skills/dockerfile/SKILL.md`
+
+**Capabilities**:
+- Multi-stage builds
+- Security hardening
+- Size optimization
+- Best practices for different languages
+- Docker Compose patterns
+- Development vs Production configs
+
+**When to Use**:
+- Creating Dockerfiles
+- Containerizing applications
+- Optimizing Docker images
+- Security hardening containers
+
+**Usage in Agents**:
+```python
+# devops-architect or deployment-integration-expert agent
+file_read(".claude/skills/dockerfile/SKILL.md")
+# Create efficient, secure Dockerfiles
+```
+
+### 5. Git Workflow
+**Location**: `.claude/skills/git-workflow/SKILL.md`
+
+**Capabilities**:
+- Commit message conventions
+- Branching strategies (Git Flow, GitHub Flow)
+- Pull request workflows
+- Conflict resolution
+- Git best practices
+- Code review integration
+
+**When to Use**:
+- Setting up Git workflows
+- Writing commit messages
+- Creating pull requests
+- Resolving merge conflicts
+- Establishing team conventions
+
+**Usage in Agents**:
+```python
+# Any agent creating commits or documentation
+file_read(".claude/skills/git-workflow/SKILL.md")
+# Follow Git conventions and best practices
+```
+
+---
+
+## Using Custom Skills
+
+### Reading Custom Skills
+
+```python
+# For built-in Claude skills (DOCX, XLSX, PPTX, PDF)
+file_read("/mnt/skills/public/docx/SKILL.md")
+
+# For custom development skills
+file_read(".claude/skills/test-generation/SKILL.md")
+file_read(".claude/skills/code-review/SKILL.md")
+file_read(".claude/skills/api-design/SKILL.md")
+file_read(".claude/skills/dockerfile/SKILL.md")
+file_read(".claude/skills/git-workflow/SKILL.md")
+```
+
+### When Agents Should Use Skills
+
+- **qc-automation-expert**: Test Generation skill
+- **code-reviewer**: Code Review skill
+- **backend-architect**: API Design skill
+- **api-documenter**: API Design skill
+- **devops-architect**: Dockerfile skill
+- **deployment-integration-expert**: Dockerfile skill
+- **All agents**: Git Workflow skill (for commits/PRs)
+
+---
+
 ## Summary
 
-- **Always** read skill documentation first: `file_read("/mnt/skills/public/{skill}/SKILL.md")`
+- **Always** read skill documentation first before implementing
+- **Built-in skills**: `file_read("/mnt/skills/public/{skill}/SKILL.md")`
+- **Custom skills**: `file_read(".claude/skills/{skill-name}/SKILL.md")`
 - Work in `/home/claude`, finalize in `/mnt/user-data/outputs/`
 - Provide `computer://` links for user access
 - Follow patterns from SKILL.md for best results
@@ -370,6 +530,6 @@ with pd.ExcelWriter(output_file) as writer:
 
 ---
 
-**Last Updated**: 2024-11-13  
-**Version**: 1.0.0  
+**Last Updated**: 2025-11-13
+**Version**: 2.0.0 (Added 5 custom development skills)
 **Maintained By**: System Administrator
