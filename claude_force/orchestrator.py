@@ -32,13 +32,16 @@ class AgentOrchestrator:
         results = orchestrator.run_workflow("full-stack-feature", task="Build auth")
     """
 
-    def __init__(self, config_path: str = ".claude/claude.json", anthropic_api_key: Optional[str] = None):
+    def __init__(self, config_path: str = ".claude/claude.json",
+                 anthropic_api_key: Optional[str] = None,
+                 enable_tracking: bool = True):
         """
         Initialize orchestrator with configuration.
 
         Args:
             config_path: Path to claude.json configuration file
             anthropic_api_key: Anthropic API key (or set ANTHROPIC_API_KEY env var)
+            enable_tracking: Enable performance tracking (default: True)
         """
         self.config_path = Path(config_path)
         self.config = self._load_config()
@@ -58,6 +61,15 @@ class AgentOrchestrator:
             raise ImportError(
                 "anthropic package required. Install with: pip install anthropic"
             )
+
+        # Initialize performance tracker
+        self.tracker = None
+        if enable_tracking:
+            try:
+                from claude_force.performance_tracker import PerformanceTracker
+                self.tracker = PerformanceTracker()
+            except Exception as e:
+                print(f"Warning: Performance tracking disabled: {e}")
 
     def _load_config(self) -> Dict:
         """Load claude.json configuration"""
@@ -133,7 +145,9 @@ class AgentOrchestrator:
         task: str,
         model: str = "claude-3-5-sonnet-20241022",
         max_tokens: int = 4096,
-        temperature: float = 1.0
+        temperature: float = 1.0,
+        workflow_name: Optional[str] = None,
+        workflow_position: Optional[int] = None
     ) -> AgentResult:
         """
         Run a single agent on a task.
@@ -144,6 +158,8 @@ class AgentOrchestrator:
             model: Claude model to use
             max_tokens: Maximum tokens in response
             temperature: Temperature for generation (0.0-1.0)
+            workflow_name: Name of workflow (internal use)
+            workflow_position: Position in workflow (internal use)
 
         Returns:
             AgentResult with output and metadata
@@ -155,6 +171,11 @@ class AgentOrchestrator:
             )
             print(result.output)
         """
+        import time
+
+        start_time = time.time()
+        error_type = None
+
         try:
             # Load agent definition and contract
             agent_definition = self._load_agent_definition(agent_name)
@@ -180,6 +201,22 @@ class AgentOrchestrator:
                 if hasattr(block, 'text'):
                     output += block.text
 
+            execution_time_ms = (time.time() - start_time) * 1000
+
+            # Record metrics
+            if self.tracker:
+                self.tracker.record_execution(
+                    agent_name=agent_name,
+                    task=task,
+                    success=True,
+                    execution_time_ms=execution_time_ms,
+                    model=model,
+                    input_tokens=response.usage.input_tokens,
+                    output_tokens=response.usage.output_tokens,
+                    workflow_name=workflow_name,
+                    workflow_position=workflow_position
+                )
+
             return AgentResult(
                 agent_name=agent_name,
                 success=True,
@@ -189,15 +226,34 @@ class AgentOrchestrator:
                     "tokens_used": response.usage.input_tokens + response.usage.output_tokens,
                     "input_tokens": response.usage.input_tokens,
                     "output_tokens": response.usage.output_tokens,
+                    "execution_time_ms": execution_time_ms
                 }
             )
 
         except Exception as e:
+            execution_time_ms = (time.time() - start_time) * 1000
+            error_type = type(e).__name__
+
+            # Record failed execution
+            if self.tracker:
+                self.tracker.record_execution(
+                    agent_name=agent_name,
+                    task=task,
+                    success=False,
+                    execution_time_ms=execution_time_ms,
+                    model=model,
+                    input_tokens=0,
+                    output_tokens=0,
+                    error_type=error_type,
+                    workflow_name=workflow_name,
+                    workflow_position=workflow_position
+                )
+
             return AgentResult(
                 agent_name=agent_name,
                 success=False,
                 output="",
-                metadata={},
+                metadata={"execution_time_ms": execution_time_ms},
                 errors=[str(e)]
             )
 
@@ -239,7 +295,12 @@ class AgentOrchestrator:
         for i, agent_name in enumerate(workflow):
             print(f"Running agent {i+1}/{len(workflow)}: {agent_name}...")
 
-            result = self.run_agent(agent_name, current_task)
+            result = self.run_agent(
+                agent_name,
+                current_task,
+                workflow_name=workflow_name,
+                workflow_position=i+1
+            )
             results.append(result)
 
             if not result.success:
@@ -305,3 +366,166 @@ Continue from the previous agent's output. Original task: {task}
             "priority": agent_config.get("priority", 3),
             "description": description
         }
+
+    def recommend_agents(self, task: str, top_k: int = 3,
+                        min_confidence: float = 0.3) -> List[Dict[str, Any]]:
+        """
+        Recommend agents for a task using semantic similarity.
+
+        Uses embeddings-based matching for intelligent agent selection with
+        confidence scores. Requires sentence-transformers package.
+
+        Args:
+            task: Task description
+            top_k: Number of agents to recommend (default: 3)
+            min_confidence: Minimum confidence threshold 0-1 (default: 0.3)
+
+        Returns:
+            List of agent recommendations with confidence scores
+
+        Example:
+            recommendations = orchestrator.recommend_agents(
+                "Review authentication code for security issues",
+                top_k=3
+            )
+            for rec in recommendations:
+                print(f"{rec['agent']}: {rec['confidence']:.2f} - {rec['reasoning']}")
+
+        Raises:
+            ImportError: If sentence-transformers not installed
+        """
+        try:
+            from claude_force.semantic_selector import SemanticAgentSelector
+        except ImportError:
+            raise ImportError(
+                "Semantic agent selection requires sentence-transformers. "
+                "Install with: pip install sentence-transformers"
+            )
+
+        selector = SemanticAgentSelector(config_path=str(self.config_path))
+        matches = selector.select_agents(task, top_k=top_k, min_confidence=min_confidence)
+
+        return [
+            {
+                "agent": match.agent_name,
+                "confidence": round(match.confidence, 3),
+                "reasoning": match.reasoning,
+                "domains": match.domains,
+                "priority": match.priority
+            }
+            for match in matches
+        ]
+
+    def explain_agent_selection(self, task: str, agent_name: str) -> Dict[str, Any]:
+        """
+        Explain why a specific agent was or wasn't recommended for a task.
+
+        Args:
+            task: Task description
+            agent_name: Agent to explain
+
+        Returns:
+            Dictionary with explanation details
+
+        Example:
+            explanation = orchestrator.explain_agent_selection(
+                "Fix bug in login endpoint",
+                "bug-investigator"
+            )
+            print(f"Selected: {explanation['selected']}")
+            print(f"Rank: {explanation['rank']}")
+            print(f"Confidence: {explanation['confidence']}")
+
+        Raises:
+            ImportError: If sentence-transformers not installed
+        """
+        try:
+            from claude_force.semantic_selector import SemanticAgentSelector
+        except ImportError:
+            raise ImportError(
+                "Semantic agent selection requires sentence-transformers. "
+                "Install with: pip install sentence-transformers"
+            )
+
+        selector = SemanticAgentSelector(config_path=str(self.config_path))
+        return selector.explain_selection(task, agent_name)
+
+    def get_performance_summary(self, hours: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Get performance summary statistics.
+
+        Args:
+            hours: Only include last N hours (None for all time)
+
+        Returns:
+            Dictionary with summary statistics
+
+        Example:
+            summary = orchestrator.get_performance_summary(hours=24)
+            print(f"Success rate: {summary['success_rate']:.2%}")
+            print(f"Total cost: ${summary['total_cost']:.4f}")
+        """
+        if not self.tracker:
+            raise RuntimeError("Performance tracking not enabled")
+
+        return self.tracker.get_summary(hours)
+
+    def get_agent_performance(self, agent_name: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get performance statistics by agent.
+
+        Args:
+            agent_name: Specific agent (None for all agents)
+
+        Returns:
+            Dictionary with per-agent statistics
+
+        Example:
+            stats = orchestrator.get_agent_performance("code-reviewer")
+            print(f"Executions: {stats['code-reviewer']['executions']}")
+            print(f"Success rate: {stats['code-reviewer']['success_rate']:.2%}")
+        """
+        if not self.tracker:
+            raise RuntimeError("Performance tracking not enabled")
+
+        return self.tracker.get_agent_stats(agent_name)
+
+    def get_cost_breakdown(self) -> Dict[str, Any]:
+        """
+        Get cost breakdown by agent and model.
+
+        Returns:
+            Dictionary with cost breakdown
+
+        Example:
+            costs = orchestrator.get_cost_breakdown()
+            print(f"Total cost: ${costs['total']:.4f}")
+            for agent, cost in costs['by_agent'].items():
+                print(f"  {agent}: ${cost:.4f}")
+        """
+        if not self.tracker:
+            raise RuntimeError("Performance tracking not enabled")
+
+        return self.tracker.get_cost_breakdown()
+
+    def export_performance_metrics(self, output_path: str, format: str = "json"):
+        """
+        Export performance metrics to file.
+
+        Args:
+            output_path: Path to output file
+            format: Export format ("json" or "csv")
+
+        Example:
+            orchestrator.export_performance_metrics("metrics.json", "json")
+            orchestrator.export_performance_metrics("metrics.csv", "csv")
+        """
+        if not self.tracker:
+            raise RuntimeError("Performance tracking not enabled")
+
+        if format == "json":
+            self.tracker.export_json(output_path)
+        elif format == "csv":
+            self.tracker.export_csv(output_path)
+        else:
+            raise ValueError(f"Unsupported format: {format}")

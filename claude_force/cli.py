@@ -76,6 +76,81 @@ def cmd_agent_info(args):
         sys.exit(1)
 
 
+def cmd_recommend(args):
+    """Recommend agents for a task using semantic similarity"""
+    try:
+        # Read task
+        task = args.task
+        if args.task_file:
+            with open(args.task_file, 'r') as f:
+                task = f.read()
+        elif not task and not sys.stdin.isatty():
+            task = sys.stdin.read()
+
+        if not task:
+            print("❌ Error: Task description required", file=sys.stderr)
+            print("   Provide with --task, --task-file, or via stdin")
+            sys.exit(1)
+
+        orchestrator = AgentOrchestrator(config_path=args.config)
+
+        print(f"\n🔍 Analyzing task (semantic matching)...\n")
+
+        # Get recommendations
+        recommendations = orchestrator.recommend_agents(
+            task,
+            top_k=args.top_k,
+            min_confidence=args.min_confidence
+        )
+
+        if not recommendations:
+            print("❌ No agents match this task with sufficient confidence")
+            print(f"   Try lowering --min-confidence (current: {args.min_confidence})")
+            sys.exit(1)
+
+        # Display recommendations
+        print(f"📊 Top {len(recommendations)} Agent Recommendations:\n")
+        for i, rec in enumerate(recommendations, 1):
+            confidence_pct = rec['confidence'] * 100
+            bar_length = int(confidence_pct / 5)  # 0-20 chars
+            bar = "█" * bar_length + "░" * (20 - bar_length)
+
+            print(f"{i}. {rec['agent']}")
+            print(f"   Confidence: {bar} {confidence_pct:.1f}%")
+            print(f"   Reasoning: {rec['reasoning']}")
+            print(f"   Domains: {', '.join(rec['domains'])}")
+            print()
+
+        # Explain top choice if requested
+        if args.explain and recommendations:
+            top_agent = recommendations[0]['agent']
+            print(f"\n💡 Detailed Explanation for '{top_agent}':\n")
+            explanation = orchestrator.explain_agent_selection(task, top_agent)
+            print(f"Selected: {'Yes' if explanation['selected'] else 'No'}")
+            print(f"Rank: {explanation.get('rank', 'N/A')}")
+            print(f"Confidence: {explanation.get('confidence', 0):.3f}")
+            print(f"Reasoning: {explanation.get('reasoning', 'N/A')}")
+
+            if 'all_candidates' in explanation:
+                print(f"\nAll Candidates:")
+                for candidate in explanation['all_candidates']:
+                    print(f"  • {candidate['agent']}: {candidate['confidence']:.3f}")
+
+        # JSON output if requested
+        if args.json:
+            import json
+            print("\n" + json.dumps(recommendations, indent=2))
+
+    except ImportError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        print("\n💡 To use semantic agent selection, install sentence-transformers:")
+        print("   pip install sentence-transformers")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_run_agent(args):
     """Run a single agent"""
     try:
@@ -188,6 +263,93 @@ def cmd_run_workflow(args):
         sys.exit(1)
 
 
+def cmd_metrics(args):
+    """Show performance metrics"""
+    try:
+        orchestrator = AgentOrchestrator(config_path=args.config)
+
+        if not orchestrator.tracker:
+            print("❌ Performance tracking is not enabled", file=sys.stderr)
+            sys.exit(1)
+
+        print("\n" + "=" * 70)
+        print("PERFORMANCE METRICS")
+        print("=" * 70 + "\n")
+
+        # Summary
+        if args.command == "summary":
+            summary = orchestrator.get_performance_summary(hours=args.hours)
+
+            print(f"Time Period: {summary.get('time_period', 'all time')}\n")
+            print(f"Total Executions:     {summary['total_executions']}")
+            print(f"Successful:           {summary['successful_executions']}")
+            print(f"Failed:               {summary['failed_executions']}")
+            print(f"Success Rate:         {summary['success_rate']:.1%}\n")
+
+            print(f"Total Tokens:         {summary['total_tokens']:,}")
+            print(f"  Input Tokens:       {summary['total_input_tokens']:,}")
+            print(f"  Output Tokens:      {summary['total_output_tokens']:,}\n")
+
+            print(f"Total Cost:           ${summary['total_cost']:.4f}")
+            print(f"Avg Cost/Execution:   ${summary['avg_cost_per_execution']:.4f}")
+            print(f"Avg Execution Time:   {summary['avg_execution_time_ms']:.0f}ms")
+
+        # Per-agent stats
+        elif args.command == "agents":
+            stats = orchestrator.get_agent_performance()
+
+            if not stats:
+                print("No agent executions recorded yet")
+                return
+
+            print("Per-Agent Statistics:\n")
+            print(f"{'Agent':<30} {'Runs':>6} {'Success':>8} {'Avg Time':>10} {'Cost':>10}")
+            print("-" * 70)
+
+            for agent, data in sorted(stats.items(), key=lambda x: x[1]['total_cost'], reverse=True):
+                success_rate = f"{data['success_rate']:.1%}"
+                avg_time = f"{data['avg_execution_time_ms']:.0f}ms"
+                cost = f"${data['total_cost']:.4f}"
+
+                print(f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}")
+
+        # Cost breakdown
+        elif args.command == "costs":
+            costs = orchestrator.get_cost_breakdown()
+
+            print(f"Total Cost: ${costs['total']:.4f}\n")
+
+            print("By Agent:")
+            for agent, cost in list(costs['by_agent'].items())[:10]:
+                pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+                bar_length = int(pct / 2)  # 0-50 chars
+                bar = "█" * bar_length
+
+                print(f"  {agent:<30} ${cost:>8.4f} {bar} {pct:.1f}%")
+
+            if len(costs['by_agent']) > 10:
+                print(f"  ... and {len(costs['by_agent']) - 10} more agents")
+
+            print("\nBy Model:")
+            for model, cost in costs['by_model'].items():
+                pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+                print(f"  {model:<40} ${cost:>8.4f} ({pct:.1f}%)")
+
+        # Export
+        elif args.command == "export":
+            orchestrator.export_performance_metrics(args.output, args.format)
+            print(f"✅ Metrics exported to: {args.output}")
+
+        print("\n" + "=" * 70)
+
+    except RuntimeError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_init(args):
     """Initialize a new claude-force project"""
     try:
@@ -222,6 +384,9 @@ Examples:
   # List all agents
   claude-force list agents
 
+  # Recommend agents for a task (semantic matching)
+  claude-force recommend --task "Fix authentication bug in login endpoint"
+
   # Run a single agent
   claude-force run agent code-reviewer --task "Review this code: def foo(): pass"
 
@@ -230,6 +395,11 @@ Examples:
 
   # Get agent information
   claude-force info code-reviewer
+
+  # View performance metrics
+  claude-force metrics summary
+  claude-force metrics agents
+  claude-force metrics costs
 
 For more information: https://github.com/YOUR_USERNAME/claude-force
         """
@@ -263,6 +433,16 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     info_parser.add_argument("agent", help="Agent name")
     info_parser.set_defaults(func=cmd_agent_info)
 
+    # Recommend command
+    recommend_parser = subparsers.add_parser("recommend", help="Recommend agents for a task (semantic matching)")
+    recommend_parser.add_argument("--task", help="Task description")
+    recommend_parser.add_argument("--task-file", help="Read task from file")
+    recommend_parser.add_argument("--top-k", type=int, default=3, help="Number of recommendations (default: 3)")
+    recommend_parser.add_argument("--min-confidence", type=float, default=0.3, help="Minimum confidence threshold 0-1 (default: 0.3)")
+    recommend_parser.add_argument("--explain", action="store_true", help="Explain top recommendation")
+    recommend_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    recommend_parser.set_defaults(func=cmd_recommend)
+
     # Run command
     run_parser = subparsers.add_parser("run", help="Run agent or workflow")
     run_subparsers = run_parser.add_subparsers(dest="run_type")
@@ -287,6 +467,29 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     run_workflow_parser.add_argument("--output", "-o", help="Save results to file (JSON)")
     run_workflow_parser.add_argument("--no-pass-output", action="store_true", help="Don't pass output between agents")
     run_workflow_parser.set_defaults(func=cmd_run_workflow)
+
+    # Metrics command
+    metrics_parser = subparsers.add_parser("metrics", help="Show performance metrics")
+    metrics_subparsers = metrics_parser.add_subparsers(dest="command")
+
+    # Metrics summary
+    summary_parser = metrics_subparsers.add_parser("summary", help="Show summary statistics")
+    summary_parser.add_argument("--hours", type=int, help="Only last N hours (default: all time)")
+    summary_parser.set_defaults(func=cmd_metrics)
+
+    # Metrics per agent
+    agents_parser = metrics_subparsers.add_parser("agents", help="Show per-agent statistics")
+    agents_parser.set_defaults(func=cmd_metrics)
+
+    # Cost breakdown
+    costs_parser = metrics_subparsers.add_parser("costs", help="Show cost breakdown")
+    costs_parser.set_defaults(func=cmd_metrics)
+
+    # Export metrics
+    export_parser = metrics_subparsers.add_parser("export", help="Export metrics to file")
+    export_parser.add_argument("output", help="Output file path")
+    export_parser.add_argument("--format", choices=["json", "csv"], default="json", help="Export format")
+    export_parser.set_defaults(func=cmd_metrics)
 
     # Init command
     init_parser = subparsers.add_parser("init", help="Initialize a new claude-force project")
