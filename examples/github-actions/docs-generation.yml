@@ -1,0 +1,218 @@
+# Automated Documentation Generation with Claude
+#
+# Generates documentation for code changes using claude-force
+# Updates docs automatically when code is pushed
+
+name: Claude Docs Generation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'lib/**'
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # To commit docs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install claude-force
+        run: |
+          pip install -e .  # If in same repo
+          # Or: pip install claude-force
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get files changed in last commit
+          FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E '\.(py|js|ts)$' || true)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate API documentation
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "📚 Generating API Documentation"
+
+          mkdir -p docs/api
+
+          # Generate documentation for each changed file
+          for file in ${{ steps.changed-files.outputs.files }}; do
+            if [ -f "$file" ]; then
+              echo "Documenting: $file"
+
+              base_name=$(basename "$file" | sed 's/\.[^.]*$//')
+
+              TASK="Generate comprehensive API documentation for this code file.
+
+              Include:
+              1. Module/File Overview
+                 - Purpose and responsibilities
+                 - Key concepts
+
+              2. Public API Reference
+                 - Classes, functions, methods
+                 - Parameters and return types
+                 - Exceptions raised
+
+              3. Usage Examples
+                 - Basic usage
+                 - Common patterns
+                 - Edge cases
+
+              4. Implementation Notes
+                 - Design decisions
+                 - Performance considerations
+                 - Thread safety
+
+              Format as clean Markdown suitable for developer documentation.
+
+              Code file: $file
+              "
+
+              claude-force run agent documentation-specialist \
+                --task "$TASK" \
+                --task-file "$file" \
+                --output "docs/api/${base_name}.md" \
+                --model claude-3-5-sonnet-20241022 \
+                || echo "⚠️ Warning: Documentation failed for $file"
+            fi
+          done
+
+      - name: Generate changelog entry
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "📝 Generating Changelog Entry"
+
+          # Get commit message and diff
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          COMMIT_DATE=$(git log -1 --pretty=%ad --date=short)
+
+          DIFF=$(git show HEAD --stat)
+
+          TASK="Generate a changelog entry for this commit.
+
+          Commit Information:
+          - Hash: $COMMIT_HASH
+          - Author: $COMMIT_AUTHOR
+          - Date: $COMMIT_DATE
+          - Message: $COMMIT_MSG
+
+          Changes:
+          $DIFF
+
+          Create a changelog entry in this format:
+
+          ### [$COMMIT_DATE] - $COMMIT_HASH
+
+          #### Added
+          - List new features
+
+          #### Changed
+          - List modifications
+
+          #### Fixed
+          - List bug fixes
+
+          #### Deprecated
+          - List deprecations
+
+          Keep it concise and user-focused. Omit empty sections.
+          "
+
+          claude-force run agent documentation-specialist \
+            --task "$TASK" \
+            --output docs/changelog-entry.md \
+            --model claude-3-5-sonnet-20241022
+
+      - name: Update CHANGELOG.md
+        run: |
+          if [ -f docs/changelog-entry.md ]; then
+            # Prepend new entry to CHANGELOG.md
+            if [ -f CHANGELOG.md ]; then
+              cat CHANGELOG.md > CHANGELOG.md.tmp
+              cat docs/changelog-entry.md > CHANGELOG.md
+              echo "" >> CHANGELOG.md
+              cat CHANGELOG.md.tmp >> CHANGELOG.md
+              rm CHANGELOG.md.tmp
+            else
+              cat docs/changelog-entry.md > CHANGELOG.md
+            fi
+
+            echo "✅ Updated CHANGELOG.md"
+          fi
+
+      - name: Generate README updates
+        if: contains(github.event.head_commit.message, '[docs]')
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "📖 Updating README"
+
+          TASK="Review the README.md file and the recent code changes.
+
+          Suggest improvements to the README:
+          1. Update feature list if new features were added
+          2. Add/update usage examples for new APIs
+          3. Update installation instructions if needed
+          4. Ensure examples are up-to-date
+          5. Add any missing sections
+
+          Provide the updated README content, or respond 'NO CHANGES NEEDED' if current README is accurate.
+
+          Recent Changes:
+          $(git log -1 --pretty=%B)
+          $(git diff HEAD~1 HEAD --stat)
+          "
+
+          claude-force run agent documentation-specialist \
+            --task "$TASK" \
+            --task-file README.md \
+            --output docs/readme-suggestions.md \
+            --model claude-3-5-sonnet-20241022
+
+      - name: Commit documentation
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add docs/ CHANGELOG.md
+
+          if git diff --staged --quiet; then
+            echo "No documentation changes to commit"
+          else
+            git commit -m "docs: auto-generate documentation for ${{ github.sha }}"
+            git push
+            echo "✅ Documentation committed and pushed"
+          fi
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-docs
+          path: docs/
+          retention-days: 30

@@ -1,0 +1,230 @@
+# Security Scanning with Claude
+#
+# Runs on code changes to detect security vulnerabilities, insecure patterns,
+# and compliance issues using the security-specialist agent
+
+name: Claude Security Scan
+
+on:
+  push:
+    branches: [main, develop, staging]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.tsx'
+      - '**.java'
+      - '**.go'
+      - '**.rs'
+  pull_request:
+    types: [opened, synchronize]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2am
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write  # Create security issues
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install claude-force
+        run: |
+          pip install -e .  # If in same repo
+          # Or: pip install claude-force
+
+      - name: Get files to scan
+        id: scan-files
+        run: |
+          # For PRs, scan changed files
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(py|js|ts|tsx|java|go|rs)$' || true)
+          else
+            # For pushes, scan all source files
+            FILES=$(find . -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.java" -o -name "*.go" -o -name "*.rs" \) -not -path "./venv/*" -not -path "./node_modules/*")
+          fi
+
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Security scan
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "🔒 Security Scanning"
+
+          mkdir -p security-reports
+
+          # Scan for common vulnerabilities
+          echo "Scanning for security vulnerabilities..."
+
+          TASK="Perform comprehensive security analysis:
+
+          1. Authentication & Authorization:
+             - Broken authentication
+             - Insecure session management
+             - Missing authorization checks
+
+          2. Input Validation:
+             - SQL injection vulnerabilities
+             - XSS (Cross-Site Scripting)
+             - Command injection
+             - Path traversal
+
+          3. Data Protection:
+             - Sensitive data exposure
+             - Weak cryptography
+             - Hardcoded secrets
+
+          4. Security Misconfigurations:
+             - Insecure defaults
+             - Verbose error messages
+             - Missing security headers
+
+          5. Known Vulnerabilities:
+             - Outdated dependencies
+             - Vulnerable libraries
+
+          For each finding, provide:
+          - Severity: CRITICAL/HIGH/MEDIUM/LOW
+          - Location: file:line
+          - Description: what is vulnerable
+          - Exploitation: how it could be exploited
+          - Remediation: how to fix it
+
+          Files to scan:
+          ${{ steps.scan-files.outputs.files }}
+          "
+
+          claude-force run agent security-specialist \
+            --task "$TASK" \
+            --output security-reports/vulnerability-report.md \
+            --model claude-3-5-sonnet-20241022 \
+            || echo "⚠️ Security scan failed"
+
+      - name: Parse vulnerabilities
+        id: parse-vulns
+        run: |
+          if [ -f security-reports/vulnerability-report.md ]; then
+            # Count severity levels
+            CRITICAL=$(grep -c "CRITICAL" security-reports/vulnerability-report.md || echo "0")
+            HIGH=$(grep -c "HIGH" security-reports/vulnerability-report.md || echo "0")
+            MEDIUM=$(grep -c "MEDIUM" security-reports/vulnerability-report.md || echo "0")
+            LOW=$(grep -c "LOW" security-reports/vulnerability-report.md || echo "0")
+
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+            echo "low=$LOW" >> $GITHUB_OUTPUT
+
+            # Set failure if critical/high vulnerabilities found
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+              echo "fail=true" >> $GITHUB_OUTPUT
+            else
+              echo "fail=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-scan-report
+          path: security-reports/
+          retention-days: 90
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (!fs.existsSync('security-reports/vulnerability-report.md')) {
+              return;
+            }
+
+            const report = fs.readFileSync('security-reports/vulnerability-report.md', 'utf8');
+            const critical = ${{ steps.parse-vulns.outputs.critical || 0 }};
+            const high = ${{ steps.parse-vulns.outputs.high || 0 }};
+            const medium = ${{ steps.parse-vulns.outputs.medium || 0 }};
+            const low = ${{ steps.parse-vulns.outputs.low || 0 }};
+
+            let statusEmoji = '✅';
+            let statusText = 'No security issues found';
+
+            if (critical > 0) {
+              statusEmoji = '🔴';
+              statusText = `${critical} CRITICAL vulnerabilities found`;
+            } else if (high > 0) {
+              statusEmoji = '🟠';
+              statusText = `${high} HIGH vulnerabilities found`;
+            } else if (medium > 0 || low > 0) {
+              statusEmoji = '🟡';
+              statusText = `${medium + low} vulnerabilities found`;
+            }
+
+            const comment = `## 🔒 Claude Security Scan
+
+            ${statusEmoji} **${statusText}**
+
+            **Severity Breakdown:**
+            - 🔴 Critical: ${critical}
+            - 🟠 High: ${high}
+            - 🟡 Medium: ${medium}
+            - ⚪ Low: ${low}
+
+            <details>
+            <summary>📋 Full Security Report</summary>
+
+            ${report}
+
+            </details>
+
+            ---
+            *Powered by [claude-force](https://github.com/anthropics/claude-force)*
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Create security issue
+        if: steps.parse-vulns.outputs.critical > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('security-reports/vulnerability-report.md', 'utf8');
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔴 CRITICAL Security Vulnerabilities Detected',
+              body: `Critical security vulnerabilities have been detected by Claude security scan.\n\n${report}`,
+              labels: ['security', 'critical']
+            });
+
+      - name: Fail if critical/high vulnerabilities
+        if: steps.parse-vulns.outputs.fail == 'true'
+        run: |
+          echo "❌ Critical or High severity vulnerabilities detected"
+          echo "Please review the security report and address the issues"
+          exit 1

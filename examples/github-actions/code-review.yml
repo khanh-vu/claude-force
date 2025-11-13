@@ -1,0 +1,124 @@
+# Automated Code Review with Claude
+#
+# Runs on every pull request to provide automated code review using claude-force
+# Reviews all changed files for quality, security, and performance issues
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.tsx'
+      - '**.java'
+      - '**.go'
+      - '**.rs'
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # Needed to comment on PRs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get full history for better context
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install claude-force
+        run: |
+          pip install -e .  # If in same repo
+          # Or: pip install claude-force
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            **/*.{py,js,ts,tsx,java,go,rs}
+
+      - name: Review changed files
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "📝 Reviewing ${{ steps.changed-files.outputs.all_changed_files_count }} files"
+
+          # Create output directory
+          mkdir -p code-reviews
+
+          # Review each changed file
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Reviewing: $file"
+
+            # Run code review agent
+            claude-force run agent code-reviewer \
+              --task-file "$file" \
+              --output "code-reviews/$(basename $file).review.md" \
+              --model claude-3-5-sonnet-20241022 \
+              || echo "⚠️ Warning: Review failed for $file"
+          done
+
+      - name: Upload review results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-reviews
+          path: code-reviews/
+          retention-days: 30
+
+      - name: Comment on PR (summary)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read all review files
+            const reviewsDir = 'code-reviews';
+            const reviews = fs.readdirSync(reviewsDir)
+              .filter(file => file.endsWith('.review.md'))
+              .map(file => {
+                const content = fs.readFileSync(path.join(reviewsDir, file), 'utf8');
+                return {
+                  file: file.replace('.review.md', ''),
+                  content: content
+                };
+              });
+
+            // Create summary comment
+            let comment = '## 🤖 Claude Code Review\n\n';
+            comment += `Reviewed ${reviews.length} files\n\n`;
+
+            for (const review of reviews) {
+              comment += `### ${review.file}\n`;
+              comment += review.content.substring(0, 500);  // First 500 chars
+              if (review.content.length > 500) {
+                comment += '\n\n*[Truncated... See full review in artifacts]*';
+              }
+              comment += '\n\n---\n\n';
+            }
+
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Performance metrics
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "📊 Performance Metrics:"
+          claude-force metrics summary || echo "No metrics available"
