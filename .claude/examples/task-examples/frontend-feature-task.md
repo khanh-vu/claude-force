@@ -5,6 +5,9 @@
 **Priority**: High
 **Type**: Feature
 
+**Assigned Agent(s)**: Full-stack workflow (see workflow section below)
+**Suggested Workflow**: `full-stack-feature`
+
 ---
 
 ## Objective
