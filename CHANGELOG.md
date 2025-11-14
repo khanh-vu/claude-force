@@ -5,6 +5,125 @@ All notable changes to the Claude Multi-Agent System are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2025-11-13
+
+### 🚀 New Agents and Skills
+
+**This release adds 4 new specialized agents for AI/ML, data engineering, prompt engineering, and Claude Code expertise, plus 2 meta skills for system extensibility.**
+
+### Added
+
+#### New Agents (4)
+
+1. **ai-engineer** - AI/ML Engineering Expert
+   - Deep learning frameworks (PyTorch, TensorFlow, JAX)
+   - LLM integration (Anthropic Claude, OpenAI, LangChain, LlamaIndex)
+   - Vector databases (Pinecone, Weaviate, Qdrant, ChromaDB)
+   - Model training and optimization
+   - RAG (Retrieval-Augmented Generation) systems
+   - MLOps and model deployment
+   - Priority: 2
+   - Domains: ai, ml, llm, rag, embeddings, pytorch, transformers
+   - File: `.claude/agents/ai-engineer.md` (450+ lines)
+   - Contract: `.claude/contracts/ai-engineer.contract`
+
+2. **prompt-engineer** - Prompt Engineering Expert
+   - Prompt design and optimization
+   - Chain-of-Thought (CoT) prompting
+   - Few-shot and zero-shot learning
+   - Function calling and tool use
+   - ReAct agents and multi-turn conversations
+   - Prompt evaluation and testing
+   - Priority: 2
+   - Domains: prompt-engineering, llm, claude, openai, function-calling
+   - File: `.claude/agents/prompt-engineer.md` (400+ lines)
+   - Contract: `.claude/contracts/prompt-engineer.contract`
+
+3. **claude-code-expert** - Claude Code System Expert
+   - Claude Code architecture and best practices
+   - Agent design and orchestration
+   - Hooks and governance systems
+   - Skills development
+   - Workflows and task decomposition
+   - MCP (Model Context Protocol) integration
+   - Priority: 1 (Critical)
+   - Domains: claude-code, orchestration, agents, workflows, governance, mcp
+   - File: `.claude/agents/claude-code-expert.md` (500+ lines)
+   - Contract: `.claude/contracts/claude-code-expert.contract`
+
+4. **data-engineer** - Data Engineering Expert
+   - Data pipeline design and implementation
+   - ETL/ELT processes (Airflow, Prefect, dbt)
+   - Data warehousing (Snowflake, BigQuery, Redshift)
+   - Streaming data processing (Kafka, Spark Streaming)
+   - Data modeling and schema design
+   - Data quality validation (Great Expectations)
+   - Priority: 2
+   - Domains: data-engineering, etl, pipelines, airflow, spark, data-warehousing
+   - File: `.claude/agents/data-engineer.md` (500+ lines)
+   - Contract: `.claude/contracts/data-engineer.contract`
+
+#### New Skills (2)
+
+5. **create-agent** - Agent Creation Meta Skill
+   - Complete templates for agent definitions
+   - Contract templates with all required sections
+   - Agent design best practices
+   - Validation checklists
+   - Integration guidance
+   - Common agent patterns
+   - File: `.claude/skills/create-agent/SKILL.md` (600+ lines)
+
+6. **create-skill** - Skill Creation Meta Skill
+   - Skill directory structure templates
+   - Pattern documentation guidelines
+   - Example creation frameworks
+   - Agent integration patterns
+   - Best practices and anti-patterns
+   - Maintenance guidelines
+   - File: `.claude/skills/create-skill/SKILL.md` (500+ lines)
+
+#### New Workflows (4)
+
+7. **ai-ml-development** - Complete AI/ML solution workflow
+   - Agents: ai-engineer, prompt-engineer, data-engineer, python-expert, code-reviewer
+   - Use case: Building AI/ML features, training models, deploying ML systems
+
+8. **data-pipeline** - Data engineering workflow
+   - Agents: data-engineer, database-architect, python-expert, code-reviewer
+   - Use case: ETL pipelines, data warehousing, data quality
+
+9. **llm-integration** - LLM-powered feature development
+   - Agents: prompt-engineer, ai-engineer, backend-architect, security-specialist, code-reviewer
+   - Use case: Adding LLM capabilities, RAG systems, AI agents
+
+10. **claude-code-system** - Claude Code system development
+    - Agents: claude-code-expert, python-expert, document-writer-expert
+    - Use case: Creating agents, workflows, governance systems
+
+### Updated
+
+- **`.claude/claude.json`**: Added 4 new agents and 2 new skills to configuration
+- **`README.md`**: Updated agent count (15 → 19), skills count (9 → 11), workflows count (6 → 10)
+- **System totals**:
+  - 19 specialized agents (was 15)
+  - 11 integrated skills (was 9)
+  - 10 pre-built workflows (was 6)
+
+### Statistics
+
+**New Content**:
+- **New Agents**: 4 (ai-engineer, prompt-engineer, claude-code-expert, data-engineer)
+- **New Contracts**: 4
+- **New Skills**: 2 (create-agent, create-skill)
+- **New Workflows**: 4 (ai-ml-development, data-pipeline, llm-integration, claude-code-system)
+- **Lines of Documentation**: ~2,500+ lines across agents and skills
+- **Total Agents**: 19 (15 + 4 new)
+- **Total Skills**: 11 (9 + 2 new)
+- **Total Workflows**: 10 (6 + 4 new)
+
+---
+
 ## [2.1.0-P1] - 2025-11-13
 
 ### 🌟 P1 Enhancements: Production-Ready Features

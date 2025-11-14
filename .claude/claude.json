@@ -93,6 +93,30 @@
       "contract": "contracts/bug-investigator.contract",
       "domains": ["debugging", "root-cause-analysis", "incident-response", "diagnostics"],
       "priority": 1
+    },
+    "ai-engineer": {
+      "file": "agents/ai-engineer.md",
+      "contract": "contracts/ai-engineer.contract",
+      "domains": ["ai", "ml", "llm", "rag", "embeddings", "pytorch", "transformers"],
+      "priority": 2
+    },
+    "prompt-engineer": {
+      "file": "agents/prompt-engineer.md",
+      "contract": "contracts/prompt-engineer.contract",
+      "domains": ["prompt-engineering", "llm", "claude", "openai", "function-calling"],
+      "priority": 2
+    },
+    "claude-code-expert": {
+      "file": "agents/claude-code-expert.md",
+      "contract": "contracts/claude-code-expert.contract",
+      "domains": ["claude-code", "orchestration", "agents", "workflows", "governance", "mcp"],
+      "priority": 1
+    },
+    "data-engineer": {
+      "file": "agents/data-engineer.md",
+      "contract": "contracts/data-engineer.contract",
+      "domains": ["data-engineering", "etl", "pipelines", "airflow", "spark", "data-warehousing"],
+      "priority": 2
     }
   },
   
@@ -138,6 +162,31 @@
     "documentation": [
       "document-writer-expert",
       "api-documenter"
+    ],
+    "ai-ml-development": [
+      "ai-engineer",
+      "prompt-engineer",
+      "data-engineer",
+      "python-expert",
+      "code-reviewer"
+    ],
+    "data-pipeline": [
+      "data-engineer",
+      "database-architect",
+      "python-expert",
+      "code-reviewer"
+    ],
+    "llm-integration": [
+      "prompt-engineer",
+      "ai-engineer",
+      "backend-architect",
+      "security-specialist",
+      "code-reviewer"
+    ],
+    "claude-code-system": [
+      "claude-code-expert",
+      "python-expert",
+      "document-writer-expert"
     ]
   },
   
@@ -167,7 +216,9 @@
       "code-review",
       "api-design",
       "dockerfile",
-      "git-workflow"
+      "git-workflow",
+      "create-agent",
+      "create-skill"
     ]
   },
   

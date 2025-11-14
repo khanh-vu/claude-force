@@ -10,12 +10,12 @@
 
 A comprehensive Claude multi-agent system featuring:
 
-- **15 Specialized Agents** - Frontend, Backend, Database, DevOps, QA, Documentation, Code Review, Security, and Debugging
+- **19 Specialized Agents** - Frontend, Backend, Database, DevOps, QA, Documentation, Code Review, Security, Debugging, AI/ML, Prompt Engineering, Data Engineering, and Claude Code Expertise
 - **Comprehensive Skills Documentation** - Detailed expertise maps for precise agent selection
 - **Formal Contracts** - Clear boundaries and responsibilities for each agent
 - **6-Layer Governance** - Quality gates, validation, and compliance enforcement
-- **9 Integrated Skills** - Built-in skills (DOCX, XLSX, PPTX, PDF) + Custom development skills (testing, code review, API design, Docker, Git)
-- **6 Pre-Built Workflows** - Full-stack, frontend, backend, infrastructure, bug-fix, and documentation workflows
+- **11 Integrated Skills** - Built-in skills (DOCX, XLSX, PPTX, PDF) + Custom development skills (testing, code review, API design, Docker, Git) + Meta skills (create-agent, create-skill)
+- **10 Pre-Built Workflows** - Full-stack, frontend, backend, infrastructure, bug-fix, documentation, AI/ML development, data pipelines, LLM integration, and Claude Code system workflows
 - **Comprehensive Benchmarks** - 4 real-world scenarios with performance metrics and interactive dashboard
 - **100% Test Coverage** - 26 comprehensive unit tests (all passing)
 
@@ -268,7 +268,7 @@ Automatic initialization when Claude Code session starts:
 
 ## 📊 System Components
 
-### Agents (15)
+### Agents (19)
 
 #### Critical Agents (Priority 1)
 | Agent | Purpose | Key Outputs |
@@ -279,6 +279,7 @@ Automatic initialization when Claude Code session starts:
 | **frontend-architect** | Frontend architecture design | Architecture brief, routing strategy, component contracts |
 | **backend-architect** | API and service architecture | API specs, data models, auth design |
 | **database-architect** | Database schema design | ERD, DDL scripts, migrations |
+| **claude-code-expert** 🆕 | Claude Code system design & orchestration | Agent definitions, contracts, workflows, governance |
 
 #### High Priority Agents (Priority 2)
 | Agent | Purpose | Key Outputs |
@@ -288,6 +289,9 @@ Automatic initialization when Claude Code session starts:
 | **frontend-developer** | Feature implementation | Pages, API integration |
 | **devops-architect** | Infrastructure and CI/CD | Dockerfiles, K8s manifests |
 | **google-cloud-expert** | GCP architecture | Cloud Run configs, IAM policies |
+| **ai-engineer** 🆕 | AI/ML development & LLM integration | Model implementations, RAG systems, LLM agents, training pipelines |
+| **prompt-engineer** 🆕 | Prompt design & optimization | Prompt templates, evaluation results, function calling schemas |
+| **data-engineer** 🆕 | Data pipelines & ETL | Pipeline code, data models, quality validation |
 
 #### Medium Priority Agents (Priority 3)
 | Agent | Purpose | Key Outputs |
@@ -297,7 +301,7 @@ Automatic initialization when Claude Code session starts:
 | **document-writer-expert** | Technical documentation | README files, user guides |
 | **api-documenter** | API documentation | OpenAPI specs, Postman collections |
 
-### Workflows (6)
+### Workflows (10)
 
 1. **full-stack-feature** - Complete feature from architecture to deployment (10 agents)
 2. **frontend-only** - Frontend-focused development (5 agents)
@@ -305,6 +309,10 @@ Automatic initialization when Claude Code session starts:
 4. **infrastructure** - Infrastructure and deployment setup (4 agents)
 5. **bug-fix** - Bug investigation and resolution (3 agents)
 6. **documentation** - Documentation generation (2 agents)
+7. **ai-ml-development** 🆕 - AI/ML solution development (5 agents)
+8. **data-pipeline** 🆕 - Data engineering and ETL (4 agents)
+9. **llm-integration** 🆕 - LLM-powered feature development (5 agents)
+10. **claude-code-system** 🆕 - Claude Code system development (3 agents)
 
 ### Governance (6 Validators)
 
@@ -315,7 +323,7 @@ Automatic initialization when Claude Code session starts:
 - ✅ **format-lint** - Validates output format
 - ✅ **hierarchy-governance** - Enforces agent boundaries
 
-### Skills Integration (9 Skills)
+### Skills Integration (11 Skills)
 
 **Built-in Claude Skills (4)**:
 - 📄 **DOCX** - Create and edit Word documents
@@ -329,6 +337,10 @@ Automatic initialization when Claude Code session starts:
 - 🔌 **api-design** - RESTful patterns, authentication, OpenAPI
 - 🐳 **dockerfile** - Multi-stage builds, security hardening
 - 🔀 **git-workflow** - Commit conventions, branching strategies
+
+**Meta Skills (2)** 🆕:
+- 🤖 **create-agent** - Templates and best practices for creating new agents
+- ⚙️ **create-skill** - Patterns and guidelines for creating new skills
 
 ## 📁 Directory Structure
 
@@ -344,8 +356,8 @@ Automatic initialization when Claude Code session starts:
 ├── .env.example                 # Configuration template
 ├── .gitignore                   # Git ignore rules
 │
-├── agents/                      # 15 agent definitions
-├── contracts/                   # 15 formal contracts
+├── agents/                      # 19 agent definitions
+├── contracts/                   # 19 formal contracts
 │
 ├── hooks/                       # Governance system
 │   ├── README.md
@@ -366,7 +378,7 @@ Automatic initialization when Claude Code session starts:
 │   ├── task-examples/          # Sample tasks
 │   └── output-examples/        # Sample outputs
 │
-├── skills/                      # Skills integration (9 skills)
+├── skills/                      # Skills integration (11 skills)
 │   ├── README.md
 │   ├── test-generation/        # Custom testing skill
 │   ├── code-review/            # Custom review skill
