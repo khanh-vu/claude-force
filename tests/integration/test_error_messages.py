@@ -129,7 +129,8 @@ class TestEnhancedErrorMessages(unittest.TestCase):
             with self.assertRaises(ValueError) as context:
                 AgentOrchestrator(
                     config_path=str(self.config_path),
-                    anthropic_api_key=None
+                    anthropic_api_key=None,
+                    validate_api_key=True  # Force validation for testing
                 )
 
             error_msg = str(context.exception)
