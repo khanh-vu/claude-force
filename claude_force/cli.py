@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional
 
 from .orchestrator import AgentOrchestrator
+from .logging_setup import setup_logging
 
 
 def cmd_list_agents(args):
@@ -1495,6 +1496,25 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
         help="Anthropic API key (or set ANTHROPIC_API_KEY env var)"
     )
 
+    # Logging configuration flags
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set logging level (default: INFO)"
+    )
+
+    parser.add_argument(
+        "--log-file",
+        help="Write logs to file (with rotation)"
+    )
+
+    parser.add_argument(
+        "--log-format",
+        choices=["text", "json", "simple", "detailed"],
+        default="simple",
+        help="Log output format (default: simple)"
+    )
+
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
     # List command
@@ -1732,6 +1752,13 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
 
     # Parse arguments
     args = parser.parse_args()
+
+    # Configure logging based on CLI flags and environment variables
+    setup_logging(
+        log_level=getattr(args, 'log_level', None),
+        log_file=getattr(args, 'log_file', None),
+        log_format=getattr(args, 'log_format', None)
+    )
 
     if not args.command:
         parser.print_help()

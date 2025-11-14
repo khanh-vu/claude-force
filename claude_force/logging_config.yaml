@@ -1,0 +1,117 @@
+# Centralized Logging Configuration for claude-force
+# This file defines the default logging behavior for all claude-force modules.
+#
+# Override via:
+# - CLI flags: --log-level, --log-file, --log-format
+# - Environment variables: CLAUDE_FORCE_LOG_LEVEL, CLAUDE_FORCE_LOG_FILE
+#
+# Documentation: https://docs.python.org/3/library/logging.config.html
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+  detailed:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+
+  json:
+    class: logging.Formatter
+    format: '{"timestamp":"%(asctime)s","logger":"%(name)s","level":"%(levelname)s","file":"%(filename)s","line":%(lineno)d,"message":"%(message)s"}'
+    datefmt: '%Y-%m-%dT%H:%M:%S'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+    formatter: simple
+    level: INFO
+
+  console_detailed:
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+    formatter: detailed
+    level: DEBUG
+
+  file:
+    class: logging.handlers.RotatingFileHandler
+    filename: /tmp/claude-force.log
+    formatter: detailed
+    level: DEBUG
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+  file_json:
+    class: logging.handlers.RotatingFileHandler
+    filename: /tmp/claude-force.json
+    formatter: json
+    level: DEBUG
+    maxBytes: 10485760  # 10MB
+    backupCount: 5
+    encoding: utf8
+
+loggers:
+  claude_force:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  # Module-specific logging levels
+  claude_force.marketplace:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.agent_router:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.workflow_composer:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.analytics:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.quick_start:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.model_orchestrator:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.skills_loader:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.template_gallery:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.contribution:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  claude_force.import_export:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+root:
+  level: WARNING
+  handlers: [console]
