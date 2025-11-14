@@ -85,14 +85,30 @@ class ResponseCache:
             cache_secret: Secret for HMAC signatures
             exclude_agents: List of agents to exclude from caching
         """
-        # ✅ Validate cache directory to prevent path traversal
+        # ✅ Validate cache directory to prevent path traversal (SECURITY FIX)
         if cache_dir:
             cache_dir = cache_dir.resolve()
             base = Path.home() / ".claude"
             # Allow /tmp and current directory for testing
-            allowed_bases = [str(base), "/tmp", str(Path.cwd())]
-            if not any(str(cache_dir).startswith(allowed_base) for allowed_base in allowed_bases):
-                raise ValueError(f"Cache directory must be under {base} or /tmp. Got: {cache_dir}")
+            allowed_bases = [base, Path("/tmp"), Path.cwd()]
+
+            # Use proper path comparison to prevent bypasses like /tmp_evil or /tmp/../etc
+            is_allowed = False
+            for allowed_base in allowed_bases:
+                try:
+                    # Check if cache_dir is relative to allowed_base
+                    cache_dir.relative_to(allowed_base.resolve())
+                    is_allowed = True
+                    break
+                except ValueError:
+                    # Not relative to this base, try next
+                    continue
+
+            if not is_allowed:
+                raise ValueError(
+                    f"Cache directory must be under {base}, /tmp, or current directory. "
+                    f"Got: {cache_dir}"
+                )
 
         self.cache_dir = cache_dir or Path.home() / ".claude" / "cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)

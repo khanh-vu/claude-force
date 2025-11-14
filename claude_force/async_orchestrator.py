@@ -150,6 +150,19 @@ class AsyncAgentOrchestrator:
         return self._response_cache
 
     @property
+    def memory(self):
+        """Lazy-load agent memory system."""
+        if self._agent_memory is None and self.enable_memory:
+            try:
+                from claude_force.agent_memory import AgentMemory
+
+                memory_path = self.config_path.parent / "sessions.db"
+                self._agent_memory = AgentMemory(db_path=str(memory_path))
+            except Exception as e:
+                logger.warning(f"Agent memory disabled: {e}")
+        return self._agent_memory
+
+    @property
     def async_client(self) -> AsyncAnthropic:
         """Lazy-load async client."""
         if self._async_client is None:
@@ -311,6 +324,7 @@ class AsyncAgentOrchestrator:
         temperature: float = 1.0,
         workflow_name: Optional[str] = None,
         workflow_position: Optional[int] = None,
+        use_memory: bool = True,
     ) -> AsyncAgentResult:
         """
         Execute agent asynchronously.
@@ -322,6 +336,7 @@ class AsyncAgentOrchestrator:
         ✅ Async performance tracking
         ✅ Response caching
         ✅ Prompt injection protection
+        ✅ Agent memory integration
 
         Args:
             agent_name: Name of agent to run
@@ -399,8 +414,24 @@ class AsyncAgentOrchestrator:
             # Load agent definition
             agent_definition = await self.load_agent_definition(agent_name)
 
-            # Build prompt
-            prompt = f"{agent_definition}\n\n# Task\n{sanitized_task}"
+            # Build prompt with optional memory context
+            prompt_parts = [agent_definition, ""]
+
+            # ✅ Inject memory context if available
+            if use_memory and self.memory:
+                try:
+                    # Run synchronous memory call in thread pool to avoid blocking
+                    context = await asyncio.to_thread(
+                        self.memory.get_context_for_task, sanitized_task, agent_name
+                    )
+                    if context:
+                        prompt_parts.extend([context, ""])
+                except Exception as e:
+                    # If memory retrieval fails, continue without it
+                    logger.debug(f"Memory retrieval failed: {e}")
+
+            prompt_parts.extend(["# Task", sanitized_task])
+            prompt = "\n".join(prompt_parts)
 
             # Call API with retry and timeout
             response = await self._call_api_with_retry(
@@ -456,6 +487,28 @@ class AsyncAgentOrchestrator:
                 except Exception as cache_error:
                     # Don't fail execution if caching fails
                     logger.warning("Failed to cache response", extra={"error": str(cache_error)})
+
+            # ✅ Store in memory
+            if self.memory:
+                try:
+                    await asyncio.to_thread(
+                        self.memory.store_session,
+                        agent_name=agent_name,
+                        task=sanitized_task,
+                        output=output,
+                        success=True,
+                        execution_time_ms=execution_time_ms,
+                        model=model,
+                        input_tokens=response.usage.input_tokens,
+                        output_tokens=response.usage.output_tokens,
+                        metadata={
+                            "workflow_name": workflow_name,
+                            "workflow_position": workflow_position,
+                        },
+                    )
+                except Exception as memory_error:
+                    # Don't fail execution if memory storage fails
+                    logger.debug(f"Failed to store in memory: {memory_error}")
 
             logger.info(
                 "Agent execution completed",
@@ -515,6 +568,29 @@ class AsyncAgentOrchestrator:
                     workflow_name=workflow_name,
                     workflow_position=workflow_position,
                 )
+
+            # ✅ Store failed execution in memory
+            if self.memory:
+                try:
+                    await asyncio.to_thread(
+                        self.memory.store_session,
+                        agent_name=agent_name,
+                        task=sanitized_task,
+                        output=str(e),
+                        success=False,
+                        execution_time_ms=execution_time_ms,
+                        model=model,
+                        input_tokens=0,
+                        output_tokens=0,
+                        metadata={
+                            "error_type": error_type,
+                            "workflow_name": workflow_name,
+                            "workflow_position": workflow_position,
+                        },
+                    )
+                except Exception as memory_error:
+                    # Don't fail execution if memory storage fails
+                    logger.debug(f"Failed to store failed execution in memory: {memory_error}")
 
             return AsyncAgentResult(
                 agent_name=agent_name,

@@ -249,7 +249,7 @@ async def test_semaphore_initialization():
 @pytest.mark.asyncio
 async def test_retry_on_transient_failure():
     """Test that transient failures are retried."""
-    orchestrator = AsyncAgentOrchestrator(max_retries=3)
+    orchestrator = AsyncAgentOrchestrator(max_retries=3, enable_cache=False)
 
     # Mock API that fails twice then succeeds
     call_count = 0
@@ -270,7 +270,7 @@ async def test_retry_on_transient_failure():
 
     with mock.patch.object(orchestrator.async_client.messages, 'create', side_effect=flaky_api):
         with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent definition"):
-            result = await orchestrator.execute_agent("python-expert", "task")
+            result = await orchestrator.execute_agent("python-expert", "unique-retry-test-task")
 
     assert call_count == 3  # Should have retried twice
     assert result.success is True

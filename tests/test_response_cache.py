@@ -318,6 +318,13 @@ def test_cache_path_validation(tmp_path):
     with pytest.raises(ValueError, match="Cache directory must be under"):
         ResponseCache(cache_dir=Path("/etc/evil_cache"))
 
+    # Test bypass attempts that would fool string prefix matching
+    with pytest.raises(ValueError, match="Cache directory must be under"):
+        ResponseCache(cache_dir=Path("/tmp_evil/cache"))  # Would pass startswith("/tmp")
+
+    with pytest.raises(ValueError, match="Cache directory must be under"):
+        ResponseCache(cache_dir=Path("/tmp/../etc/passwd"))  # Path traversal attempt
+
 
 def test_cache_path_allowed(tmp_path):
     """Test that valid cache paths are accepted."""

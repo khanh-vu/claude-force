@@ -32,7 +32,7 @@ jobs:
     - name: Run tests
       run: |
         # Run system structure tests
-        pytest test_claude_system.py -v --cov=claude_force --cov-report=xml --cov-report=term
+        pytest test_claude_system.py -v --cov=claude_force --cov-report=xml --cov-report=term --override-ini="addopts="
         # Run performance tests
         ANTHROPIC_API_KEY="test-key" pytest tests/test_async_orchestrator.py tests/test_response_cache.py tests/test_performance_integration.py -v --override-ini="addopts="
 
