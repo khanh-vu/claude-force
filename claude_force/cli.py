@@ -553,6 +553,197 @@ def cmd_init(args):
         sys.exit(1)
 
 
+def cmd_marketplace_list(args):
+    """List available plugins from marketplace"""
+    try:
+        from .marketplace import get_marketplace_manager
+
+        manager = get_marketplace_manager()
+        plugins = manager.list_available(
+            category=args.category,
+            source=args.source,
+            installed_only=args.installed
+        )
+
+        if not plugins:
+            print("No plugins found matching criteria")
+            return
+
+        print(f"\n📦 Available Plugins ({len(plugins)})\n")
+        print("=" * 80)
+
+        current_category = None
+        for plugin in sorted(plugins, key=lambda p: (p.category.value, p.name)):
+            # Print category header
+            if plugin.category.value != current_category:
+                current_category = plugin.category.value
+                print(f"\n{plugin.category.value.upper().replace('-', ' ')}")
+                print("-" * 80)
+
+            # Plugin details
+            status = "✅ INSTALLED" if plugin.installed else ""
+            print(f"\n{plugin.name} ({plugin.id}) {status}")
+            print(f"  {plugin.description}")
+            print(f"  Source: {plugin.source.value} | Version: {plugin.version}")
+            print(f"  Agents: {len(plugin.agents)} | Skills: {len(plugin.skills)} | Workflows: {len(plugin.workflows)}")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 Install: claude-force marketplace install <plugin-id>")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_marketplace_search(args):
+    """Search marketplace for plugins"""
+    try:
+        from .marketplace import get_marketplace_manager
+
+        manager = get_marketplace_manager()
+        results = manager.search(args.query)
+
+        if not results:
+            print(f"No plugins found matching '{args.query}'")
+            return
+
+        print(f"\n🔍 Search Results for '{args.query}' ({len(results)} found)\n")
+        print("=" * 80)
+
+        for plugin in results:
+            status = "✅ INSTALLED" if plugin.installed else ""
+            print(f"\n📦 {plugin.name} ({plugin.id}) {status}")
+            print(f"   {plugin.description}")
+            print(f"   Source: {plugin.source.value} | Category: {plugin.category.value}")
+            print(f"   Agents: {', '.join(plugin.agents[:3])}" + (" ..." if len(plugin.agents) > 3 else ""))
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 Install: claude-force marketplace install <plugin-id>")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_marketplace_install(args):
+    """Install a plugin from marketplace"""
+    try:
+        from .marketplace import get_marketplace_manager
+
+        manager = get_marketplace_manager()
+
+        print(f"📦 Installing plugin '{args.plugin_id}'...\n")
+
+        result = manager.install_plugin(
+            plugin_id=args.plugin_id,
+            force=args.force
+        )
+
+        if not result.success:
+            print(f"❌ Installation failed", file=sys.stderr)
+            for error in result.errors:
+                print(f"   {error}", file=sys.stderr)
+            for warning in result.warnings:
+                print(f"⚠️  {warning}")
+            sys.exit(1)
+
+        print(f"✅ Successfully installed {result.plugin.name}")
+        print(f"\n📊 Installation Summary:")
+        print(f"   Agents added:    {result.agents_added}")
+        print(f"   Skills added:    {result.skills_added}")
+        print(f"   Workflows added: {result.workflows_added}")
+        print(f"   Tools added:     {result.tools_added}")
+
+        if result.plugin.agents:
+            print(f"\n💡 Try running an agent:")
+            print(f"   claude-force run agent {result.plugin.agents[0]} --task 'Your task'")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_marketplace_uninstall(args):
+    """Uninstall a plugin"""
+    try:
+        from .marketplace import get_marketplace_manager
+
+        manager = get_marketplace_manager()
+
+        print(f"🗑️  Uninstalling plugin '{args.plugin_id}'...")
+
+        success = manager.uninstall_plugin(args.plugin_id)
+
+        if success:
+            print(f"✅ Successfully uninstalled '{args.plugin_id}'")
+        else:
+            print(f"❌ Failed to uninstall '{args.plugin_id}'", file=sys.stderr)
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_marketplace_info(args):
+    """Show detailed information about a plugin"""
+    try:
+        from .marketplace import get_marketplace_manager
+
+        manager = get_marketplace_manager()
+        plugin = manager.get_plugin(args.plugin_id)
+
+        if not plugin:
+            print(f"❌ Plugin '{args.plugin_id}' not found", file=sys.stderr)
+            sys.exit(1)
+
+        print(f"\n📦 {plugin.name}")
+        print("=" * 80)
+        print(f"\nID:          {plugin.id}")
+        print(f"Version:     {plugin.version}")
+        print(f"Source:      {plugin.source.value}")
+        print(f"Category:    {plugin.category.value}")
+        print(f"Installed:   {'Yes (v' + plugin.installed_version + ')' if plugin.installed else 'No'}")
+
+        if plugin.author:
+            print(f"Author:      {plugin.author}")
+        if plugin.repository:
+            print(f"Repository:  {plugin.repository}")
+
+        print(f"\nDescription:")
+        print(f"  {plugin.description}")
+
+        if plugin.agents:
+            print(f"\nAgents ({len(plugin.agents)}):")
+            for agent in plugin.agents:
+                print(f"  • {agent}")
+
+        if plugin.skills:
+            print(f"\nSkills ({len(plugin.skills)}):")
+            for skill in plugin.skills:
+                print(f"  • {skill}")
+
+        if plugin.workflows:
+            print(f"\nWorkflows ({len(plugin.workflows)}):")
+            for workflow in plugin.workflows:
+                print(f"  • {workflow}")
+
+        if plugin.keywords:
+            print(f"\nKeywords: {', '.join(plugin.keywords)}")
+
+        if plugin.dependencies:
+            print(f"\nDependencies: {', '.join(plugin.dependencies)}")
+
+        print("\n" + "=" * 80)
+
+        if not plugin.installed:
+            print(f"\n💡 Install: claude-force marketplace install {plugin.id}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -689,6 +880,38 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     init_parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing .claude directory")
     init_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     init_parser.set_defaults(func=cmd_init)
+
+    # Marketplace command
+    marketplace_parser = subparsers.add_parser("marketplace", help="Manage plugins from marketplace")
+    marketplace_subparsers = marketplace_parser.add_subparsers(dest="marketplace_command")
+
+    # Marketplace list
+    list_parser = marketplace_subparsers.add_parser("list", help="List available plugins")
+    list_parser.add_argument("--category", help="Filter by category")
+    list_parser.add_argument("--source", help="Filter by source (builtin, wshobson, custom)")
+    list_parser.add_argument("--installed", action="store_true", help="Show only installed plugins")
+    list_parser.set_defaults(func=cmd_marketplace_list)
+
+    # Marketplace search
+    search_parser = marketplace_subparsers.add_parser("search", help="Search marketplace for plugins")
+    search_parser.add_argument("query", help="Search query")
+    search_parser.set_defaults(func=cmd_marketplace_search)
+
+    # Marketplace install
+    install_parser = marketplace_subparsers.add_parser("install", help="Install a plugin")
+    install_parser.add_argument("plugin_id", help="Plugin ID to install")
+    install_parser.add_argument("--force", "-f", action="store_true", help="Force reinstall if already installed")
+    install_parser.set_defaults(func=cmd_marketplace_install)
+
+    # Marketplace uninstall
+    uninstall_parser = marketplace_subparsers.add_parser("uninstall", help="Uninstall a plugin")
+    uninstall_parser.add_argument("plugin_id", help="Plugin ID to uninstall")
+    uninstall_parser.set_defaults(func=cmd_marketplace_uninstall)
+
+    # Marketplace info
+    info_parser_mp = marketplace_subparsers.add_parser("info", help="Show plugin information")
+    info_parser_mp.add_argument("plugin_id", help="Plugin ID")
+    info_parser_mp.set_defaults(func=cmd_marketplace_info)
 
     # Parse arguments
     args = parser.parse_args()
