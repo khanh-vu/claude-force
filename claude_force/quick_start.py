@@ -8,6 +8,7 @@ interactive selection.
 import os
 import json
 import yaml
+import shutil
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
@@ -434,7 +435,41 @@ class QuickStartOrchestrator:
             dir_path = output_path / directory
             dir_path.mkdir(exist_ok=True)
 
-        # 6. Create example task if requested
+        # 6. Copy agent and contract template files
+        templates_base_path = Path(__file__).parent / "templates"
+        agents_template_path = templates_base_path / "agents"
+        contracts_template_path = templates_base_path / "contracts"
+
+        for agent_name in config.agents:
+            # Copy agent definition file (skip if already exists to preserve customizations)
+            agent_dest = output_path / "agents" / f"{agent_name}.md"
+            if not agent_dest.exists():
+                agent_template = agents_template_path / f"{agent_name}.md"
+                if agent_template.exists():
+                    shutil.copy2(agent_template, agent_dest)
+                    created_files.append(str(agent_dest))
+                else:
+                    # Create a basic agent template if no template exists
+                    basic_agent = self._generate_basic_agent_template(agent_name, config)
+                    with open(agent_dest, 'w') as f:
+                        f.write(basic_agent)
+                    created_files.append(str(agent_dest))
+
+            # Copy contract file (skip if already exists to preserve customizations)
+            contract_dest = output_path / "contracts" / f"{agent_name}.contract"
+            if not contract_dest.exists():
+                contract_template = contracts_template_path / f"{agent_name}.contract"
+                if contract_template.exists():
+                    shutil.copy2(contract_template, contract_dest)
+                    created_files.append(str(contract_dest))
+                else:
+                    # Create a basic contract template if no template exists
+                    basic_contract = self._generate_basic_contract_template(agent_name, config)
+                    with open(contract_dest, 'w') as f:
+                        f.write(basic_contract)
+                    created_files.append(str(contract_dest))
+
+        # 7. Create example task if requested
         if create_examples:
             example_task_path = output_path / "examples" / "example-task.md"
             example_task_path.parent.mkdir(exist_ok=True)
@@ -652,6 +687,171 @@ Template: {config.template_id}
 ---
 
 Template: {config.template_id}
+"""
+
+    def _generate_basic_agent_template(self, agent_name: str, config: ProjectConfig) -> str:
+        """Generate a basic agent template when no template file exists."""
+        agent_title = agent_name.replace('-', ' ').title()
+        return f"""# {agent_title} Agent
+
+## Role
+{agent_title} - specialized in their domain of expertise.
+
+## Domain Expertise
+- Domain-specific knowledge and skills
+- Best practices and industry standards
+- Tool proficiency
+
+## Skills & Specializations
+[To be filled in based on agent requirements]
+
+## Responsibilities
+1. Execute tasks within domain expertise
+2. Provide high-quality, production-ready solutions
+3. Follow best practices and coding standards
+4. Document work appropriately
+
+## Input Requirements
+From `.claude/task.md`:
+- Task description and requirements
+- Context and constraints
+- Expected deliverables
+
+## Reads
+- `.claude/task.md` (task specification)
+- `.claude/tasks/context_session_1.md` (session context)
+- Relevant project files
+
+## Writes
+- `.claude/work.md` (output and deliverables)
+- Your **Write Zone** in `.claude/tasks/context_session_1.md` (summary)
+
+## Tools Available
+- Code reading and writing
+- File analysis
+- Testing and validation
+
+## Guardrails
+1. Do NOT edit `.claude/task.md`
+2. Write only to `.claude/work.md` and your Write Zone
+3. Follow project coding standards
+4. Ensure quality and completeness
+5. Document all significant decisions
+
+## Output Format
+Write to `.claude/work.md` with:
+1. Summary of work completed
+2. Implementation details
+3. Testing results
+4. Any issues or concerns
+5. Next steps or recommendations
+
+---
+
+**Version**: 1.0.0
+**Created**: {config.created_at}
+**Template**: {config.template_id}
+**Note**: This is a basic template. Customize based on agent needs.
+"""
+
+    def _generate_basic_contract_template(self, agent_name: str, config: ProjectConfig) -> str:
+        """Generate a basic contract template when no template file exists."""
+        agent_title = agent_name.replace('-', ' ').title()
+        return f"""# {agent_title} - Agent Contract
+
+## Agent Identity
+- **Name**: {agent_name}
+- **Type**: {agent_title}
+- **Priority**: 3 (Standard)
+- **Version**: 1.0.0
+
+## Scope of Authority
+This agent has authority over:
+- Tasks within their domain expertise
+- Implementation decisions within scope
+- Quality standards for deliverables
+
+## Core Responsibilities
+1. Execute assigned tasks effectively
+2. Deliver high-quality solutions
+3. Follow best practices
+4. Document work appropriately
+
+## Deliverables
+This agent MUST deliver:
+1. Completed implementation in `.claude/work.md`
+2. Summary in Write Zone
+3. Quality validation
+
+## Boundaries (What This Agent Does NOT Do)
+- Does not modify `.claude/task.md`
+- Does not write outside designated areas
+- Does not exceed scope without consultation
+
+## Dependencies
+- **Required**: `.claude/task.md` with clear task description
+- **Optional**: Previous agent outputs for context
+
+## Input Requirements
+### Required Inputs
+- `.claude/task.md` with task description
+- Clear requirements and acceptance criteria
+
+### Optional Inputs
+- Previous work from other agents
+- Project-specific context
+
+## Output Requirements
+### MUST Include
+1. Completed work in `.claude/work.md`
+2. Write Zone update (3-8 lines)
+3. Quality validation
+
+### Output Location
+- Primary: `.claude/work.md`
+- Context: Own Write Zone in `tasks/context_session_1.md`
+
+## Quality Gates
+### Pre-execution Checks
+- [ ] `.claude/task.md` exists and is readable
+- [ ] Requirements are clear
+- [ ] All hooks loaded
+
+### Post-execution Validation
+- [ ] Work completed per requirements
+- [ ] Quality standards met
+- [ ] Write Zone updated
+- [ ] No governance violations
+
+## Success Criteria
+This agent's output is considered successful when:
+- [ ] All requirements met
+- [ ] Quality standards achieved
+- [ ] Documentation complete
+- [ ] No governance violations
+
+## Governance
+### Must Follow
+- All rules in `.claude/hooks/pre-run.md`
+- All validators in `.claude/hooks/validators/`
+- All rules in `.claude/hooks/post-run.md`
+
+### Must NOT Do
+- Edit `.claude/task.md`
+- Write outside designated areas
+- Skip quality gates
+
+## Change Management
+Changes to this contract require:
+1. Human approval
+2. Version increment
+3. Dated note in `context_session_1.md`
+
+---
+
+**Contract Effective Date**: {config.created_at}
+**Template**: {config.template_id}
+**Note**: This is a basic contract. Customize based on agent needs.
 """
 
 
