@@ -167,6 +167,8 @@ class AgentRouter:
 
     def _match_builtin_agents(self, task: str) -> List[AgentMatch]:
         """Match task against builtin agents."""
+        if not task:
+            return []
         task_lower = task.lower()
         matches = []
 
@@ -201,6 +203,8 @@ class AgentRouter:
     def _match_marketplace_agents(self, task: str) -> List[AgentMatch]:
         """Match task against marketplace agents."""
         if not self.marketplace:
+            return []
+        if not task:
             return []
 
         task_lower = task.lower()
