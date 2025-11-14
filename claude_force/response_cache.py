@@ -106,6 +106,16 @@ class ResponseCache:
             "default_secret_change_in_production"
         )
 
+        # ✅ FIXED: Security warning for default secret
+        if self.cache_secret == "default_secret_change_in_production":
+            logger.warning(
+                "⚠️  SECURITY WARNING: Using default HMAC secret! "
+                "Cache integrity is NOT protected. "
+                "Set CLAUDE_CACHE_SECRET environment variable or pass cache_secret parameter. "
+                "Attackers can forge cache entries with the default secret.",
+                extra={"security_risk": "HIGH", "cvss_score": 8.1}
+            )
+
         # In-memory cache for fast access
         self._memory_cache: Dict[str, CacheEntry] = {}
 
