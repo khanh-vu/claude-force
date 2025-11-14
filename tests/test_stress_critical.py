@@ -91,9 +91,9 @@ class TestConcurrentOperations:
             "Create documentation",
         ]
 
-        def route_agent():
+        def route_agent(idx):
             try:
-                task = tasks[_ % len(tasks)]
+                task = tasks[idx % len(tasks)]
                 matches = router.recommend_agents(task=task, top_k=3)
                 return len(matches) > 0
             except Exception:
@@ -101,7 +101,7 @@ class TestConcurrentOperations:
 
         start = time.time()
         with ThreadPoolExecutor(max_workers=25) as executor:
-            futures = [executor.submit(route_agent) for _ in range(num_requests)]
+            futures = [executor.submit(route_agent, i) for i in range(num_requests)]
             results = [f.result() for f in as_completed(futures)]
         elapsed = time.time() - start
 
@@ -123,16 +123,16 @@ class TestConcurrentOperations:
             "Implement authentication",
         ]
 
-        def compose():
+        def compose(idx):
             try:
-                goal = goals[_ % len(goals)]
+                goal = goals[idx % len(goals)]
                 workflow = composer.compose_workflow(goal=goal, max_agents=5)
                 return workflow is not None and len(workflow.steps) > 0
             except Exception:
                 return False
 
         with ThreadPoolExecutor(max_workers=15) as executor:
-            futures = [executor.submit(compose) for _ in range(num_workflows)]
+            futures = [executor.submit(compose, i) for i in range(num_workflows)]
             results = [f.result() for f in as_completed(futures)]
 
         success_rate = sum(results) / num_workflows
