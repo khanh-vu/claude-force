@@ -7,6 +7,14 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
+from claude_force.error_helpers import (
+    format_agent_not_found_error,
+    format_workflow_not_found_error,
+    format_api_key_error,
+    format_config_not_found_error,
+    format_tracking_not_enabled_error,
+    format_missing_dependency_error
+)
 
 
 @dataclass
@@ -48,10 +56,7 @@ class AgentOrchestrator:
         self.api_key = anthropic_api_key or os.getenv("ANTHROPIC_API_KEY")
 
         if not self.api_key:
-            raise ValueError(
-                "Anthropic API key required. Set ANTHROPIC_API_KEY environment variable "
-                "or pass api_key parameter."
-            )
+            raise ValueError(format_api_key_error())
 
         # Lazy import anthropic to allow installation without API key
         try:
@@ -59,7 +64,7 @@ class AgentOrchestrator:
             self.client = anthropic.Client(api_key=self.api_key)
         except ImportError:
             raise ImportError(
-                "anthropic package required. Install with: pip install anthropic"
+                format_missing_dependency_error("anthropic", "pip install anthropic")
             )
 
         # Initialize performance tracker
@@ -75,8 +80,7 @@ class AgentOrchestrator:
         """Load claude.json configuration"""
         if not self.config_path.exists():
             raise FileNotFoundError(
-                f"Configuration file not found: {self.config_path}\n"
-                f"Make sure you're in a claude-force repository with .claude/claude.json"
+                format_config_not_found_error(str(self.config_path))
             )
 
         try:
@@ -90,9 +94,9 @@ class AgentOrchestrator:
         """Load agent definition from markdown file"""
         agent_config = self.config['agents'].get(agent_name)
         if not agent_config:
+            all_agents = list(self.config['agents'].keys())
             raise ValueError(
-                f"Agent '{agent_name}' not found in configuration. "
-                f"Available agents: {', '.join(self.config['agents'].keys())}"
+                format_agent_not_found_error(agent_name, all_agents)
             )
 
         agent_file = self.config_path.parent / agent_config['file']
@@ -284,9 +288,9 @@ class AgentOrchestrator:
         """
         workflow = self.config['workflows'].get(workflow_name)
         if not workflow:
+            all_workflows = list(self.config['workflows'].keys())
             raise ValueError(
-                f"Workflow '{workflow_name}' not found. "
-                f"Available workflows: {', '.join(self.config['workflows'].keys())}"
+                format_workflow_not_found_error(workflow_name, all_workflows)
             )
 
         results = []
@@ -345,7 +349,10 @@ Continue from the previous agent's output. Original task: {task}
     def get_agent_info(self, agent_name: str) -> Dict[str, Any]:
         """Get detailed information about an agent"""
         if agent_name not in self.config['agents']:
-            raise ValueError(f"Agent '{agent_name}' not found")
+            all_agents = list(self.config['agents'].keys())
+            raise ValueError(
+                format_agent_not_found_error(agent_name, all_agents)
+            )
 
         agent_config = self.config['agents'][agent_name]
 
@@ -398,8 +405,10 @@ Continue from the previous agent's output. Original task: {task}
             from claude_force.semantic_selector import SemanticAgentSelector
         except ImportError:
             raise ImportError(
-                "Semantic agent selection requires sentence-transformers. "
-                "Install with: pip install sentence-transformers"
+                format_missing_dependency_error(
+                    "sentence-transformers",
+                    "pip install sentence-transformers"
+                )
             )
 
         selector = SemanticAgentSelector(config_path=str(self.config_path))
@@ -443,8 +452,10 @@ Continue from the previous agent's output. Original task: {task}
             from claude_force.semantic_selector import SemanticAgentSelector
         except ImportError:
             raise ImportError(
-                "Semantic agent selection requires sentence-transformers. "
-                "Install with: pip install sentence-transformers"
+                format_missing_dependency_error(
+                    "sentence-transformers",
+                    "pip install sentence-transformers"
+                )
             )
 
         selector = SemanticAgentSelector(config_path=str(self.config_path))
@@ -466,7 +477,7 @@ Continue from the previous agent's output. Original task: {task}
             print(f"Total cost: ${summary['total_cost']:.4f}")
         """
         if not self.tracker:
-            raise RuntimeError("Performance tracking not enabled")
+            raise RuntimeError(format_tracking_not_enabled_error())
 
         return self.tracker.get_summary(hours)
 
@@ -486,7 +497,7 @@ Continue from the previous agent's output. Original task: {task}
             print(f"Success rate: {stats['code-reviewer']['success_rate']:.2%}")
         """
         if not self.tracker:
-            raise RuntimeError("Performance tracking not enabled")
+            raise RuntimeError(format_tracking_not_enabled_error())
 
         return self.tracker.get_agent_stats(agent_name)
 
@@ -504,7 +515,7 @@ Continue from the previous agent's output. Original task: {task}
                 print(f"  {agent}: ${cost:.4f}")
         """
         if not self.tracker:
-            raise RuntimeError("Performance tracking not enabled")
+            raise RuntimeError(format_tracking_not_enabled_error())
 
         return self.tracker.get_cost_breakdown()
 
@@ -521,7 +532,7 @@ Continue from the previous agent's output. Original task: {task}
             orchestrator.export_performance_metrics("metrics.csv", "csv")
         """
         if not self.tracker:
-            raise RuntimeError("Performance tracking not enabled")
+            raise RuntimeError(format_tracking_not_enabled_error())
 
         if format == "json":
             self.tracker.export_json(output_path)
