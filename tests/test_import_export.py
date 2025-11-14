@@ -15,6 +15,7 @@ from claude_force.import_export import (
     ContractMetadata,
     get_porting_tool
 )
+from claude_force.path_validator import PathValidationError
 
 
 class TestAgentMetadataDataclass(unittest.TestCase):
@@ -155,7 +156,7 @@ Expert Python developer with focus on clean code and best practices.
 
     def test_import_nonexistent_file(self):
         """Should raise error for nonexistent file."""
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(PathValidationError):
             self.tool.import_from_wshobson(
                 agent_file=Path("/nonexistent/agent.md")
             )

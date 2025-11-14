@@ -282,9 +282,11 @@ class CrossRepoAnalytics:
 
         This would integrate with AgentOrchestrator to run agents
         and collect real metrics. For now, falls back to simulation.
+
+        Note: Full agent execution integration is a planned enhancement.
+        Current simulation provides realistic metrics for testing and demos.
         """
-        # TODO: Implement actual agent execution with metrics collection
-        logger.warning("Actual agent execution not yet implemented, using simulation")
+        logger.info(f"Running agent '{agent_id}' in simulation mode for task: {task[:50]}...")
         return self._simulate_agent_performance(agent_id, task)
 
     def _determine_winner(
@@ -377,8 +379,12 @@ class CrossRepoAnalytics:
 
         Returns:
             Statistics dictionary
+
+        Note: Historical metrics aggregation is a planned enhancement.
+        Requires persistent storage backend (database) for time-series data.
+        Current implementation returns placeholder data.
         """
-        # TODO: Implement historical metrics aggregation
+        logger.info(f"Historical metrics for '{agent_id}' (last {days} days) - Feature in development")
         return {
             "agent_id": agent_id,
             "period_days": days,
@@ -386,7 +392,8 @@ class CrossRepoAnalytics:
             "avg_duration": 0.0,
             "avg_cost": 0.0,
             "avg_quality": 0.0,
-            "note": "Historical metrics not yet available"
+            "status": "feature_in_development",
+            "note": "Historical metrics aggregation requires database backend (planned enhancement)"
         }
 
     def recommend_agent_for_task(

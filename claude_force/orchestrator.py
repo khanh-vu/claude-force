@@ -452,7 +452,8 @@ Continue from the previous agent's output. Original task: {task}
             # Extract first few lines as description
             lines = definition.split('\n')[:10]
             description = '\n'.join(lines)
-        except:
+        except Exception as e:
+            logger.warning(f"Could not load description for agent '{agent_name}': {e}")
             description = "No description available"
 
         return {
