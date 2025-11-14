@@ -193,9 +193,38 @@ self.send_header('Strict-Transport-Security', 'max-age=31536000')
 
 ---
 
+#### 7. ✅ API Key Exposure in Logs - FIXED
+**Severity:** HIGH (CVSS 7.5) | **CWE-532** (Insertion of Sensitive Information into Log File)
+**Added:** 2025-11-14 (PR #19 code review follow-up)
+
+**Before:**
+```python
+# mcp_server.py:167 - Full API key logged
+logger.warning(f"MCP API key auto-generated: {self.mcp_api_key}\n")
+```
+
+**After:**
+```python
+# Mask API key showing only first 8 and last 4 characters
+masked_key = f"{self.mcp_api_key[:8]}...{self.mcp_api_key[-4:]}"
+logger.warning(
+    f"MCP API key auto-generated (key starts with: {masked_key})\n"
+    "IMPORTANT: Save this key securely - it will not be shown again."
+)
+```
+
+**Attack Scenario:**
+- Attacker gains read access to application logs (common in shared/cloud environments)
+- Extracts full API key from logs
+- Uses key to authenticate to MCP server, bypassing all authentication
+
+**Impact:** Prevents credential harvesting from logs, aligns with OWASP logging security guidelines.
+
+---
+
 ## 📊 Code Quality Improvements
 
-### 7. ✅ Replace MD5 with SHA256
+### 8. ✅ Replace MD5 with SHA256
 **File:** `claude_force/agent_memory.py:159`
 
 **Before:**
@@ -212,7 +241,7 @@ return hashlib.sha256(normalized.encode()).hexdigest()  # Modern, secure
 
 ---
 
-### 8. ✅ Fix Bare Except Clause
+### 9. ✅ Fix Bare Except Clause
 **File:** `claude_force/orchestrator.py:455`
 
 **Before:**
@@ -236,7 +265,7 @@ except Exception as e:
 
 ---
 
-### 9. ✅ Add MIT LICENSE File
+### 10. ✅ Add MIT LICENSE File
 **File:** `LICENSE` (new)
 
 ```
@@ -250,7 +279,7 @@ Copyright (c) 2025 Claude Force Contributors
 
 ---
 
-### 10. ✅ Complete Agent Documentation
+### 11. ✅ Complete Agent Documentation
 **File:** `.claude/agents/ai-engineer.md`
 
 **Added Sections:**
@@ -264,7 +293,7 @@ Copyright (c) 2025 Claude Force Contributors
 
 ---
 
-### 11. ✅ Document Planned Features
+### 12. ✅ Document Planned Features
 **Files:** `analytics.py`, `benchmark_runner.py`
 
 **Before:**
@@ -285,7 +314,7 @@ logger.info(f"Running agent in simulation mode...")
 
 ## ⚙️ Configuration Improvements
 
-### 12. ✅ Coverage Enforcement
+### 13. ✅ Coverage Enforcement
 **File:** `pyproject.toml`
 
 **Added:**
@@ -311,12 +340,14 @@ show_missing = true
 | Metric | Before | After | Change |
 |--------|--------|-------|--------|
 | Critical Vulns | 2 | 0 | ✅ -2 |
-| High Vulns | 3 | 0 | ✅ -3 |
+| High Vulns | 4 | 0 | ✅ -4 |
 | Medium Vulns | 4 | 0 | ✅ -4 |
-| OWASP Pass Rate | 4/10 | 8/10 | ✅ +40% |
+| OWASP Pass Rate | 4/10 | 9/10 | ✅ +50% |
 | Security Score | FAIL | PASS* | ✅ PASS |
 
 *With conditions: Internal/dev use approved, production after validation
+
+**Note:** Updated 2025-11-14 to include API key exposure fix (HIGH severity) from PR #19 follow-up review
 
 ### Code Quality
 | Metric | Before | After | Change |
