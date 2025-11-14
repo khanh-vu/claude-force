@@ -44,6 +44,53 @@ python3 -m pytest test_claude_system.py -v
 
 See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions.
 
+### Project Initialization (NEW! 🎉)
+
+Initialize a new project with intelligent template selection:
+
+```bash
+# Interactive mode - guided setup with prompts
+claude-force init my-project --interactive
+
+# Non-interactive mode - specify details directly
+claude-force init my-project \
+  --description "Build a RAG chatbot with Claude and vector search" \
+  --tech "Python,FastAPI,Pinecone,React"
+
+# Use a specific template (skips auto-matching)
+claude-force init my-project --template llm-app \
+  --description "LLM-powered customer service bot"
+```
+
+**Available Templates:**
+- `fullstack-web` - Full-Stack Web Application (React, FastAPI, PostgreSQL)
+- `llm-app` - LLM-Powered Application (RAG, chatbots, semantic search)
+- `ml-project` - Machine Learning Project (training, deployment)
+- `data-pipeline` - Data Engineering Pipeline (ETL, Airflow, Spark)
+- `api-service` - REST API Service (microservices)
+- `frontend-spa` - Frontend SPA (React/Vue)
+- `mobile-app` - Mobile Application (React Native/Flutter)
+- `infrastructure` - Infrastructure & DevOps (Docker, K8s)
+- `claude-code-system` - Claude Code Multi-Agent System
+
+**What gets created:**
+```
+my-project/
+├── .claude/
+│   ├── claude.json          # Agent configuration
+│   ├── task.md              # Task template
+│   ├── README.md            # Project documentation
+│   ├── scorecard.md         # Quality scorecard
+│   ├── agents/              # Agent definitions (empty, ready for agents)
+│   ├── contracts/           # Agent contracts (empty, ready for contracts)
+│   ├── hooks/               # Governance hooks
+│   ├── skills/              # Skills directory
+│   ├── tasks/               # Context and session data
+│   ├── metrics/             # Performance tracking
+│   └── examples/            # Example tasks
+└── ...
+```
+
 ### Quick Usage (CLI)
 
 ```bash

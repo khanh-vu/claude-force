@@ -18,6 +18,12 @@ __license__ = "MIT"
 from .orchestrator import AgentOrchestrator, AgentResult
 from .cli import main as cli_main
 from .mcp_server import MCPServer, MCPCapability, MCPRequest, MCPResponse
+from .quick_start import (
+    QuickStartOrchestrator,
+    ProjectTemplate,
+    ProjectConfig,
+    get_quick_start_orchestrator
+)
 
 # Optional: Semantic agent selection (requires sentence-transformers)
 try:
@@ -25,11 +31,15 @@ try:
     __all__ = [
         "AgentOrchestrator", "AgentResult", "cli_main",
         "SemanticAgentSelector", "AgentMatch",
-        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse"
+        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
+        "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
+        "get_quick_start_orchestrator"
     ]
 except ImportError:
     # sentence-transformers not installed
     __all__ = [
         "AgentOrchestrator", "AgentResult", "cli_main",
-        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse"
+        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
+        "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
+        "get_quick_start_orchestrator"
     ]

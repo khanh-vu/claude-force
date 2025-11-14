@@ -1,0 +1,441 @@
+version: "1.0.0"
+name: "Claude Force Project Templates"
+description: "Curated templates for quick project initialization"
+
+templates:
+
+  # Full-stack template
+  - id: fullstack-web
+    name: "Full-Stack Web Application"
+    description: "Complete web application with frontend, backend, and database"
+    category: web
+    difficulty: intermediate
+    estimated_setup_time: "5-10 minutes"
+
+    agents:
+      - frontend-architect
+      - backend-architect
+      - database-architect
+      - ui-components-expert
+      - python-expert
+      - code-reviewer
+      - security-specialist
+
+    workflows:
+      - full-stack-feature
+      - frontend-only
+      - backend-only
+
+    skills:
+      - api-design
+      - test-generation
+      - code-review
+      - git-workflow
+
+    keywords:
+      - web
+      - fullstack
+      - react
+      - api
+      - postgres
+      - mongodb
+      - nextjs
+      - frontend
+      - backend
+
+    tech_stack:
+      frontend: ["React", "Next.js", "TypeScript", "Tailwind CSS"]
+      backend: ["Python", "FastAPI", "Node.js"]
+      database: ["PostgreSQL", "MongoDB"]
+      deployment: ["Vercel", "Docker"]
+
+    use_cases:
+      - "SaaS applications"
+      - "E-commerce platforms"
+      - "Admin dashboards"
+      - "Content management systems"
+
+  # ML Project template
+  - id: ml-project
+    name: "Machine Learning Project"
+    description: "ML model training, evaluation, and deployment pipeline"
+    category: ai-ml
+    difficulty: advanced
+    estimated_setup_time: "10-15 minutes"
+
+    agents:
+      - ai-engineer
+      - data-engineer
+      - python-expert
+      - code-reviewer
+
+    workflows:
+      - ai-ml-development
+      - data-pipeline
+
+    skills:
+      - test-generation
+      - git-workflow
+
+    keywords:
+      - ml
+      - ai
+      - pytorch
+      - tensorflow
+      - training
+      - deployment
+      - model
+      - machine learning
+      - scikit-learn
+
+    tech_stack:
+      ml_frameworks: ["PyTorch", "TensorFlow", "scikit-learn"]
+      data_processing: ["pandas", "numpy", "polars"]
+      experiment_tracking: ["MLflow", "Weights & Biases"]
+      deployment: ["FastAPI", "Docker", "TorchServe"]
+
+    use_cases:
+      - "Image classification"
+      - "NLP applications"
+      - "Predictive models"
+      - "Recommendation systems"
+
+  # LLM Application template
+  - id: llm-app
+    name: "LLM-Powered Application"
+    description: "RAG systems, chatbots, and semantic search with LLMs"
+    category: ai-ml
+    difficulty: advanced
+    estimated_setup_time: "10-15 minutes"
+
+    agents:
+      - prompt-engineer
+      - ai-engineer
+      - backend-architect
+      - security-specialist
+      - python-expert
+      - code-reviewer
+
+    workflows:
+      - llm-integration
+
+    skills:
+      - api-design
+      - test-generation
+
+    keywords:
+      - llm
+      - rag
+      - chatbot
+      - openai
+      - claude
+      - embeddings
+      - semantic search
+      - langchain
+      - vector database
+
+    tech_stack:
+      llm_providers: ["Anthropic Claude", "OpenAI"]
+      frameworks: ["LangChain", "LlamaIndex"]
+      vector_databases: ["Pinecone", "Weaviate", "Qdrant", "ChromaDB"]
+      backend: ["FastAPI", "Python"]
+
+    use_cases:
+      - "Customer support chatbots"
+      - "Document Q&A systems"
+      - "Semantic search engines"
+      - "AI assistants"
+
+  # Data Pipeline template
+  - id: data-pipeline
+    name: "Data Engineering Pipeline"
+    description: "ETL pipelines, data warehousing, and analytics"
+    category: data
+    difficulty: advanced
+    estimated_setup_time: "10-15 minutes"
+
+    agents:
+      - data-engineer
+      - database-architect
+      - python-expert
+      - code-reviewer
+
+    workflows:
+      - data-pipeline
+
+    skills:
+      - test-generation
+      - git-workflow
+
+    keywords:
+      - etl
+      - airflow
+      - spark
+      - bigquery
+      - snowflake
+      - data
+      - warehouse
+      - pipeline
+      - dbt
+
+    tech_stack:
+      orchestration: ["Apache Airflow", "Prefect", "Dagster"]
+      transformation: ["dbt", "Spark", "pandas"]
+      warehouses: ["Snowflake", "BigQuery", "Redshift"]
+      quality: ["Great Expectations", "dbt tests"]
+
+    use_cases:
+      - "Data warehouse building"
+      - "ETL automation"
+      - "Analytics pipelines"
+      - "Data quality monitoring"
+
+  # REST API template
+  - id: api-service
+    name: "REST API Service"
+    description: "Backend API with database and authentication"
+    category: backend
+    difficulty: intermediate
+    estimated_setup_time: "5-10 minutes"
+
+    agents:
+      - backend-architect
+      - database-architect
+      - security-specialist
+      - python-expert
+      - code-reviewer
+
+    workflows:
+      - backend-only
+
+    skills:
+      - api-design
+      - test-generation
+      - dockerfile
+
+    keywords:
+      - api
+      - rest
+      - graphql
+      - backend
+      - microservice
+      - fastapi
+      - authentication
+
+    tech_stack:
+      framework: ["FastAPI", "Flask", "Express.js"]
+      database: ["PostgreSQL", "MongoDB"]
+      auth: ["JWT", "OAuth2"]
+      documentation: ["OpenAPI", "Swagger"]
+
+    use_cases:
+      - "Microservices"
+      - "API backends"
+      - "Authentication services"
+      - "Data APIs"
+
+  # Frontend SPA template
+  - id: frontend-spa
+    name: "Frontend Single-Page Application"
+    description: "React/Vue/Angular SPA with state management"
+    category: frontend
+    difficulty: intermediate
+    estimated_setup_time: "5-10 minutes"
+
+    agents:
+      - frontend-architect
+      - ui-components-expert
+      - frontend-developer
+      - code-reviewer
+
+    workflows:
+      - frontend-only
+
+    skills:
+      - test-generation
+      - git-workflow
+
+    keywords:
+      - frontend
+      - react
+      - vue
+      - angular
+      - spa
+      - ui
+      - components
+      - typescript
+
+    tech_stack:
+      framework: ["React", "Next.js", "Vue", "Angular"]
+      state_management: ["Redux", "Zustand", "Pinia", "NgRx"]
+      styling: ["Tailwind CSS", "styled-components", "CSS Modules"]
+      testing: ["Vitest", "Jest", "Playwright"]
+
+    use_cases:
+      - "Admin dashboards"
+      - "User portals"
+      - "Progressive web apps"
+      - "Single-page applications"
+
+  # Mobile App template
+  - id: mobile-app
+    name: "Mobile Application"
+    description: "React Native or Flutter cross-platform mobile app"
+    category: mobile
+    difficulty: advanced
+    estimated_setup_time: "10-15 minutes"
+
+    agents:
+      - frontend-architect
+      - ui-components-expert
+      - backend-architect
+      - code-reviewer
+
+    workflows:
+      - full-stack-feature
+
+    skills:
+      - test-generation
+      - api-design
+
+    keywords:
+      - mobile
+      - react-native
+      - flutter
+      - ios
+      - android
+      - expo
+      - app
+
+    tech_stack:
+      framework: ["React Native", "Flutter", "Expo"]
+      navigation: ["React Navigation", "Flutter Navigator"]
+      state: ["Redux", "Provider", "Riverpod"]
+      backend: ["FastAPI", "Firebase"]
+
+    use_cases:
+      - "Mobile applications"
+      - "Cross-platform apps"
+      - "Native features"
+      - "Mobile-first products"
+
+  # Infrastructure template
+  - id: infrastructure
+    name: "Infrastructure & DevOps"
+    description: "Docker, Kubernetes, CI/CD, and cloud deployment"
+    category: infrastructure
+    difficulty: advanced
+    estimated_setup_time: "10-15 minutes"
+
+    agents:
+      - devops-architect
+      - google-cloud-expert
+      - deployment-integration-expert
+      - security-specialist
+      - code-reviewer
+
+    workflows:
+      - infrastructure
+
+    skills:
+      - dockerfile
+      - git-workflow
+
+    keywords:
+      - devops
+      - kubernetes
+      - docker
+      - terraform
+      - aws
+      - gcp
+      - azure
+      - infrastructure
+      - iac
+
+    tech_stack:
+      containers: ["Docker", "Docker Compose"]
+      orchestration: ["Kubernetes", "Helm"]
+      iac: ["Terraform", "Pulumi", "CloudFormation"]
+      ci_cd: ["GitHub Actions", "GitLab CI", "CircleCI"]
+
+    use_cases:
+      - "Container deployment"
+      - "Kubernetes clusters"
+      - "Infrastructure as code"
+      - "CI/CD pipelines"
+
+  # Claude Code System template
+  - id: claude-code-system
+    name: "Claude Code Multi-Agent System"
+    description: "Build custom agents, workflows, and governance systems"
+    category: claude-code
+    difficulty: expert
+    estimated_setup_time: "15-20 minutes"
+
+    agents:
+      - claude-code-expert
+      - python-expert
+      - document-writer-expert
+      - code-reviewer
+
+    workflows:
+      - claude-code-system
+
+    skills:
+      - create-agent
+      - create-skill
+      - test-generation
+      - git-workflow
+
+    keywords:
+      - claude-code
+      - agents
+      - orchestration
+      - governance
+      - multi-agent
+      - workflow
+      - automation
+
+    tech_stack:
+      framework: ["Claude Code", "Python"]
+      orchestration: ["AgentOrchestrator"]
+      governance: ["Hooks", "Validators", "Contracts"]
+
+    use_cases:
+      - "Custom agent systems"
+      - "Workflow automation"
+      - "Agent governance"
+      - "System extensibility"
+
+categories:
+  - id: web
+    name: "Web Development"
+    description: "Full-stack and web applications"
+
+  - id: ai-ml
+    name: "AI & Machine Learning"
+    description: "ML models, LLM applications, and AI systems"
+
+  - id: data
+    name: "Data Engineering"
+    description: "ETL pipelines and data warehousing"
+
+  - id: backend
+    name: "Backend Development"
+    description: "APIs and backend services"
+
+  - id: frontend
+    name: "Frontend Development"
+    description: "UI and frontend applications"
+
+  - id: mobile
+    name: "Mobile Development"
+    description: "iOS and Android applications"
+
+  - id: infrastructure
+    name: "Infrastructure & DevOps"
+    description: "Cloud infrastructure and deployment"
+
+  - id: claude-code
+    name: "Claude Code Systems"
+    description: "Multi-agent orchestration systems"

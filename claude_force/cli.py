@@ -351,25 +351,167 @@ def cmd_metrics(args):
 
 
 def cmd_init(args):
-    """Initialize a new claude-force project"""
+    """Initialize a new claude-force project with intelligent template selection"""
     try:
-        target_dir = Path(args.directory)
+        from .quick_start import get_quick_start_orchestrator
 
-        if target_dir.exists() and list(target_dir.iterdir()):
-            print(f"❌ Error: Directory {target_dir} is not empty", file=sys.stderr)
-            sys.exit(1)
+        target_dir = Path(args.directory if args.directory != '.' else Path.cwd())
+        claude_dir = target_dir / ".claude"
+
+        # Check if .claude already exists
+        if claude_dir.exists():
+            if not args.force:
+                print(f"❌ Error: .claude directory already exists in {target_dir}", file=sys.stderr)
+                print("   Use --force to reinitialize", file=sys.stderr)
+                sys.exit(1)
+            else:
+                print(f"⚠️  Warning: Reinitializing existing .claude directory\n")
 
         print(f"🚀 Initializing claude-force project in {target_dir}\n")
 
-        # This would copy template files from the package
-        # For now, just give instructions
-        print("To initialize a claude-force project:")
-        print("1. Clone the repository: git clone https://github.com/YOUR_USERNAME/claude-force.git")
-        print("2. Or copy the .claude/ directory from an existing project")
-        print("\nComing soon: claude-force init will create a new project from template")
+        # Initialize orchestrator
+        orchestrator = get_quick_start_orchestrator(use_semantic=not args.no_semantic)
 
+        # Get project details
+        if args.interactive:
+            # Interactive mode
+            print("📋 Project Setup (Interactive Mode)\n")
+
+            project_name = input("Project name: ").strip()
+            if not project_name:
+                project_name = target_dir.name
+                print(f"   Using directory name: {project_name}")
+
+            print("\nDescribe your project:")
+            print("(What are you building? Be specific about features and goals)")
+            description = input("> ").strip()
+
+            if not description:
+                print("❌ Error: Project description is required", file=sys.stderr)
+                sys.exit(1)
+
+            tech_input = input("\nTech stack (comma-separated, optional): ").strip()
+            tech_stack = [t.strip() for t in tech_input.split(",")] if tech_input else None
+
+        else:
+            # Non-interactive mode
+            project_name = args.name or target_dir.name
+            description = args.description
+
+            if not description:
+                print("❌ Error: --description required in non-interactive mode", file=sys.stderr)
+                sys.exit(1)
+
+            tech_stack = args.tech.split(",") if args.tech else None
+
+        # Match templates
+        print(f"\n🔍 Finding best templates for your project...\n")
+
+        if args.template:
+            # User specified template
+            template = None
+            for t in orchestrator.templates:
+                if t.id == args.template:
+                    template = t
+                    break
+
+            if not template:
+                print(f"❌ Error: Template '{args.template}' not found", file=sys.stderr)
+                print(f"\nAvailable templates:")
+                for t in orchestrator.templates:
+                    print(f"  - {t.id}: {t.name}")
+                sys.exit(1)
+
+            matched_templates = [template]
+        else:
+            # Auto-match templates
+            matched_templates = orchestrator.match_templates(
+                description=description,
+                tech_stack=tech_stack,
+                top_k=3
+            )
+
+        # Display matched templates
+        if len(matched_templates) > 1:
+            print("📊 Recommended Templates:\n")
+            for i, template in enumerate(matched_templates, 1):
+                confidence_pct = template.confidence * 100
+                bar_length = int(confidence_pct / 5)
+                bar = "█" * bar_length + "░" * (20 - bar_length)
+
+                print(f"{i}. {template.name}")
+                print(f"   Match: {bar} {confidence_pct:.1f}%")
+                print(f"   {template.description}")
+                print(f"   Difficulty: {template.difficulty} | Setup: {template.estimated_setup_time}")
+                print(f"   Agents: {len(template.agents)} | Workflows: {len(template.workflows)}")
+                print()
+
+            if args.interactive:
+                choice = input(f"Select template (1-{len(matched_templates)}) [1]: ").strip()
+                choice = int(choice) if choice else 1
+                if choice < 1 or choice > len(matched_templates):
+                    print(f"❌ Error: Invalid choice", file=sys.stderr)
+                    sys.exit(1)
+                selected_template = matched_templates[choice - 1]
+            else:
+                selected_template = matched_templates[0]
+        else:
+            selected_template = matched_templates[0]
+
+        print(f"✅ Selected: {selected_template.name}\n")
+
+        # Generate configuration
+        config = orchestrator.generate_config(
+            template=selected_template,
+            project_name=project_name,
+            description=description
+        )
+
+        # Initialize project
+        print("📁 Creating project structure...\n")
+        result = orchestrator.initialize_project(
+            config=config,
+            output_dir=str(claude_dir),
+            create_examples=not args.no_examples
+        )
+
+        # Display results
+        print("✅ Project initialized successfully!\n")
+        print(f"📂 Created {len(result['created_files'])} files:")
+        for file in result['created_files']:
+            rel_path = Path(file).relative_to(target_dir)
+            print(f"   ✓ {rel_path}")
+
+        print(f"\n📋 Configuration:")
+        print(f"   Name: {config.name}")
+        print(f"   Template: {config.template_id}")
+        print(f"   Agents: {len(config.agents)}")
+        print(f"   Workflows: {len(config.workflows)}")
+        print(f"   Skills: {len(config.skills)}")
+
+        print(f"\n🚀 Next Steps:")
+        print(f"   1. Edit {claude_dir / 'task.md'} with your first task")
+        print(f"   2. Run: claude-force recommend --task-file {claude_dir / 'task.md'}")
+        print(f"   3. Run: claude-force run agent <agent-name> --task-file {claude_dir / 'task.md'}")
+        print(f"   4. Review output in {claude_dir / 'work.md'}")
+
+        print(f"\n📚 Learn More:")
+        print(f"   • README: {claude_dir / 'README.md'}")
+        print(f"   • Agents: {claude_dir / 'agents/'}")
+        print(f"   • Workflows: claude-force list workflows")
+
+    except ImportError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if "sentence_transformers" in str(e):
+            print("\n💡 For semantic template matching, install sentence-transformers:")
+            print("   pip install sentence-transformers")
+            print("\nOr use --no-semantic for keyword-based matching")
+        sys.exit(1)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
+        import traceback
+        if args.verbose:
+            traceback.print_exc()
         sys.exit(1)
 
 
@@ -492,8 +634,17 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     export_parser.set_defaults(func=cmd_metrics)
 
     # Init command
-    init_parser = subparsers.add_parser("init", help="Initialize a new claude-force project")
-    init_parser.add_argument("directory", nargs="?", default=".", help="Target directory")
+    init_parser = subparsers.add_parser("init", help="Initialize a new claude-force project with intelligent template selection")
+    init_parser.add_argument("directory", nargs="?", default=".", help="Target directory (default: current directory)")
+    init_parser.add_argument("--description", "-d", help="Project description (required for non-interactive mode)")
+    init_parser.add_argument("--name", "-n", help="Project name (default: directory name)")
+    init_parser.add_argument("--template", "-t", help="Template ID to use (skips auto-matching)")
+    init_parser.add_argument("--tech", help="Tech stack (comma-separated)")
+    init_parser.add_argument("--interactive", "-i", action="store_true", help="Interactive mode with prompts")
+    init_parser.add_argument("--no-semantic", action="store_true", help="Disable semantic matching (use keyword-based)")
+    init_parser.add_argument("--no-examples", action="store_true", help="Don't create example files")
+    init_parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing .claude directory")
+    init_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     init_parser.set_defaults(func=cmd_init)
 
     # Parse arguments
