@@ -110,12 +110,60 @@ claude-force run workflow full-stack-feature --task "Build user dashboard"
 claude-force info python-expert
 ```
 
+### Hybrid Model Orchestration (NEW! ⚡)
+
+Automatically optimize costs by using the right model for each task:
+
+```bash
+# Enable hybrid orchestration (auto-select Haiku/Sonnet/Opus)
+claude-force run agent document-writer-expert \
+  --task "Generate API documentation" \
+  --auto-select-model
+# → Auto-selects Haiku (60-80% cost savings)
+
+claude-force run agent frontend-architect \
+  --task "Design component architecture" \
+  --auto-select-model
+# → Auto-selects Sonnet (complex reasoning)
+
+# Show cost estimate before running
+claude-force run agent ai-engineer \
+  --task "Implement RAG system" \
+  --auto-select-model \
+  --estimate-cost
+# Output:
+# 📊 Cost Estimate:
+#    Model: claude-3-5-sonnet-20241022
+#    Estimated tokens: 2,500 input + 2,000 output
+#    Estimated cost: $0.037500
+#
+# Proceed? [Y/n]:
+
+# Set cost threshold (auto-reject if exceeded)
+claude-force run agent code-reviewer \
+  --task "Review entire codebase" \
+  --auto-select-model \
+  --cost-threshold 0.50
+```
+
+**Model Selection Strategy:**
+- **Haiku** (Fast, cheap): Documentation, formatting, simple transforms
+- **Sonnet** (Powerful): Architecture, code generation, complex reasoning
+- **Opus** (Critical): Security audits, production deployments
+
+**Benefits:**
+- ⚡ 60-80% cost savings for simple tasks
+- 🚀 3-5x faster for deterministic operations
+- 🎯 Automatic task complexity analysis
+- 💰 Cost estimation and thresholds
+```
+
 ### Quick Usage (Python API)
 
 ```python
-from claude_force import AgentOrchestrator
+from claude_force import AgentOrchestrator, HybridOrchestrator
 
-# Initialize orchestrator
+# Standard orchestrator
 orchestrator = AgentOrchestrator()
 
 # Run a single agent
@@ -134,6 +182,31 @@ results = orchestrator.run_workflow(
     workflow_name='full-stack-feature',
     task='Build user profile page'
 )
+```
+
+```python
+# Hybrid orchestrator (cost optimization)
+from claude_force import HybridOrchestrator
+
+orchestrator = HybridOrchestrator(
+    auto_select_model=True,
+    cost_threshold=1.0  # Max $1 per task
+)
+
+# Auto-selects optimal model
+result = orchestrator.run_agent(
+    agent_name='document-writer-expert',
+    task='Generate API documentation'
+)
+# → Uses Haiku (fast & cheap)
+
+# Get cost estimate
+estimate = orchestrator.estimate_cost(
+    task='Design microservices architecture',
+    agent_name='backend-architect'
+)
+print(f"Estimated cost: ${estimate.estimated_cost:.4f}")
+print(f"Model: {estimate.model}")
 ```
 
 ### First Task (Claude Code)

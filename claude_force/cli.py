@@ -152,7 +152,7 @@ def cmd_recommend(args):
 
 
 def cmd_run_agent(args):
-    """Run a single agent"""
+    """Run a single agent with optional hybrid model orchestration"""
     try:
         # Read task from file or stdin if not provided
         task = args.task
@@ -168,18 +168,56 @@ def cmd_run_agent(args):
 
         print(f"🚀 Running agent: {args.agent}\n")
 
-        orchestrator = AgentOrchestrator(
-            config_path=args.config,
-            anthropic_api_key=args.api_key
-        )
+        # Use HybridOrchestrator if auto-select-model is enabled
+        if args.auto_select_model:
+            from .hybrid_orchestrator import HybridOrchestrator
 
-        result = orchestrator.run_agent(
-            agent_name=args.agent,
-            task=task,
-            model=args.model,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature
-        )
+            orchestrator = HybridOrchestrator(
+                config_path=args.config,
+                anthropic_api_key=args.api_key,
+                auto_select_model=True,
+                prefer_cheaper=True,
+                cost_threshold=args.cost_threshold
+            )
+
+            # Show cost estimate if requested
+            if args.estimate_cost:
+                estimate = orchestrator.estimate_cost(task, args.agent, args.model)
+
+                print("📊 Cost Estimate:\n")
+                print(f"   Model: {estimate.model}")
+                print(f"   Estimated tokens: {estimate.estimated_input_tokens:,} input + {estimate.estimated_output_tokens:,} output")
+                print(f"   Estimated cost: ${estimate.estimated_cost:.6f}\n")
+
+                if not args.yes:
+                    proceed = input("Proceed? [Y/n]: ").strip().lower()
+                    if proceed and proceed != 'y':
+                        print("Cancelled")
+                        sys.exit(0)
+
+            result = orchestrator.run_agent(
+                agent_name=args.agent,
+                task=task,
+                model=args.model,
+                max_tokens=args.max_tokens,
+                temperature=args.temperature,
+                auto_select=True
+            )
+
+        else:
+            # Use standard orchestrator
+            orchestrator = AgentOrchestrator(
+                config_path=args.config,
+                anthropic_api_key=args.api_key
+            )
+
+            result = orchestrator.run_agent(
+                agent_name=args.agent,
+                task=task,
+                model=args.model,
+                max_tokens=args.max_tokens,
+                temperature=args.temperature
+            )
 
         if result.success:
             print("✅ Agent completed successfully\n")
@@ -590,15 +628,20 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     run_subparsers = run_parser.add_subparsers(dest="run_type")
 
     # Run agent
-    run_agent_parser = run_subparsers.add_parser("agent", help="Run a single agent")
+    run_agent_parser = run_subparsers.add_parser("agent", help="Run a single agent with optional hybrid model orchestration")
     run_agent_parser.add_argument("agent", help="Agent name")
     run_agent_parser.add_argument("--task", help="Task description")
     run_agent_parser.add_argument("--task-file", help="Read task from file")
     run_agent_parser.add_argument("--output", "-o", help="Save output to file")
-    run_agent_parser.add_argument("--model", default="claude-3-5-sonnet-20241022", help="Claude model to use")
+    run_agent_parser.add_argument("--model", help="Claude model to use (auto-selected if --auto-select-model is enabled)")
     run_agent_parser.add_argument("--max-tokens", type=int, default=4096, help="Maximum tokens")
     run_agent_parser.add_argument("--temperature", type=float, default=1.0, help="Temperature (0.0-1.0)")
     run_agent_parser.add_argument("--json", action="store_true", help="Output metadata as JSON")
+    # Hybrid orchestration options
+    run_agent_parser.add_argument("--auto-select-model", action="store_true", help="Enable hybrid model orchestration (auto-select Haiku/Sonnet/Opus)")
+    run_agent_parser.add_argument("--estimate-cost", action="store_true", help="Show cost estimate before running")
+    run_agent_parser.add_argument("--cost-threshold", type=float, help="Maximum cost per task in USD")
+    run_agent_parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts")
     run_agent_parser.set_defaults(func=cmd_run_agent)
 
     # Run workflow

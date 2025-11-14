@@ -24,6 +24,12 @@ from .quick_start import (
     ProjectConfig,
     get_quick_start_orchestrator
 )
+from .hybrid_orchestrator import (
+    HybridOrchestrator,
+    ModelPricing,
+    CostEstimate,
+    get_hybrid_orchestrator
+)
 
 # Optional: Semantic agent selection (requires sentence-transformers)
 try:
@@ -33,7 +39,9 @@ try:
         "SemanticAgentSelector", "AgentMatch",
         "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
         "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
-        "get_quick_start_orchestrator"
+        "get_quick_start_orchestrator",
+        "HybridOrchestrator", "ModelPricing", "CostEstimate",
+        "get_hybrid_orchestrator"
     ]
 except ImportError:
     # sentence-transformers not installed
@@ -41,5 +49,7 @@ except ImportError:
         "AgentOrchestrator", "AgentResult", "cli_main",
         "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
         "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
-        "get_quick_start_orchestrator"
+        "get_quick_start_orchestrator",
+        "HybridOrchestrator", "ModelPricing", "CostEstimate",
+        "get_hybrid_orchestrator"
     ]

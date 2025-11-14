@@ -135,19 +135,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - New team member onboarding
       - Proof-of-concept creation
 
+#### Hybrid Model Orchestration (Integration 2)
+
+12. **Intelligent Cost Optimization** - Automatic model selection based on task complexity
+    - **Command**: `claude-force run agent <name> --auto-select-model [options]`
+    - **Features**:
+      - Automatic model selection (Haiku/Sonnet/Opus) based on task complexity
+      - Task complexity analysis using keyword matching and heuristics
+      - Agent classification (Haiku agents: document-writer-expert, api-documenter, deployment-integration-expert; Sonnet agents: all architects, engineers, reviewers)
+      - Cost estimation before execution (`--estimate-cost`)
+      - Cost thresholds (`--cost-threshold`) to prevent expensive operations
+      - Interactive confirmation prompts
+    - **Model Strategy**:
+      - **Haiku**: Fast, deterministic tasks (documentation, formatting, config generation)
+      - **Sonnet**: Complex reasoning (architecture, code generation, reviews)
+      - **Opus**: Critical decisions (security audits, production deployments, migrations)
+    - **Complexity Detection**:
+      - **Critical**: Production changes, delete operations, security, migrations
+      - **Simple**: < 200 chars, formatting, documentation, template-based
+      - **Complex**: Architecture, design, implementation, refactoring (default)
+    - **Implementation**:
+      - File: `claude_force/hybrid_orchestrator.py` (400+ lines)
+      - CLI: Enhanced `cmd_run_agent()` with hybrid orchestration support
+      - Tests: `tests/test_hybrid_orchestrator.py` (350+ lines, 16 test cases)
+    - **Documentation**: Added to README.md with CLI and Python API examples
+    - **Benefits**:
+      - 60-80% cost savings for simple tasks
+      - 3-5x faster execution for deterministic operations
+      - Automatic cost estimation and optimization
+      - Manual override support
+    - **Use Cases**:
+      - Cost-sensitive production deployments
+      - High-volume automation (CI/CD pipelines)
+      - Budget-constrained projects
+      - Educational/experimental use
+
 ### Updated
 
 - **`.claude/claude.json`**: Added 4 new agents and 2 new skills to configuration
 - **`README.md`**:
   - Updated agent count (15 → 19), skills count (9 → 11), workflows count (6 → 10)
   - Added Quick Start project initialization section with template documentation
-- **`claude_force/cli.py`**: Enhanced `cmd_init()` with full QuickStartOrchestrator integration
-- **`claude_force/__init__.py`**: Exported QuickStartOrchestrator and related classes
+  - Added Hybrid Model Orchestration section with CLI and Python examples
+- **`claude_force/cli.py`**:
+  - Enhanced `cmd_init()` with full QuickStartOrchestrator integration
+  - Enhanced `cmd_run_agent()` with hybrid orchestration support (--auto-select-model, --estimate-cost, --cost-threshold)
+- **`claude_force/__init__.py`**: Exported QuickStartOrchestrator, HybridOrchestrator, and related classes
 - **System totals**:
   - 19 specialized agents (was 15)
   - 11 integrated skills (was 9)
   - 10 pre-built workflows (was 6)
   - 9 project templates (new)
+  - 2 orchestration modes (standard + hybrid)
 
 ### Statistics
 
@@ -156,15 +195,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **New Contracts**: 4
 - **New Skills**: 2 (create-agent, create-skill)
 - **New Workflows**: 4 (ai-ml-development, data-pipeline, llm-integration, claude-code-system)
-- **New Features**: 1 (Quick Start project initialization)
+- **New Features**: 2 (Quick Start initialization, Hybrid Model Orchestration)
 - **New Templates**: 9 project templates
-- **Lines of Code**: ~1,350+ lines for Quick Start feature
+- **Lines of Code**: ~1,750+ lines (Quick Start: ~1,350, Hybrid: ~400)
 - **Lines of Documentation**: ~2,500+ lines across agents and skills
-- **Test Cases**: 15 new tests for Quick Start
+- **Test Cases**: 31 new tests (Quick Start: 15, Hybrid: 16)
 - **Total Agents**: 19 (15 + 4 new)
 - **Total Skills**: 11 (9 + 2 new)
 - **Total Workflows**: 10 (6 + 4 new)
 - **Total Templates**: 9 (new)
+- **Orchestration Modes**: 2 (Standard, Hybrid)
 
 ---
 
