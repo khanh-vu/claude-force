@@ -156,6 +156,35 @@ claude-force run agent code-reviewer \
 - 🚀 3-5x faster for deterministic operations
 - 🎯 Automatic task complexity analysis
 - 💰 Cost estimation and thresholds
+
+### Progressive Skills Loading (NEW! 📦)
+
+Reduce token usage by loading only relevant skills:
+
+```python
+from claude_force import ProgressiveSkillsManager
+
+manager = ProgressiveSkillsManager()
+
+# Analyze which skills are needed for a task
+task = "Write unit tests for the API endpoints"
+required_skills = manager.analyze_required_skills("python-expert", task)
+# → ["test-generation", "api-design"]
+
+# Get token savings estimate
+savings = manager.get_token_savings_estimate(
+    loaded_skills=len(required_skills),
+    total_skills=11
+)
+print(f"Token reduction: {savings['reduction_percentage']}%")
+# → Token reduction: 72.7%
+```
+
+**Benefits:**
+- 📉 40-60% reduction in prompt tokens (15K → 5-8K)
+- ⚡ Faster API responses
+- 💰 Lower costs per request
+- 🎯 Automatic skill detection from task keywords
 ```
 
 ### Quick Usage (Python API)

@@ -30,6 +30,10 @@ from .hybrid_orchestrator import (
     CostEstimate,
     get_hybrid_orchestrator
 )
+from .skills_manager import (
+    ProgressiveSkillsManager,
+    get_skills_manager
+)
 
 # Optional: Semantic agent selection (requires sentence-transformers)
 try:
@@ -41,7 +45,8 @@ try:
         "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
         "get_quick_start_orchestrator",
         "HybridOrchestrator", "ModelPricing", "CostEstimate",
-        "get_hybrid_orchestrator"
+        "get_hybrid_orchestrator",
+        "ProgressiveSkillsManager", "get_skills_manager"
     ]
 except ImportError:
     # sentence-transformers not installed
@@ -51,5 +56,6 @@ except ImportError:
         "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
         "get_quick_start_orchestrator",
         "HybridOrchestrator", "ModelPricing", "CostEstimate",
-        "get_hybrid_orchestrator"
+        "get_hybrid_orchestrator",
+        "ProgressiveSkillsManager", "get_skills_manager"
     ]
