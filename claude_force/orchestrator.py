@@ -43,7 +43,8 @@ class AgentOrchestrator:
     def __init__(self, config_path: str = ".claude/claude.json",
                  anthropic_api_key: Optional[str] = None,
                  enable_tracking: bool = True,
-                 enable_memory: bool = True):
+                 enable_memory: bool = True,
+                 validate_api_key: bool = False):
         """
         Initialize orchestrator with configuration.
 
@@ -52,13 +53,18 @@ class AgentOrchestrator:
             anthropic_api_key: Anthropic API key (or set ANTHROPIC_API_KEY env var)
             enable_tracking: Enable performance tracking (default: True)
             enable_memory: Enable agent memory system (default: True)
+            validate_api_key: Validate API key immediately (default: False, validated lazily)
         """
         self.config_path = Path(config_path)
         self.config = self._load_config()
         self.api_key = anthropic_api_key or os.getenv("ANTHROPIC_API_KEY")
 
+        # Optionally validate API key upfront for better error messages
+        # This is useful for testing error handling but not needed for read-only operations
+        if validate_api_key and not self.api_key:
+            raise ValueError(format_api_key_error())
+
         # Lazy initialization of anthropic client (only create when needed)
-        # API key validation happens when client is first accessed
         self._client = None
         self.enable_tracking = enable_tracking
         self.enable_memory = enable_memory
@@ -377,7 +383,7 @@ class AgentOrchestrator:
                 print(f"{result.agent_name}: {result.success}")
         """
         workflow = self.config['workflows'].get(workflow_name)
-        if not workflow:
+        if workflow is None:
             all_workflows = list(self.config['workflows'].keys())
             raise ValueError(
                 format_workflow_not_found_error(workflow_name, all_workflows)

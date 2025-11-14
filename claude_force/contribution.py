@@ -61,8 +61,8 @@ class ContributionManager:
             agents_dir: Path to .claude/agents directory
             export_dir: Path for exported contributions
         """
-        self.agents_dir = agents_dir or Path(".claude/agents")
-        self.export_dir = export_dir or Path("./exported")
+        self.agents_dir = Path(agents_dir) if agents_dir else Path(".claude/agents")
+        self.export_dir = Path(export_dir) if export_dir else Path("./exported")
         self.contracts_dir = Path(".claude/contracts")
 
         # Reuse porting tool for format conversion

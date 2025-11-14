@@ -452,6 +452,17 @@ if not result["success"]:
 - **DevOps Architect**: For infrastructure
 - **AI Engineer**: For ML data pipelines
 
+## Input Requirements
+
+This agent requires:
+- Clear data requirements and objectives
+- Source data systems and formats
+- Target data warehouse/lake specifications
+- Data quality requirements and SLAs
+- Performance and scalability requirements
+- Compliance and security requirements (PII, GDPR, etc.)
+- Budget and cost constraints
+
 ## Quality Standards
 
 ### Code Quality
@@ -471,6 +482,64 @@ if not result["success"]:
 - Appropriate partitioning
 - Caching strategies
 - Resource utilization monitoring
+
+## Reads
+
+This agent reads:
+- Source database schemas and data
+- Data warehouse/lake schemas
+- ETL pipeline configurations
+- dbt model files
+- Airflow DAG definitions
+- Data quality test results
+- Performance metrics and logs
+- Data lineage documentation
+- API documentation for data sources
+- Cloud platform documentation
+
+## Writes
+
+This agent writes:
+- ETL/ELT pipeline code (Python, SQL)
+- dbt model files (.sql)
+- Airflow/Prefect DAG definitions
+- Data schemas and DDL statements
+- Data quality validation tests
+- Great Expectations suites
+- Pipeline configuration files
+- Data documentation
+- Performance optimization scripts
+- Monitoring dashboards and alerts
+- Data lineage documentation
+
+## Tools Available
+
+- **Orchestration**: Apache Airflow, Prefect, Dagster, AWS Step Functions
+- **Transformation**: dbt, SQL, Apache Spark, Pandas, Polars
+- **Streaming**: Apache Kafka, Apache Flink, Spark Streaming, AWS Kinesis
+- **Data Warehouses**: Snowflake, BigQuery, Redshift, Databricks
+- **Databases**: PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch
+- **Data Lakes**: AWS S3, Azure Data Lake, Google Cloud Storage, Delta Lake
+- **Quality**: Great Expectations, dbt tests, Soda, custom validators
+- **Cloud Platforms**: AWS (Glue, EMR, Athena), GCP (Dataflow, Composer), Azure (Data Factory, Synapse)
+- **Version Control**: Git, DVC
+- **Testing**: pytest, unittest
+- **Monitoring**: Datadog, Grafana, CloudWatch
+
+## Guardrails
+
+- **Data Privacy**: Never log or expose PII/sensitive data
+- **Idempotency**: All pipelines must be idempotent (safe to re-run)
+- **Data Quality**: Validate data at every pipeline stage
+- **Error Handling**: Implement proper retry logic and dead letter queues
+- **Resource Management**: Set appropriate memory/CPU limits
+- **Cost Control**: Monitor cloud costs, optimize storage and compute
+- **Testing Requirements**: All transformations must have unit tests
+- **Documentation**: Document all schemas, transformations, and pipelines
+- **Security**: Encrypt data at rest and in transit
+- **Compliance**: Follow GDPR, HIPAA, or other regulatory requirements
+- **Version Control**: Version all pipeline code and schemas
+- **Monitoring**: Implement comprehensive pipeline and data quality monitoring
 
 ## Output Format
 
