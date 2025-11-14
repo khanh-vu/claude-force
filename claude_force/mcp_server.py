@@ -19,18 +19,83 @@ Usage:
 
 import json
 import logging
+import os
+import secrets
+import time
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import threading
+from collections import defaultdict, deque
 
 from .orchestrator import AgentOrchestrator, AgentResult
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class RateLimiter:
+    """
+    Token bucket rate limiter for API requests
+
+    Limits requests per IP address using a sliding window approach.
+    """
+
+    def __init__(self, max_requests: int = 100, window_seconds: int = 3600):
+        """
+        Initialize rate limiter
+
+        Args:
+            max_requests: Maximum requests allowed per window
+            window_seconds: Time window in seconds (default: 1 hour)
+        """
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = defaultdict(deque)  # IP -> deque of timestamps
+        self._lock = threading.Lock()
+
+    def is_allowed(self, client_ip: str) -> tuple[bool, Optional[int]]:
+        """
+        Check if request is allowed for this IP
+
+        Args:
+            client_ip: Client IP address
+
+        Returns:
+            Tuple of (is_allowed, retry_after_seconds)
+        """
+        with self._lock:
+            current_time = time.time()
+            client_requests = self.requests[client_ip]
+
+            # Remove old requests outside the window
+            while client_requests and client_requests[0] < current_time - self.window_seconds:
+                client_requests.popleft()
+
+            # Check if limit exceeded
+            if len(client_requests) >= self.max_requests:
+                # Calculate when the oldest request will expire
+                retry_after = int(client_requests[0] + self.window_seconds - current_time) + 1
+                return False, retry_after
+
+            # Allow request and record timestamp
+            client_requests.append(current_time)
+            return True, None
+
+    def get_remaining(self, client_ip: str) -> int:
+        """Get remaining requests for this IP"""
+        with self._lock:
+            current_time = time.time()
+            client_requests = self.requests[client_ip]
+
+            # Remove old requests
+            while client_requests and client_requests[0] < current_time - self.window_seconds:
+                client_requests.popleft()
+
+            return max(0, self.max_requests - len(client_requests))
 
 
 @dataclass
@@ -73,7 +138,11 @@ class MCPServer:
         self,
         orchestrator: Optional[AgentOrchestrator] = None,
         config_path: str = ".claude/claude.json",
-        anthropic_api_key: Optional[str] = None
+        anthropic_api_key: Optional[str] = None,
+        mcp_api_key: Optional[str] = None,
+        allowed_origins: Optional[List[str]] = None,
+        rate_limit_requests: int = 100,
+        rate_limit_window: int = 3600
     ):
         """
         Initialize MCP server
@@ -82,13 +151,69 @@ class MCPServer:
             orchestrator: Existing AgentOrchestrator instance (optional)
             config_path: Path to claude.json configuration
             anthropic_api_key: Anthropic API key (optional)
+            mcp_api_key: MCP server API key for authentication (optional, generated if not provided)
+            allowed_origins: List of allowed CORS origins (default: localhost only)
+            rate_limit_requests: Maximum requests per window (default: 100)
+            rate_limit_window: Rate limit window in seconds (default: 3600 = 1 hour)
         """
         self.orchestrator = orchestrator or AgentOrchestrator(
             config_path=config_path,
             anthropic_api_key=anthropic_api_key
         )
+        # Generate or use provided MCP API key
+        self.mcp_api_key = mcp_api_key or os.getenv("MCP_API_KEY") or self._generate_api_key()
+        if not mcp_api_key and not os.getenv("MCP_API_KEY"):
+            logger.warning(
+                f"MCP API key auto-generated: {self.mcp_api_key}\n"
+                "Set MCP_API_KEY environment variable or pass mcp_api_key parameter for production use."
+            )
+        # Configure CORS origins
+        self.allowed_origins = allowed_origins or ["http://localhost:3000", "http://localhost:8080"]
+        # Initialize rate limiter
+        self.rate_limiter = RateLimiter(
+            max_requests=rate_limit_requests,
+            window_seconds=rate_limit_window
+        )
         self.server_instance = None
         self.server_thread = None
+
+    def _generate_api_key(self) -> str:
+        """Generate a secure random API key"""
+        return secrets.token_urlsafe(32)
+
+    def _verify_api_key(self, provided_key: str) -> bool:
+        """
+        Verify API key using constant-time comparison
+
+        Args:
+            provided_key: API key from request
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not provided_key or not self.mcp_api_key:
+            return False
+        return secrets.compare_digest(provided_key, self.mcp_api_key)
+
+    def _get_allowed_origin(self, origin: Optional[str]) -> str:
+        """
+        Get allowed origin for CORS or None
+
+        Args:
+            origin: Origin header from request
+
+        Returns:
+            Allowed origin or first allowed origin if none match
+        """
+        if not origin:
+            return self.allowed_origins[0] if self.allowed_origins else "http://localhost:3000"
+
+        # Check if origin is in allowed list
+        if origin in self.allowed_origins:
+            return origin
+
+        # Default to first allowed origin
+        return self.allowed_origins[0] if self.allowed_origins else "http://localhost:3000"
 
     def get_capabilities(self) -> List[MCPCapability]:
         """
@@ -357,12 +482,38 @@ class MCPServer:
                 logger.info(f"{self.address_string()} - {format % args}")
 
             def _send_json_response(self, data: dict, status_code: int = 200):
-                """Send JSON response"""
+                """Send JSON response with security headers"""
                 self.send_response(status_code)
                 self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
+
+                # CORS - use configured allowed origins
+                origin = self.headers.get('Origin')
+                allowed_origin = mcp_server._get_allowed_origin(origin)
+                self.send_header('Access-Control-Allow-Origin', allowed_origin)
+                self.send_header('Access-Control-Allow-Credentials', 'true')
+
+                # Security headers
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                self.send_header('X-Frame-Options', 'DENY')
+                self.send_header('Content-Security-Policy', "default-src 'none'; script-src 'none'")
+                self.send_header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+
                 self.end_headers()
                 self.wfile.write(json.dumps(data, indent=2).encode('utf-8'))
+
+            def _verify_authentication(self) -> bool:
+                """
+                Verify API key authentication from Authorization header
+
+                Returns:
+                    True if authenticated, False otherwise
+                """
+                auth_header = self.headers.get('Authorization', '')
+                if not auth_header.startswith('Bearer '):
+                    return False
+
+                api_key = auth_header[7:]  # Remove 'Bearer ' prefix
+                return mcp_server._verify_api_key(api_key)
 
             def do_GET(self):
                 """Handle GET requests"""
@@ -411,6 +562,26 @@ class MCPServer:
                 parsed_path = urlparse(self.path)
 
                 if parsed_path.path == '/execute':
+                    # Check rate limit
+                    client_ip = self.client_address[0]
+                    allowed, retry_after = mcp_server.rate_limiter.is_allowed(client_ip)
+
+                    if not allowed:
+                        self._send_json_response({
+                            "success": False,
+                            "error": f"Rate limit exceeded. Please retry after {retry_after} seconds.",
+                            "retry_after": retry_after
+                        }, status_code=429)
+                        return
+
+                    # Verify authentication for execute endpoint
+                    if not self._verify_authentication():
+                        self._send_json_response({
+                            "success": False,
+                            "error": "Unauthorized. Please provide valid API key in Authorization header (Bearer <key>)"
+                        }, status_code=401)
+                        return
+
                     # Read request body
                     content_length = int(self.headers.get('Content-Length', 0))
                     body = self.rfile.read(content_length).decode('utf-8')
@@ -449,9 +620,13 @@ class MCPServer:
             def do_OPTIONS(self):
                 """Handle CORS preflight"""
                 self.send_response(200)
-                self.send_header('Access-Control-Allow-Origin', '*')
+                # Use configured allowed origins
+                origin = self.headers.get('Origin')
+                allowed_origin = mcp_server._get_allowed_origin(origin)
+                self.send_header('Access-Control-Allow-Origin', allowed_origin)
                 self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-                self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+                self.send_header('Access-Control-Allow-Credentials', 'true')
                 self.end_headers()
 
         return MCPRequestHandler

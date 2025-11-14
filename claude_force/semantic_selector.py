@@ -6,8 +6,8 @@ Provides confidence scores and multi-agent recommendations.
 """
 
 import json
-import pickle
 import hashlib
+import hmac
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
@@ -53,7 +53,8 @@ class SemanticAgentSelector:
         self.agent_embeddings = {}
         self._lazy_init = False
         self._cache_dir = self.config_path.parent / ".cache"
-        self._embeddings_cache_file = self._cache_dir / "agent_embeddings.pkl"
+        self._embeddings_cache_file = self._cache_dir / "agent_embeddings.json"
+        self._cache_key = self._get_cache_key()
 
     def _load_config(self) -> dict:
         """Load agent configuration"""
@@ -116,7 +117,13 @@ class SemanticAgentSelector:
     def _get_config_hash(self) -> str:
         """Generate hash of config for cache invalidation."""
         config_str = json.dumps(self.config, sort_keys=True)
-        return hashlib.md5(config_str.encode()).hexdigest()
+        return hashlib.sha256(config_str.encode()).hexdigest()
+
+    def _get_cache_key(self) -> str:
+        """Generate HMAC key for cache integrity verification."""
+        # Use config path and model name as key material
+        key_material = f"{self.config_path}:{self.model_name}".encode()
+        return hashlib.sha256(key_material).hexdigest()
 
     def _load_from_cache(self) -> bool:
         """
@@ -129,8 +136,26 @@ class SemanticAgentSelector:
             return False
 
         try:
-            with open(self._embeddings_cache_file, 'rb') as f:
-                cache_data = pickle.load(f)
+            with open(self._embeddings_cache_file, 'r') as f:
+                cache_data = json.load(f)
+
+            # Verify HMAC signature
+            stored_hmac = cache_data.get('hmac', '')
+            cache_content = json.dumps({
+                'config_hash': cache_data.get('config_hash'),
+                'model_name': cache_data.get('model_name'),
+                'embeddings': cache_data.get('embeddings')
+            }, sort_keys=True)
+
+            expected_hmac = hmac.new(
+                self._cache_key.encode(),
+                cache_content.encode(),
+                hashlib.sha256
+            ).hexdigest()
+
+            if not hmac.compare_digest(stored_hmac, expected_hmac):
+                # Cache integrity check failed
+                return False
 
             # Validate cache
             if cache_data.get('config_hash') != self._get_config_hash():
@@ -139,8 +164,12 @@ class SemanticAgentSelector:
             if cache_data.get('model_name') != self.model_name:
                 return False
 
-            # Load embeddings
-            self.agent_embeddings = cache_data.get('embeddings', {})
+            # Load embeddings (convert lists back to numpy arrays)
+            embeddings_data = cache_data.get('embeddings', {})
+            self.agent_embeddings = {
+                agent: np.array(embedding)
+                for agent, embedding in embeddings_data.items()
+            }
             return True
 
         except Exception:
@@ -148,19 +177,36 @@ class SemanticAgentSelector:
             return False
 
     def _save_to_cache(self):
-        """Save embeddings to cache."""
+        """Save embeddings to cache with HMAC signature."""
         try:
             # Create cache directory if not exists
             self._cache_dir.mkdir(parents=True, exist_ok=True)
 
-            cache_data = {
-                'config_hash': self._get_config_hash(),
-                'model_name': self.model_name,
-                'embeddings': self.agent_embeddings
+            # Convert numpy arrays to lists for JSON serialization
+            embeddings_serializable = {
+                agent: embedding.tolist()
+                for agent, embedding in self.agent_embeddings.items()
             }
 
-            with open(self._embeddings_cache_file, 'wb') as f:
-                pickle.dump(cache_data, f)
+            cache_content = {
+                'config_hash': self._get_config_hash(),
+                'model_name': self.model_name,
+                'embeddings': embeddings_serializable
+            }
+
+            # Generate HMAC signature for integrity
+            cache_content_str = json.dumps(cache_content, sort_keys=True)
+            signature = hmac.new(
+                self._cache_key.encode(),
+                cache_content_str.encode(),
+                hashlib.sha256
+            ).hexdigest()
+
+            # Add signature to cache data
+            cache_data = {**cache_content, 'hmac': signature}
+
+            with open(self._embeddings_cache_file, 'w') as f:
+                json.dump(cache_data, f, indent=2)
         except Exception:
             # Cache save failure should not break functionality
             pass

@@ -152,11 +152,11 @@ class AgentMemory:
             task: Task description
 
         Returns:
-            MD5 hash of normalized task
+            SHA256 hash of normalized task
         """
         # Normalize task (lowercase, strip whitespace)
         normalized = task.lower().strip()
-        return hashlib.md5(normalized.encode()).hexdigest()
+        return hashlib.sha256(normalized.encode()).hexdigest()
 
     def store_session(
         self,

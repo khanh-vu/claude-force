@@ -274,8 +274,10 @@ class RealWorldBenchmark:
                     lines_of_code=baseline_metrics.lines_of_code
                 )
             else:
-                # Real mode - would need to parse agent output and extract improved code
-                # For now, use baseline (TODO: implement code extraction)
+                # Real mode: Code extraction from agent output is a planned enhancement
+                # Requires: 1) Running actual agent, 2) Parsing output, 3) Extracting code blocks
+                # Current implementation: Use baseline as fallback
+                logger.info(f"Real mode benchmark for {scenario_name} - using baseline (code extraction pending)")
                 improved_metrics = baseline_metrics
 
             # Calculate improvements
