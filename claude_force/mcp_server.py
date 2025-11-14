@@ -22,7 +22,7 @@ import logging
 import os
 import secrets
 import time
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -57,7 +57,7 @@ class RateLimiter:
         self.requests = defaultdict(deque)  # IP -> deque of timestamps
         self._lock = threading.Lock()
 
-    def is_allowed(self, client_ip: str) -> tuple[bool, Optional[int]]:
+    def is_allowed(self, client_ip: str) -> Tuple[bool, Optional[int]]:
         """
         Check if request is allowed for this IP
 

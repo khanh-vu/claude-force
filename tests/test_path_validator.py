@@ -157,16 +157,22 @@ class TestPathValidation:
     def test_validate_agent_file_path(self, tmp_path):
         """Test agent file path validation"""
         # Should accept paths in .claude/agents/
-        os.chdir(tmp_path)
+        # Save current working directory to restore later
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(tmp_path)
 
-        claude_dir = tmp_path / ".claude" / "agents"
-        claude_dir.mkdir(parents=True)
+            claude_dir = tmp_path / ".claude" / "agents"
+            claude_dir.mkdir(parents=True)
 
-        agent_file = claude_dir / "test-agent.md"
-        agent_file.write_text("# Agent")
+            agent_file = claude_dir / "test-agent.md"
+            agent_file.write_text("# Agent")
 
-        result = validate_agent_file_path("agents/test-agent.md")
-        assert ".claude" in str(result)
+            result = validate_agent_file_path("agents/test-agent.md")
+            assert ".claude" in str(result)
+        finally:
+            # Restore original working directory
+            os.chdir(original_cwd)
 
     def test_reject_agent_file_outside_claude(self):
         """Test rejection of agent files outside .claude/"""
@@ -237,7 +243,12 @@ class TestSecurityScenarios:
         try:
             result = validate_path(evil_path, base_dir=base_dir)
             # If it succeeds, ensure it's still within base_dir
-            assert result.is_relative_to(base_dir.resolve())
+            # Python 3.8 compatible: use relative_to() instead of is_relative_to()
+            try:
+                result.relative_to(base_dir.resolve())
+            except ValueError:
+                # Path is not relative to base_dir - security violation
+                pytest.fail(f"Path {result} escaped base directory {base_dir}")
         except PathValidationError:
             pass  # Expected - rejected
 
