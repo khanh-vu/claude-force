@@ -36,14 +36,18 @@ def validate_path(
         PathValidationError: If path is invalid or unsafe
     """
     try:
-        # Convert to Path object
-        path_obj = Path(path).resolve()
+        # Convert to Path object (don't resolve yet to check for symlinks)
+        path_obj = Path(path)
 
-        # Check if symlink (potential security risk)
+        # Check if symlink BEFORE resolving (security: prevent symlink attacks)
+        # Must check before resolve() because resolve() follows symlinks
         if not allow_symlinks and path_obj.is_symlink():
             raise PathValidationError(
                 f"Symlinks not allowed: {path}"
             )
+
+        # Now safe to resolve the path
+        path_obj = path_obj.resolve()
 
         # Check existence if required
         if must_exist and not path_obj.exists():
