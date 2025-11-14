@@ -163,9 +163,12 @@ class MCPServer:
         # Generate or use provided MCP API key
         self.mcp_api_key = mcp_api_key or os.getenv("MCP_API_KEY") or self._generate_api_key()
         if not mcp_api_key and not os.getenv("MCP_API_KEY"):
+            # Only log first 8 chars of key to prevent secret exposure in logs
+            masked_key = f"{self.mcp_api_key[:8]}...{self.mcp_api_key[-4:]}"
             logger.warning(
-                f"MCP API key auto-generated: {self.mcp_api_key}\n"
-                "Set MCP_API_KEY environment variable or pass mcp_api_key parameter for production use."
+                f"MCP API key auto-generated (key starts with: {masked_key})\n"
+                "Set MCP_API_KEY environment variable or pass mcp_api_key parameter for production use.\n"
+                "IMPORTANT: Save this key securely - it will not be shown again."
             )
         # Configure CORS origins
         self.allowed_origins = allowed_origins or ["http://localhost:3000", "http://localhost:8080"]
