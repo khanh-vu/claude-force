@@ -111,9 +111,15 @@ class AgentPortingTool:
 
         # Validate and create agent directory (prevent path traversal)
         try:
-            agent_dir = validate_agent_file_path(
-                self.agents_dir / metadata.name / "AGENT.md"
-            ).parent
+            # Validate that the agent directory is within agents_dir (prevent path traversal)
+            agent_md_path = self.agents_dir / metadata.name / "AGENT.md"
+            validated_agent_path = validate_path(
+                agent_md_path,
+                base_dir=self.agents_dir,
+                must_exist=False,
+                allow_symlinks=False
+            )
+            agent_dir = validated_agent_path.parent
         except PathValidationError as e:
             logger.error(f"Invalid agent directory for '{metadata.name}': {e}")
             raise ValueError(f"Invalid agent name '{metadata.name}': creates unsafe path")

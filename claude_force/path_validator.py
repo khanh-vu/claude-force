@@ -36,6 +36,10 @@ def validate_path(
         PathValidationError: If path is invalid or unsafe
     """
     try:
+        # Validate path is not empty
+        if not path or (isinstance(path, str) and not path.strip()):
+            raise PathValidationError("Path cannot be empty")
+
         # Convert to Path object (don't resolve yet to check for symlinks)
         path_obj = Path(path)
 
