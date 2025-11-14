@@ -113,12 +113,15 @@ class ProgressiveSkillsManager:
         """
         Load skills registry metadata.
 
+        Scans the skills directory for all subdirectories with SKILL.md files,
+        in addition to checking for known skills in SKILL_KEYWORDS.
+
         Returns:
             Dictionary of skill metadata
         """
         registry = {}
 
-        # Build registry from available skills
+        # First, add all known skills from SKILL_KEYWORDS
         for skill_id in self.SKILL_KEYWORDS.keys():
             skill_path = self.skills_dir / skill_id
             if skill_path.exists() and skill_path.is_dir():
@@ -135,6 +138,30 @@ class ProgressiveSkillsManager:
                     "keywords": self.SKILL_KEYWORDS.get(skill_id, []),
                     "exists": False
                 }
+
+        # Also scan skills directory for any additional skills
+        if self.skills_dir.exists() and self.skills_dir.is_dir():
+            for skill_path in self.skills_dir.iterdir():
+                if not skill_path.is_dir():
+                    continue
+
+                skill_id = skill_path.name
+
+                # Skip if already in registry
+                if skill_id in registry:
+                    continue
+
+                # Check if it has SKILL.md or README.md
+                has_skill_file = (skill_path / "SKILL.md").exists()
+                has_readme = (skill_path / "README.md").exists()
+
+                if has_skill_file or has_readme:
+                    registry[skill_id] = {
+                        "id": skill_id,
+                        "path": str(skill_path),
+                        "keywords": self.SKILL_KEYWORDS.get(skill_id, []),
+                        "exists": True
+                    }
 
         return registry
 

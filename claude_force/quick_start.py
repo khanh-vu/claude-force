@@ -100,7 +100,22 @@ class QuickStartOrchestrator:
                 data = yaml.safe_load(f)
 
             templates = []
-            for template_data in data.get('templates', []):
+            required_fields = [
+                'id', 'name', 'description', 'category', 'difficulty',
+                'estimated_setup_time', 'agents', 'workflows', 'skills',
+                'keywords', 'tech_stack', 'use_cases'
+            ]
+
+            for idx, template_data in enumerate(data.get('templates', [])):
+                # Validate required fields
+                missing_fields = [f for f in required_fields if f not in template_data]
+                if missing_fields:
+                    template_id = template_data.get('id', f'template-{idx}')
+                    raise ValueError(
+                        f"Template '{template_id}' is missing required field(s): "
+                        f"{', '.join(missing_fields)}"
+                    )
+
                 template = ProjectTemplate(
                     id=template_data['id'],
                     name=template_data['name'],
@@ -119,6 +134,9 @@ class QuickStartOrchestrator:
 
             return templates
 
+        except ValueError:
+            # Re-raise ValueError with our custom message
+            raise
         except Exception as e:
             raise ValueError(f"Failed to load templates: {e}")
 
