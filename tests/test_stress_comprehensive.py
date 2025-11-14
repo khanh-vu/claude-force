@@ -19,7 +19,7 @@ from unittest.mock import Mock, patch, MagicMock
 from typing import List, Dict, Any
 
 from claude_force.quick_start import QuickStartOrchestrator
-from claude_force.hybrid_orchestrator import HybridOrchestrator
+from claude_force.agent_router import AgentRouter
 from claude_force.skills_manager import ProgressiveSkillsManager
 from claude_force.marketplace import MarketplaceManager
 from claude_force.agent_router import AgentRouter
@@ -237,7 +237,7 @@ class TestLargeScaleOperations:
 
     def test_many_cost_estimations(self):
         """Test estimating costs for many tasks rapidly"""
-        orchestrator = HybridOrchestrator()
+        orchestrator = AgentRouter()
         num_estimations = 500
 
         tasks = [f"Task {i}: Build feature X" for i in range(num_estimations)]
@@ -283,7 +283,7 @@ Use this agent for task {i}.
             pattern="agent_*.md"
         )
 
-        assert len(results) == 50
+        assert len(results['imported']) == 50
         assert all(r['success'] for r in results)
 
     def test_large_workflow_composition(self):
@@ -327,7 +327,7 @@ class TestMemoryAndPerformance:
 
     def test_performance_degradation_over_time(self):
         """Test that operations don't slow down over time"""
-        orchestrator = HybridOrchestrator()
+        orchestrator = AgentRouter()
 
         times = []
         for _ in range(100):
@@ -469,7 +469,7 @@ class TestEdgeCasesAndBoundaries:
 
     def test_boundary_values(self):
         """Test boundary values for numeric parameters"""
-        orchestrator = HybridOrchestrator()
+        orchestrator = AgentRouter()
         router = AgentRouter()
         composer = WorkflowComposer()
 
@@ -577,7 +577,7 @@ class TestErrorRecoveryAndResilience:
         if not os.getenv("ANTHROPIC_API_KEY"):
             pytest.skip("No API key available")
 
-        orchestrator = HybridOrchestrator()
+        orchestrator = AgentRouter()
 
         # Simulate network delay by setting very short timeout
         # The system should handle this gracefully
@@ -678,7 +678,7 @@ class TestIntegrationScenarios:
         """Test using marketplace plugins in workflows"""
         # 1. List marketplace plugins
         marketplace = MarketplaceManager()
-        plugins = marketplace.list_plugins()
+        plugins = marketplace.list_available()
         assert len(plugins) > 0
 
         # 2. Use marketplace in agent routing
@@ -730,7 +730,7 @@ Use for testing tasks.
         # Compare agents
         report = analytics.compare_agents(
             task="Review code for security",
-            agent_names=["code-reviewer", "security-specialist"]
+            agents=["code-reviewer", "security-specialist"]
         )
 
         assert report is not None
