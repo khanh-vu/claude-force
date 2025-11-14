@@ -42,7 +42,8 @@ class AgentOrchestrator:
 
     def __init__(self, config_path: str = ".claude/claude.json",
                  anthropic_api_key: Optional[str] = None,
-                 enable_tracking: bool = True):
+                 enable_tracking: bool = True,
+                 enable_memory: bool = True):
         """
         Initialize orchestrator with configuration.
 
@@ -50,31 +51,63 @@ class AgentOrchestrator:
             config_path: Path to claude.json configuration file
             anthropic_api_key: Anthropic API key (or set ANTHROPIC_API_KEY env var)
             enable_tracking: Enable performance tracking (default: True)
+            enable_memory: Enable agent memory system (default: True)
         """
         self.config_path = Path(config_path)
         self.config = self._load_config()
         self.api_key = anthropic_api_key or os.getenv("ANTHROPIC_API_KEY")
 
-        if not self.api_key:
-            raise ValueError(format_api_key_error())
+        # Lazy initialization of anthropic client (only create when needed)
+        # API key validation happens when client is first accessed
+        self._client = None
+        self.enable_tracking = enable_tracking
+        self.enable_memory = enable_memory
 
-        # Lazy import anthropic to allow installation without API key
-        try:
-            import anthropic
-            self.client = anthropic.Client(api_key=self.api_key)
-        except ImportError:
-            raise ImportError(
-                format_missing_dependency_error("anthropic", "pip install anthropic")
-            )
+        # Lazy initialization of performance tracker
+        self._tracker = None
 
-        # Initialize performance tracker
-        self.tracker = None
-        if enable_tracking:
+        # Lazy initialization of agent memory
+        self._memory = None
+
+    @property
+    def client(self):
+        """Lazy load anthropic client."""
+        if self._client is None:
+            # Validate API key when client is first needed
+            if not self.api_key:
+                raise ValueError(format_api_key_error())
+
+            try:
+                import anthropic
+                self._client = anthropic.Client(api_key=self.api_key)
+            except ImportError:
+                raise ImportError(
+                    format_missing_dependency_error("anthropic", "pip install anthropic")
+                )
+        return self._client
+
+    @property
+    def tracker(self):
+        """Lazy load performance tracker."""
+        if self._tracker is None and self.enable_tracking:
             try:
                 from claude_force.performance_tracker import PerformanceTracker
-                self.tracker = PerformanceTracker()
+                self._tracker = PerformanceTracker()
             except Exception as e:
                 print(f"Warning: Performance tracking disabled: {e}")
+        return self._tracker
+
+    @property
+    def memory(self):
+        """Lazy load agent memory."""
+        if self._memory is None and self.enable_memory:
+            try:
+                from claude_force.agent_memory import AgentMemory
+                memory_path = self.config_path.parent / "sessions.db"
+                self._memory = AgentMemory(db_path=str(memory_path))
+            except Exception as e:
+                print(f"Warning: Agent memory disabled: {e}")
+        return self._memory
 
     def _load_config(self) -> Dict:
         """Load claude.json configuration"""
@@ -119,8 +152,9 @@ class AgentOrchestrator:
         with open(contract_file, 'r') as f:
             return f.read()
 
-    def _build_prompt(self, agent_definition: str, agent_contract: str, task: str) -> str:
-        """Build complete prompt for agent"""
+    def _build_prompt(self, agent_definition: str, agent_contract: str, task: str,
+                     agent_name: str, use_memory: bool = True) -> str:
+        """Build complete prompt for agent with optional memory context"""
         prompt_parts = [
             "# Agent Definition",
             agent_definition,
@@ -133,6 +167,19 @@ class AgentOrchestrator:
                 agent_contract,
                 "",
             ])
+
+        # Inject memory context if available
+        if use_memory and self.memory:
+            try:
+                context = self.memory.get_context_for_task(task, agent_name)
+                if context:
+                    prompt_parts.extend([
+                        context,
+                        ""
+                    ])
+            except Exception:
+                # If memory retrieval fails, continue without it
+                pass
 
         prompt_parts.extend([
             "# Task",
@@ -185,8 +232,8 @@ class AgentOrchestrator:
             agent_definition = self._load_agent_definition(agent_name)
             agent_contract = self._load_agent_contract(agent_name)
 
-            # Build prompt
-            prompt = self._build_prompt(agent_definition, agent_contract, task)
+            # Build prompt (with memory context if enabled)
+            prompt = self._build_prompt(agent_definition, agent_contract, task, agent_name)
 
             # Call Claude API
             response = self.client.messages.create(
@@ -221,6 +268,27 @@ class AgentOrchestrator:
                     workflow_position=workflow_position
                 )
 
+            # Store in memory
+            if self.memory:
+                try:
+                    self.memory.store_session(
+                        agent_name=agent_name,
+                        task=task,
+                        output=output,
+                        success=True,
+                        execution_time_ms=execution_time_ms,
+                        model=model,
+                        input_tokens=response.usage.input_tokens,
+                        output_tokens=response.usage.output_tokens,
+                        metadata={
+                            "workflow_name": workflow_name,
+                            "workflow_position": workflow_position
+                        }
+                    )
+                except Exception:
+                    # Memory storage failures shouldn't break execution
+                    pass
+
             return AgentResult(
                 agent_name=agent_name,
                 success=True,
@@ -252,6 +320,28 @@ class AgentOrchestrator:
                     workflow_name=workflow_name,
                     workflow_position=workflow_position
                 )
+
+            # Store failed session in memory
+            if self.memory:
+                try:
+                    self.memory.store_session(
+                        agent_name=agent_name,
+                        task=task,
+                        output=str(e),
+                        success=False,
+                        execution_time_ms=execution_time_ms,
+                        model=model,
+                        input_tokens=0,
+                        output_tokens=0,
+                        metadata={
+                            "error_type": error_type,
+                            "workflow_name": workflow_name,
+                            "workflow_position": workflow_position
+                        }
+                    )
+                except Exception:
+                    # Memory storage failures shouldn't break execution
+                    pass
 
             return AgentResult(
                 agent_name=agent_name,

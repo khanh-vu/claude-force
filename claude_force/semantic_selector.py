@@ -6,6 +6,8 @@ Provides confidence scores and multi-agent recommendations.
 """
 
 import json
+import pickle
+import hashlib
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
@@ -31,7 +33,8 @@ class SemanticAgentSelector:
     """
 
     def __init__(self, config_path: str = ".claude/claude.json",
-                 model_name: str = "all-MiniLM-L6-v2"):
+                 model_name: str = "all-MiniLM-L6-v2",
+                 use_cache: bool = True):
         """
         Initialize semantic selector
 
@@ -40,13 +43,17 @@ class SemanticAgentSelector:
             model_name: Sentence transformer model to use (default: all-MiniLM-L6-v2)
                        This is a lightweight, fast model good for production.
                        Alternatives: all-mpnet-base-v2 (more accurate, slower)
+            use_cache: Whether to use cached embeddings (default: True)
         """
         self.config_path = Path(config_path)
         self.model_name = model_name
+        self.use_cache = use_cache
         self.config = self._load_config()
         self.model = None
         self.agent_embeddings = {}
         self._lazy_init = False
+        self._cache_dir = self.config_path.parent / ".cache"
+        self._embeddings_cache_file = self._cache_dir / "agent_embeddings.pkl"
 
     def _load_config(self) -> dict:
         """Load agent configuration"""
@@ -106,8 +113,64 @@ class SemanticAgentSelector:
             domains = agent_info.get("domains", [])
             return f"Agent specialized in: {', '.join(domains)}. Error loading details: {e}"
 
+    def _get_config_hash(self) -> str:
+        """Generate hash of config for cache invalidation."""
+        config_str = json.dumps(self.config, sort_keys=True)
+        return hashlib.md5(config_str.encode()).hexdigest()
+
+    def _load_from_cache(self) -> bool:
+        """
+        Load embeddings from cache if valid.
+
+        Returns:
+            True if cache loaded successfully, False otherwise
+        """
+        if not self._embeddings_cache_file.exists():
+            return False
+
+        try:
+            with open(self._embeddings_cache_file, 'rb') as f:
+                cache_data = pickle.load(f)
+
+            # Validate cache
+            if cache_data.get('config_hash') != self._get_config_hash():
+                return False
+
+            if cache_data.get('model_name') != self.model_name:
+                return False
+
+            # Load embeddings
+            self.agent_embeddings = cache_data.get('embeddings', {})
+            return True
+
+        except Exception:
+            # If cache load fails, regenerate
+            return False
+
+    def _save_to_cache(self):
+        """Save embeddings to cache."""
+        try:
+            # Create cache directory if not exists
+            self._cache_dir.mkdir(parents=True, exist_ok=True)
+
+            cache_data = {
+                'config_hash': self._get_config_hash(),
+                'model_name': self.model_name,
+                'embeddings': self.agent_embeddings
+            }
+
+            with open(self._embeddings_cache_file, 'wb') as f:
+                pickle.dump(cache_data, f)
+        except Exception:
+            # Cache save failure should not break functionality
+            pass
+
     def _compute_agent_embeddings(self):
-        """Pre-compute embeddings for all agents"""
+        """Pre-compute embeddings for all agents with caching support."""
+        # Try to load from cache first
+        if self.use_cache and self._load_from_cache():
+            return
+
         self._ensure_initialized()
 
         agents = self.config.get("agents", {})
@@ -125,6 +188,10 @@ class SemanticAgentSelector:
         # Store embeddings
         for agent_name, embedding in zip(agent_names, embeddings):
             self.agent_embeddings[agent_name] = embedding
+
+        # Save to cache
+        if self.use_cache:
+            self._save_to_cache()
 
     def _cosine_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
         """Compute cosine similarity between two vectors"""
