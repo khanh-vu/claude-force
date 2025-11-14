@@ -59,12 +59,29 @@ def cmd_list_workflows(args):
         if args.demo:
             from .demo_mode import DemoOrchestrator
             orchestrator = DemoOrchestrator(config_path=args.config)
-            print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
+            if not getattr(args, 'json', False):
+                print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
 
         workflows = orchestrator.list_workflows()
 
+        # JSON output if requested
+        if getattr(args, 'json', False):
+            import json
+            workflows_data = [
+                {
+                    "name": name,
+                    "agent_count": len(agents),
+                    "agents": agents,
+                    "flow": " → ".join(agents)
+                }
+                for name, agents in workflows.items()
+            ]
+            print(json.dumps(workflows_data, indent=2))
+            return
+
+        # Standard output
         print("\n🔄 Available Workflows\n")
 
         for name, agents in workflows.items():
@@ -113,79 +130,7 @@ def cmd_agent_info(args):
         sys.exit(1)
 
 
-def cmd_recommend(args):
-    """Recommend agents for a task using semantic similarity"""
-    try:
-        # Read task
-        task = args.task
-        if args.task_file:
-            with open(args.task_file, 'r') as f:
-                task = f.read()
-        elif not task and not sys.stdin.isatty():
-            task = sys.stdin.read()
-
-        if not task:
-            print("❌ Error: Task description required", file=sys.stderr)
-            print("   Provide with --task, --task-file, or via stdin")
-            sys.exit(1)
-
-        orchestrator = AgentOrchestrator(config_path=args.config)
-
-        print(f"\n🔍 Analyzing task (semantic matching)...\n")
-
-        # Get recommendations
-        recommendations = orchestrator.recommend_agents(
-            task,
-            top_k=args.top_k,
-            min_confidence=args.min_confidence
-        )
-
-        if not recommendations:
-            print("❌ No agents match this task with sufficient confidence")
-            print(f"   Try lowering --min-confidence (current: {args.min_confidence})")
-            sys.exit(1)
-
-        # Display recommendations
-        print(f"📊 Top {len(recommendations)} Agent Recommendations:\n")
-        for i, rec in enumerate(recommendations, 1):
-            confidence_pct = rec['confidence'] * 100
-            bar_length = int(confidence_pct / 5)  # 0-20 chars
-            bar = "█" * bar_length + "░" * (20 - bar_length)
-
-            print(f"{i}. {rec['agent']}")
-            print(f"   Confidence: {bar} {confidence_pct:.1f}%")
-            print(f"   Reasoning: {rec['reasoning']}")
-            print(f"   Domains: {', '.join(rec['domains'])}")
-            print()
-
-        # Explain top choice if requested
-        if args.explain and recommendations:
-            top_agent = recommendations[0]['agent']
-            print(f"\n💡 Detailed Explanation for '{top_agent}':\n")
-            explanation = orchestrator.explain_agent_selection(task, top_agent)
-            print(f"Selected: {'Yes' if explanation['selected'] else 'No'}")
-            print(f"Rank: {explanation.get('rank', 'N/A')}")
-            print(f"Confidence: {explanation.get('confidence', 0):.3f}")
-            print(f"Reasoning: {explanation.get('reasoning', 'N/A')}")
-
-            if 'all_candidates' in explanation:
-                print(f"\nAll Candidates:")
-                for candidate in explanation['all_candidates']:
-                    print(f"  • {candidate['agent']}: {candidate['confidence']:.3f}")
-
-        # JSON output if requested
-        if args.json:
-            import json
-            print("\n" + json.dumps(recommendations, indent=2))
-
-    except ImportError as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
-        print("\n💡 To use semantic agent selection, install sentence-transformers:")
-        print("   pip install sentence-transformers")
-        sys.exit(1)
-    except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
-        sys.exit(1)
+# NOTE: cmd_recommend is defined later in the file (line ~1114) with AgentRouter implementation
 
 
 def cmd_run_agent(args):
@@ -1116,12 +1061,24 @@ def cmd_recommend(args):
     try:
         from .agent_router import get_agent_router
 
+        # Read task from --task, --task-file, or stdin
+        task = args.task
+        if args.task_file:
+            with open(args.task_file, 'r') as f:
+                task = f.read()
+        elif not task and not sys.stdin.isatty():
+            task = sys.stdin.read()
+
+        if not task:
+            print("❌ Error: Task description required", file=sys.stderr)
+            print("   Provide with --task, --task-file, or via stdin")
+            sys.exit(1)
+
         router = get_agent_router(include_marketplace=args.include_marketplace)
 
-        print(f"\n🤖 Analyzing task: \"{args.task}\"\n")
-
+        # Get recommendations
         matches = router.recommend_agents(
-            task=args.task,
+            task=task,
             top_k=args.top_k,
             min_confidence=args.min_confidence
         )
@@ -1130,6 +1087,27 @@ def cmd_recommend(args):
             print("No suitable agents found for this task")
             return
 
+        # JSON output if requested
+        if args.json:
+            import json
+            matches_data = [
+                {
+                    "agent_name": m.agent_name,
+                    "agent_id": m.agent_id,
+                    "confidence": m.confidence,
+                    "description": m.description,
+                    "reason": m.reason,
+                    "source": m.source,
+                    "installed": m.installed,
+                    "plugin_id": getattr(m, 'plugin_id', None)
+                }
+                for m in matches
+            ]
+            print(json.dumps(matches_data, indent=2))
+            return
+
+        # Standard output
+        print(f"\n🤖 Analyzing task: \"{task[:100]}{'...' if len(task) > 100 else ''}\"\n")
         print(f"🎯 Agent Recommendations (Top {len(matches)}):\n")
         print("=" * 80)
 
