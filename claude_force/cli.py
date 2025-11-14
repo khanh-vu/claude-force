@@ -1271,6 +1271,85 @@ def cmd_contribute_prepare(args):
         sys.exit(1)
 
 
+def cmd_compose(args):
+    """Compose workflow from high-level goal"""
+    try:
+        from .workflow_composer import get_workflow_composer
+        import json
+
+        composer = get_workflow_composer(include_marketplace=not args.no_marketplace)
+
+        print(f"\n🎯 Analyzing goal: \"{args.goal}\"\n")
+        print("=" * 80)
+
+        # Compose workflow
+        workflow = composer.compose_workflow(
+            goal=args.goal,
+            max_agents=args.max_agents,
+            prefer_builtin=args.prefer_builtin
+        )
+
+        # Show workflow summary
+        print(f"\n✨ Workflow: {workflow.name}\n")
+        print(f"Description: {workflow.description}")
+        print(f"\nAgents: {workflow.agents_count} ({workflow.builtin_count} built-in, {workflow.marketplace_count} marketplace)")
+        print(f"Estimated Duration: {workflow.total_estimated_duration_min}-{workflow.total_estimated_duration_min + 30} minutes")
+        print(f"Estimated Cost: ${workflow.total_estimated_cost:.2f}-${workflow.total_estimated_cost * 1.5:.2f}")
+
+        # Show workflow steps
+        print(f"\n📋 Workflow Steps:")
+        print("=" * 80)
+
+        for step in workflow.steps:
+            # Status indicator
+            if step.agent.source == "builtin":
+                status = "✅"
+            elif step.agent.installed:
+                status = "✅"
+            else:
+                status = "⚠️ "
+
+            conf_percent = int(step.agent.confidence * 100)
+
+            print(f"\n{step.step_number}. {step.step_type.upper()} - {step.description}")
+            print(f"   Agent: {status} {step.agent.agent_name} ({conf_percent}% match)")
+            print(f"   Duration: ~{step.estimated_duration_min} min | Cost: ~${step.estimated_cost:.2f}")
+
+        # Show installation requirements
+        if workflow.requires_installation:
+            print(f"\n⚠️  Installation Required:")
+            print("=" * 80)
+            print(f"\nThe following marketplace agents need to be installed:")
+            for plugin_id in workflow.installation_needed:
+                print(f"   • {plugin_id}")
+            print(f"\n💡 Install: claude-force marketplace install <plugin-id>")
+
+        # Save workflow if requested
+        if args.save:
+            workflow_file = composer.save_workflow(workflow, output_dir=Path(args.output_dir))
+            print(f"\n💾 Workflow saved to: {workflow_file}")
+
+        # Show next steps
+        print(f"\n💡 Next Steps:")
+        print("=" * 80)
+        if workflow.requires_installation:
+            print("\n1. Install required marketplace agents (see above)")
+            print(f"2. Run workflow: claude-force run workflow {workflow.name}")
+        else:
+            print(f"\n1. Run workflow: claude-force run workflow {workflow.name}")
+
+        # Output JSON if requested
+        if args.json:
+            print("\n" + json.dumps(workflow.to_dict(), indent=2))
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -1517,6 +1596,18 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     prepare_parser.add_argument("--skip-validation", action="store_true", help="Skip validation checks")
     prepare_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     prepare_parser.set_defaults(func=cmd_contribute_prepare)
+
+    # Workflow Composer commands
+    compose_parser = subparsers.add_parser("compose", help="Compose workflow from high-level goal")
+    compose_parser.add_argument("--goal", "-g", required=True, help="High-level goal description")
+    compose_parser.add_argument("--max-agents", type=int, default=10, help="Maximum number of agents (default: 10)")
+    compose_parser.add_argument("--prefer-builtin", action="store_true", help="Prefer builtin agents over marketplace")
+    compose_parser.add_argument("--no-marketplace", action="store_true", help="Exclude marketplace agents")
+    compose_parser.add_argument("--save", action="store_true", help="Save workflow to file")
+    compose_parser.add_argument("--output-dir", default=".claude/workflows", help="Output directory for saved workflow")
+    compose_parser.add_argument("--json", action="store_true", help="Output workflow as JSON")
+    compose_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    compose_parser.set_defaults(func=cmd_compose)
 
     # Parse arguments
     args = parser.parse_args()
