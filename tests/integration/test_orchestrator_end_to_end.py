@@ -344,7 +344,7 @@ class TestPerformanceTrackingIntegration(unittest.TestCase):
             tracker.record_execution(
                 agent_name="code-reviewer",
                 task=f"Review task {i}",
-                success=i % 8 != 0,  # 1 failure
+                success=i % 8 != 0,  # 2 failures (i=0 and i=8)
                 execution_time_ms=1000 + i * 100,
                 model="claude-3-5-sonnet-20241022",
                 input_tokens=100 + i * 10,
@@ -352,14 +352,14 @@ class TestPerformanceTrackingIntegration(unittest.TestCase):
             )
 
         # Get analytics
-        analytics = tracker.get_analytics()
+        analytics = tracker.get_summary()
 
         # Verify analytics structure
         self.assertIn("total_executions", analytics)
         self.assertEqual(analytics["total_executions"], 10)
 
         self.assertIn("success_rate", analytics)
-        self.assertAlmostEqual(analytics["success_rate"], 0.9, places=2)
+        self.assertAlmostEqual(analytics["success_rate"], 0.8, places=2)  # 8 successes out of 10
 
         self.assertIn("total_cost", analytics)
         self.assertGreater(analytics["total_cost"], 0)
@@ -390,7 +390,7 @@ class TestPerformanceTrackingIntegration(unittest.TestCase):
         self.assertEqual(len(agent_stats), 3)
         for agent in agents:
             self.assertIn(agent, agent_stats)
-            self.assertEqual(agent_stats[agent]["execution_count"], 5)
+            self.assertEqual(agent_stats[agent]["executions"], 5)
 
 
 class TestSemanticSelectorIntegration(unittest.TestCase):
@@ -460,16 +460,15 @@ class TestSemanticSelectorIntegration(unittest.TestCase):
 
         try:
             selector = SemanticAgentSelector(config_path=str(config_path))
+            # Test case 1: Security-related task
+            matches = selector.select_agents(
+                task="Analyze this code for SQL injection vulnerabilities",
+                top_k=2
+            )
         except ImportError:
             # sentence-transformers not installed, skip test
             self.skipTest("sentence-transformers not installed")
             return
-
-        # Test case 1: Security-related task
-        matches = selector.recommend_agents(
-            task="Analyze this code for SQL injection vulnerabilities",
-            top_k=2
-        )
 
         self.assertGreater(len(matches), 0)
         # Should recommend security-specialist or code-reviewer
@@ -478,7 +477,7 @@ class TestSemanticSelectorIntegration(unittest.TestCase):
         self.assertGreater(top_match.confidence, 0.5)
 
         # Test case 2: Infrastructure task
-        matches = selector.recommend_agents(
+        matches = selector.select_agents(
             task="Set up Kubernetes cluster with auto-scaling",
             top_k=2
         )
@@ -488,7 +487,7 @@ class TestSemanticSelectorIntegration(unittest.TestCase):
         self.assertEqual(top_match.agent_name, "devops-engineer")
 
         # Test case 3: Backend development task
-        matches = selector.recommend_agents(
+        matches = selector.select_agents(
             task="Design REST API for user management",
             top_k=2
         )
@@ -503,15 +502,14 @@ class TestSemanticSelectorIntegration(unittest.TestCase):
 
         try:
             selector = SemanticAgentSelector(config_path=str(config_path))
+            # Complex task requiring multiple agents
+            matches = selector.select_agents(
+                task="Build secure authentication API with deployment pipeline",
+                top_k=3
+            )
         except ImportError:
             self.skipTest("sentence-transformers not installed")
             return
-
-        # Complex task requiring multiple agents
-        matches = selector.recommend_agents(
-            task="Build secure authentication API with deployment pipeline",
-            top_k=3
-        )
 
         self.assertGreaterEqual(len(matches), 2)
 
@@ -529,15 +527,14 @@ class TestSemanticSelectorIntegration(unittest.TestCase):
 
         try:
             selector = SemanticAgentSelector(config_path=str(config_path))
+            # Very specific task - should have high confidence
+            matches = selector.select_agents(
+                task="Review code for security vulnerabilities",
+                top_k=4
+            )
         except ImportError:
             self.skipTest("sentence-transformers not installed")
             return
-
-        # Very specific task - should have high confidence
-        matches = selector.recommend_agents(
-            task="Review code for security vulnerabilities",
-            top_k=4
-        )
 
         # Top match should have higher confidence than lower matches
         if len(matches) > 1:
@@ -612,7 +609,7 @@ class TestCompleteIntegrationWorkflow(unittest.TestCase):
         # Step 1: Semantic agent selection (if available)
         try:
             selector = SemanticAgentSelector(config_path=str(config_path))
-            matches = selector.recommend_agents(
+            matches = selector.select_agents(
                 task="Review authentication code for security issues",
                 top_k=1
             )
@@ -638,7 +635,7 @@ class TestCompleteIntegrationWorkflow(unittest.TestCase):
 
         # Step 4: Verify tracking
         if orchestrator.tracker:
-            analytics = orchestrator.tracker.get_analytics()
+            analytics = orchestrator.tracker.get_summary()
             self.assertGreater(analytics["total_executions"], 0)
 
 
