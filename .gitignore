@@ -28,6 +28,7 @@ Thumbs.db
 
 # Test outputs
 test_results.txt
+exported/
 
 # Temporary files
 *.tmp
