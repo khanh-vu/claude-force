@@ -1045,6 +1045,127 @@ def cmd_gallery_popular(args):
         sys.exit(1)
 
 
+def cmd_recommend(args):
+    """Recommend agents for a task using intelligent routing"""
+    try:
+        from .agent_router import get_agent_router
+
+        router = get_agent_router(include_marketplace=args.include_marketplace)
+
+        print(f"\n🤖 Analyzing task: \"{args.task}\"\n")
+
+        matches = router.recommend_agents(
+            task=args.task,
+            top_k=args.top_k,
+            min_confidence=args.min_confidence
+        )
+
+        if not matches:
+            print("No suitable agents found for this task")
+            return
+
+        print(f"🎯 Agent Recommendations (Top {len(matches)}):\n")
+        print("=" * 80)
+
+        for i, match in enumerate(matches, 1):
+            # Confidence visualization
+            conf_percent = int(match.confidence * 100)
+            conf_bar = "█" * (conf_percent // 10) + "░" * (10 - conf_percent // 10)
+
+            # Status indicator
+            if match.source == "builtin":
+                status = "✅ Built-in"
+            elif match.installed:
+                status = "✅ Installed"
+            else:
+                status = "📦 Available (not installed)"
+
+            print(f"\n{i}. {match.agent_name} - {conf_percent}% match")
+            print(f"   Confidence: [{conf_bar}]")
+            print(f"   Status: {status}")
+            print(f"   {match.description}")
+            print(f"   Reason: {match.reason}")
+
+            if match.source == "marketplace" and not match.installed:
+                print(f"   💡 Install: claude-force marketplace install {match.plugin_id}")
+
+        print("\n" + "=" * 80)
+
+        # Show installation plan if marketplace agents
+        if args.include_marketplace:
+            plan = router.get_installation_plan(matches)
+            if plan["requires_installation"]:
+                print(f"\n📦 Installation Required:")
+                print(f"   {len(plan['to_install'])} marketplace agent(s) need installation")
+                print(f"   {plan['ready_to_use']} agent(s) ready to use")
+
+        # Show next steps
+        print(f"\n💡 Next Steps:")
+        if matches:
+            first_match = matches[0]
+            if first_match.source == "builtin" or first_match.installed:
+                print(f"   claude-force run agent {first_match.agent_id} --task \"Your task\"")
+            else:
+                print(f"   claude-force marketplace install {first_match.plugin_id}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_analyze_task(args):
+    """Analyze task complexity and requirements"""
+    try:
+        from .agent_router import get_agent_router
+
+        router = get_agent_router(include_marketplace=args.include_marketplace)
+
+        print(f"\n📊 Task Analysis\n")
+        print("=" * 80)
+        print(f"\nTask: {args.task}")
+        print()
+
+        analysis = router.analyze_task_complexity(args.task)
+
+        # Complexity
+        complexity_emoji = {
+            "simple": "🟢",
+            "medium": "🟡",
+            "complex": "🔴"
+        }
+        print(f"Complexity: {complexity_emoji.get(analysis['complexity'], '⚪')} {analysis['complexity'].upper()}")
+        print(f"Task Length: {analysis['task_length']} words")
+        print(f"Estimated Agents: {analysis['estimated_agents']}")
+        print(f"Multiple Agents: {'Yes' if analysis['requires_multiple_agents'] else 'No'}")
+
+        # Categories
+        if analysis['categories']:
+            print(f"\nCategories:")
+            for category in analysis['categories']:
+                print(f"   • {category}")
+
+        # Recommendations
+        if analysis['recommendations']:
+            print(f"\n🤖 Recommended Agents:")
+            for i, match in enumerate(analysis['recommendations'], 1):
+                conf_percent = int(match.confidence * 100)
+                status = "✅" if match.source == "builtin" or match.installed else "📦"
+                print(f"   {i}. {status} {match.agent_name} ({conf_percent}% match)")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 Run: claude-force recommend --task \"Your task\" for detailed recommendations")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -1262,6 +1383,14 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     popular_parser = gallery_subparsers.add_parser("popular", help="Show popular templates")
     popular_parser.add_argument("--top-k", type=int, default=5, help="Number of templates to show (default: 5)")
     popular_parser.set_defaults(func=cmd_gallery_popular)
+
+    # Task Complexity Analysis command
+    analyze_parser = subparsers.add_parser("analyze-task", help="Analyze task complexity")
+    analyze_parser.add_argument("--task", "-t", required=True, help="Task description")
+    analyze_parser.add_argument("--include-marketplace", action="store_true", default=True, help="Include marketplace agents")
+    analyze_parser.add_argument("--no-marketplace", dest="include_marketplace", action="store_false", help="Exclude marketplace agents")
+    analyze_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    analyze_parser.set_defaults(func=cmd_analyze_task)
 
     # Parse arguments
     args = parser.parse_args()
