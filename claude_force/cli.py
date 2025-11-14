@@ -1350,6 +1350,108 @@ def cmd_compose(args):
         sys.exit(1)
 
 
+def cmd_analyze_compare(args):
+    """Compare agent performance"""
+    try:
+        from .analytics import get_analytics_manager
+
+        manager = get_analytics_manager()
+
+        print(f"\n📊 Comparing Agent Performance\n")
+        print("=" * 80)
+        print(f"\nTask: {args.task}")
+        print(f"Agents: {', '.join(args.agents)}\n")
+
+        # Run comparison
+        report = manager.compare_agents(
+            task=args.task,
+            agents=args.agents,
+            simulate=True  # Using simulation for demo
+        )
+
+        # Display results
+        print(f"\n📋 Comparison Results")
+        print("=" * 80)
+
+        for i, result in enumerate(report.results, 1):
+            is_winner = result.agent_id == report.winner
+
+            print(f"\n{i}. {result.agent_name} ({result.source})")
+            if is_winner:
+                print("   🏆 WINNER - Best quality-to-cost ratio")
+
+            print(f"   Duration: {result.duration_seconds:.1f}s")
+            print(f"   Tokens: {result.tokens_used:,}")
+            print(f"   Cost: ${result.cost_usd:.4f}")
+            print(f"   Quality: {result.quality_score:.1f}/10")
+            print(f"   Model: {result.model_used}")
+            print(f"   Suitability: {result.task_suitability.upper()}")
+
+            if result.strengths:
+                print(f"\n   Strengths:")
+                for strength in result.strengths:
+                    print(f"     ✓ {strength}")
+
+            if result.weaknesses:
+                print(f"\n   Weaknesses:")
+                for weakness in result.weaknesses:
+                    print(f"     ✗ {weakness}")
+
+        # Show recommendation
+        print(f"\n\n💡 Recommendation")
+        print("=" * 80)
+        print(f"\n{report.recommendation}")
+
+        # Output JSON if requested
+        if args.json:
+            import json
+            print("\n" + json.dumps(report.to_dict(), indent=2))
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_analyze_recommend(args):
+    """Recommend agent based on task and priority"""
+    try:
+        from .analytics import get_analytics_manager
+
+        manager = get_analytics_manager()
+
+        print(f"\n🎯 Agent Recommendation\n")
+        print("=" * 80)
+        print(f"\nTask: {args.task}")
+        print(f"Priority: {args.priority.upper()}\n")
+
+        # Get recommendation
+        recommendation = manager.recommend_agent_for_task(
+            task=args.task,
+            priority=args.priority
+        )
+
+        if not recommendation.get("recommendation"):
+            print("❌ No suitable agents found for this task")
+            return
+
+        print(f"Recommended Agent: {recommendation['agent_name']}")
+        print(f"Confidence: {int(recommendation['confidence'] * 100)}%")
+        print(f"\n{recommendation['guidance']}")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 Next: claude-force run agent {recommendation['recommendation']} --task \"Your task\"")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -1608,6 +1710,25 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     compose_parser.add_argument("--json", action="store_true", help="Output workflow as JSON")
     compose_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     compose_parser.set_defaults(func=cmd_compose)
+
+    # Analytics commands
+    analyze_parser_main = subparsers.add_parser("analyze", help="Analytics and agent comparison")
+    analyze_subparsers = analyze_parser_main.add_subparsers(dest="analyze_command")
+
+    # Analyze compare
+    compare_parser = analyze_subparsers.add_parser("compare", help="Compare agent performance")
+    compare_parser.add_argument("--task", "-t", required=True, help="Task description")
+    compare_parser.add_argument("--agents", nargs="+", required=True, help="Agents to compare")
+    compare_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    compare_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    compare_parser.set_defaults(func=cmd_analyze_compare)
+
+    # Analyze recommend
+    recommend_parser_analytics = analyze_subparsers.add_parser("recommend", help="Recommend agent based on priority")
+    recommend_parser_analytics.add_argument("--task", "-t", required=True, help="Task description")
+    recommend_parser_analytics.add_argument("--priority", choices=["speed", "cost", "quality", "balanced"], default="balanced", help="Optimization priority")
+    recommend_parser_analytics.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    recommend_parser_analytics.set_defaults(func=cmd_analyze_recommend)
 
     # Parse arguments
     args = parser.parse_args()
