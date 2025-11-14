@@ -69,10 +69,7 @@ class AgentPortingTool:
         self.contracts_dir = Path(".claude/contracts")
 
     def import_from_wshobson(
-        self,
-        agent_file: Path,
-        generate_contract: bool = True,
-        target_name: Optional[str] = None
+        self, agent_file: Path, generate_contract: bool = True, target_name: Optional[str] = None
     ) -> Dict[str, any]:
         """
         Import agent from wshobson/agents markdown format.
@@ -91,11 +88,7 @@ class AgentPortingTool:
         """
         # Validate input path to prevent path traversal attacks
         try:
-            validated_path = validate_path(
-                agent_file,
-                must_exist=True,
-                allow_symlinks=False
-            )
+            validated_path = validate_path(agent_file, must_exist=True, allow_symlinks=False)
         except PathValidationError as e:
             logger.error(f"Path validation failed for {agent_file}: {e}")
             raise
@@ -114,10 +107,7 @@ class AgentPortingTool:
             # Validate that the agent directory is within agents_dir (prevent path traversal)
             agent_md_path = self.agents_dir / metadata.name / "AGENT.md"
             validated_agent_path = validate_path(
-                agent_md_path,
-                base_dir=self.agents_dir,
-                must_exist=False,
-                allow_symlinks=False
+                agent_md_path, base_dir=self.agents_dir, must_exist=False, allow_symlinks=False
             )
             agent_dir = validated_agent_path.parent
         except PathValidationError as e:
@@ -141,14 +131,11 @@ class AgentPortingTool:
             "name": metadata.name,
             "agent_path": str(agent_md),
             "contract_path": str(contract_path) if contract_path else None,
-            "metadata": metadata
+            "metadata": metadata,
         }
 
     def export_to_wshobson(
-        self,
-        agent_name: str,
-        output_dir: Path,
-        include_metadata: bool = True
+        self, agent_name: str, output_dir: Path, include_metadata: bool = True
     ) -> Path:
         """
         Export claude-force agent to wshobson markdown format.
@@ -204,28 +191,28 @@ class AgentPortingTool:
         agent_name = agent_file.stem
 
         # Try to extract from markdown title
-        title_match = re.search(r'^#\s+(.+?)(?:\n|$)', content, re.MULTILINE)
+        title_match = re.search(r"^#\s+(.+?)(?:\n|$)", content, re.MULTILINE)
         if title_match:
             agent_name = self._slugify(title_match.group(1))
 
         # Extract description (first paragraph after title)
         description = "Imported agent from wshobson/agents"
-        desc_match = re.search(r'^#\s+.+?\n\n(.+?)(?:\n\n|$)', content, re.DOTALL)
+        desc_match = re.search(r"^#\s+.+?\n\n(.+?)(?:\n\n|$)", content, re.DOTALL)
         if desc_match:
             description = desc_match.group(1).strip()
             # Limit to first sentence or 200 chars
-            description = description.split('.')[0][:200]
+            description = description.split(".")[0][:200]
 
         # Extract expertise areas
         expertise = []
         expertise_section = re.search(
-            r'(?:##\s+Expertise|##\s+Capabilities|##\s+Skills)(.+?)(?:##|$)',
+            r"(?:##\s+Expertise|##\s+Capabilities|##\s+Skills)(.+?)(?:##|$)",
             content,
-            re.DOTALL | re.IGNORECASE
+            re.DOTALL | re.IGNORECASE,
         )
         if expertise_section:
             # Extract bullet points
-            bullets = re.findall(r'[-*]\s+(.+)', expertise_section.group(1))
+            bullets = re.findall(r"[-*]\s+(.+)", expertise_section.group(1))
             expertise = [b.strip() for b in bullets]
 
         return AgentMetadata(
@@ -233,7 +220,7 @@ class AgentPortingTool:
             description=description,
             content=content,
             expertise=expertise,
-            source="wshobson"
+            source="wshobson",
         )
 
     def _generate_contract(self, metadata: AgentMetadata) -> Path:
@@ -267,24 +254,27 @@ class AgentPortingTool:
         # Default inputs for imported agents
         inputs = [
             "task: Clear description of the task to be performed",
-            "context: Optional context or background information"
+            "context: Optional context or background information",
         ]
 
         # Default outputs
         outputs = [
             "analysis: Detailed analysis of the task",
             "recommendations: Actionable recommendations",
-            "implementation: Code or configuration if applicable"
+            "implementation: Code or configuration if applicable",
         ]
 
         # Infer constraints from expertise
         constraints = [
             "Follow industry best practices",
             "Provide clear explanations",
-            "Include examples where helpful"
+            "Include examples where helpful",
         ]
 
-        if "security" in metadata.description.lower() or "security" in str(metadata.expertise).lower():
+        if (
+            "security" in metadata.description.lower()
+            or "security" in str(metadata.expertise).lower()
+        ):
             constraints.append("Address security considerations")
 
         if "performance" in metadata.description.lower():
@@ -294,14 +284,11 @@ class AgentPortingTool:
         quality_metrics = [
             "Completeness: All aspects of task addressed",
             "Clarity: Clear and understandable output",
-            "Actionability: Recommendations are specific and actionable"
+            "Actionability: Recommendations are specific and actionable",
         ]
 
         return ContractMetadata(
-            inputs=inputs,
-            outputs=outputs,
-            constraints=constraints,
-            quality_metrics=quality_metrics
+            inputs=inputs, outputs=outputs, constraints=constraints, quality_metrics=quality_metrics
         )
 
     def _format_contract(self, agent_name: str, contract: ContractMetadata) -> str:
@@ -360,31 +347,18 @@ Outputs from this agent should be validated against:
         - Governance details
         """
         # Remove contract sections
-        content = re.sub(
-            r'##\s+Contract.+?(?=##|$)',
-            '',
-            content,
-            flags=re.DOTALL | re.IGNORECASE
-        )
+        content = re.sub(r"##\s+Contract.+?(?=##|$)", "", content, flags=re.DOTALL | re.IGNORECASE)
 
         # Remove governance sections
         content = re.sub(
-            r'##\s+Governance.+?(?=##|$)',
-            '',
-            content,
-            flags=re.DOTALL | re.IGNORECASE
+            r"##\s+Governance.+?(?=##|$)", "", content, flags=re.DOTALL | re.IGNORECASE
         )
 
         # Remove MCP references
-        content = re.sub(
-            r'##\s+MCP.+?(?=##|$)',
-            '',
-            content,
-            flags=re.DOTALL | re.IGNORECASE
-        )
+        content = re.sub(r"##\s+MCP.+?(?=##|$)", "", content, flags=re.DOTALL | re.IGNORECASE)
 
         # Clean up extra whitespace
-        content = re.sub(r'\n{3,}', '\n\n', content)
+        content = re.sub(r"\n{3,}", "\n\n", content)
 
         return content.strip()
 
@@ -403,17 +377,14 @@ Outputs from this agent should be validated against:
     def _slugify(self, text: str) -> str:
         """Convert text to slug format."""
         # Remove special characters
-        text = re.sub(r'[^\w\s-]', '', text.lower())
+        text = re.sub(r"[^\w\s-]", "", text.lower())
         # Replace spaces with hyphens
-        text = re.sub(r'[\s_]+', '-', text)
+        text = re.sub(r"[\s_]+", "-", text)
         # Remove leading/trailing hyphens
-        return text.strip('-')
+        return text.strip("-")
 
     def bulk_import(
-        self,
-        source_dir: Path,
-        pattern: str = "*.md",
-        generate_contracts: bool = True
+        self, source_dir: Path, pattern: str = "*.md", generate_contracts: bool = True
     ) -> Dict[str, any]:
         """
         Import multiple agents from a directory.
@@ -430,28 +401,20 @@ Outputs from this agent should be validated against:
         if not source_dir.exists():
             raise FileNotFoundError(f"Source directory not found: {source_dir}")
 
-        results = {
-            "imported": [],
-            "failed": [],
-            "total": 0
-        }
+        results = {"imported": [], "failed": [], "total": 0}
 
         for agent_file in source_dir.glob(pattern):
             results["total"] += 1
 
             try:
                 result = self.import_from_wshobson(
-                    agent_file=agent_file,
-                    generate_contract=generate_contracts
+                    agent_file=agent_file, generate_contract=generate_contracts
                 )
                 results["imported"].append(result)
 
             except Exception as e:
                 logger.error(f"Failed to import {agent_file}: {e}")
-                results["failed"].append({
-                    "file": str(agent_file),
-                    "error": str(e)
-                })
+                results["failed"].append({"file": str(agent_file), "error": str(e)})
 
         logger.info(
             f"Bulk import complete: {len(results['imported'])}/{results['total']} successful"
@@ -460,10 +423,7 @@ Outputs from this agent should be validated against:
         return results
 
     def bulk_export(
-        self,
-        agent_names: List[str],
-        output_dir: Path,
-        include_metadata: bool = True
+        self, agent_names: List[str], output_dir: Path, include_metadata: bool = True
     ) -> Dict[str, any]:
         """
         Export multiple agents to wshobson format.
@@ -476,30 +436,18 @@ Outputs from this agent should be validated against:
         Returns:
             Dict with export results
         """
-        results = {
-            "exported": [],
-            "failed": [],
-            "total": len(agent_names)
-        }
+        results = {"exported": [], "failed": [], "total": len(agent_names)}
 
         for agent_name in agent_names:
             try:
                 output_file = self.export_to_wshobson(
-                    agent_name=agent_name,
-                    output_dir=output_dir,
-                    include_metadata=include_metadata
+                    agent_name=agent_name, output_dir=output_dir, include_metadata=include_metadata
                 )
-                results["exported"].append({
-                    "name": agent_name,
-                    "path": str(output_file)
-                })
+                results["exported"].append({"name": agent_name, "path": str(output_file)})
 
             except Exception as e:
                 logger.error(f"Failed to export {agent_name}: {e}")
-                results["failed"].append({
-                    "name": agent_name,
-                    "error": str(e)
-                })
+                results["failed"].append({"name": agent_name, "error": str(e)})
 
         logger.info(
             f"Bulk export complete: {len(results['exported'])}/{results['total']} successful"

@@ -45,6 +45,7 @@ from datetime import datetime, timedelta
 @dataclass
 class SessionMemory:
     """A stored agent session."""
+
     session_id: str
     agent_name: str
     task: str
@@ -87,7 +88,8 @@ class AgentMemory:
     def _init_database(self):
         """Create database tables if they don't exist."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS sessions (
                     session_id TEXT PRIMARY KEY,
                     agent_name TEXT NOT NULL,
@@ -103,31 +105,41 @@ class AgentMemory:
                     metadata TEXT NOT NULL,
                     UNIQUE(agent_name, task_hash, timestamp)
                 )
-            """)
+            """
+            )
 
             # Create indices for fast retrieval
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_agent_name
                 ON sessions(agent_name)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_task_hash
                 ON sessions(task_hash)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_timestamp
                 ON sessions(timestamp DESC)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_success
                 ON sessions(success)
-            """)
+            """
+            )
 
             # Create strategies table for tracking successful approaches
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS strategies (
                     strategy_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     agent_name TEXT NOT NULL,
@@ -140,7 +152,8 @@ class AgentMemory:
                     metadata TEXT NOT NULL,
                     UNIQUE(agent_name, task_category, strategy_description)
                 )
-            """)
+            """
+            )
 
             conn.commit()
 
@@ -168,7 +181,7 @@ class AgentMemory:
         model: str = "claude-3-5-sonnet-20241022",
         input_tokens: int = 0,
         output_tokens: int = 0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Store an agent session in memory.
@@ -205,10 +218,19 @@ class AgentMemory:
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
-                        session_id, agent_name, task, task_hash, output,
-                        1 if success else 0, execution_time_ms, model,
-                        input_tokens, output_tokens, timestamp, metadata_json
-                    )
+                        session_id,
+                        agent_name,
+                        task,
+                        task_hash,
+                        output,
+                        1 if success else 0,
+                        execution_time_ms,
+                        model,
+                        input_tokens,
+                        output_tokens,
+                        timestamp,
+                        metadata_json,
+                    ),
                 )
                 conn.commit()
             except sqlite3.IntegrityError:
@@ -224,7 +246,7 @@ class AgentMemory:
         agent_name: Optional[str] = None,
         success_only: bool = True,
         limit: int = 5,
-        days: Optional[int] = None
+        days: Optional[int] = None,
     ) -> List[SessionMemory]:
         """
         Find sessions similar to the given task.
@@ -293,18 +315,13 @@ class AgentMemory:
                     output_tokens=row[9],
                     timestamp=row[10],
                     metadata=metadata,
-                    similarity_score=1.0 if row[3] == task_hash else 0.5
+                    similarity_score=1.0 if row[3] == task_hash else 0.5,
                 )
                 sessions.append(session)
 
         return sessions
 
-    def get_context_for_task(
-        self,
-        task: str,
-        agent_name: str,
-        max_sessions: int = 3
-    ) -> str:
+    def get_context_for_task(self, task: str, agent_name: str, max_sessions: int = 3) -> str:
         """
         Get relevant context from past sessions for a task.
 
@@ -321,7 +338,7 @@ class AgentMemory:
             agent_name=agent_name,
             success_only=True,
             limit=max_sessions,
-            days=90  # Last 90 days
+            days=90,  # Last 90 days
         )
 
         if not similar_sessions:
@@ -331,22 +348,21 @@ class AgentMemory:
             "# Relevant Past Experience",
             "",
             "Here are successful approaches from similar tasks:",
-            ""
+            "",
         ]
 
         for i, session in enumerate(similar_sessions, 1):
-            context_parts.extend([
-                f"## Past Task {i} (Similarity: {session.similarity_score:.0%})",
-                f"**Task**: {session.task[:200]}...",
-                f"**Approach**: {session.output[:400]}...",
-                f"**Result**: ✓ Success in {session.execution_time_ms:.0f}ms",
-                ""
-            ])
+            context_parts.extend(
+                [
+                    f"## Past Task {i} (Similarity: {session.similarity_score:.0%})",
+                    f"**Task**: {session.task[:200]}...",
+                    f"**Approach**: {session.output[:400]}...",
+                    f"**Result**: ✓ Success in {session.execution_time_ms:.0f}ms",
+                    "",
+                ]
+            )
 
-        context_parts.extend([
-            "Use these successful approaches to inform your current task.",
-            ""
-        ])
+        context_parts.extend(["Use these successful approaches to inform your current task.", ""])
 
         return "\n".join(context_parts)
 
@@ -369,7 +385,7 @@ class AgentMemory:
                 FROM sessions
                 WHERE session_id = ?
                 """,
-                (session_id,)
+                (session_id,),
             )
 
             row = cursor.fetchone()
@@ -389,7 +405,7 @@ class AgentMemory:
                 input_tokens=row[8],
                 output_tokens=row[9],
                 timestamp=row[10],
-                metadata=metadata
+                metadata=metadata,
             )
 
     def get_statistics(self, agent_name: Optional[str] = None) -> Dict[str, Any]:
@@ -416,7 +432,7 @@ class AgentMemory:
             return {
                 "total_sessions": row[0] or 0,
                 "success_rate": (row[1] or 0.0) * 100,
-                "avg_execution_time_ms": row[2] or 0.0
+                "avg_execution_time_ms": row[2] or 0.0,
             }
 
     def prune_old_sessions(self, days: int = 90) -> int:
@@ -432,10 +448,7 @@ class AgentMemory:
         cutoff = (datetime.now() - timedelta(days=days)).isoformat()
 
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute(
-                "DELETE FROM sessions WHERE timestamp < ?",
-                (cutoff,)
-            )
+            cursor = conn.execute("DELETE FROM sessions WHERE timestamp < ?", (cutoff,))
             deleted = cursor.rowcount
             conn.commit()
 

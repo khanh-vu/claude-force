@@ -13,13 +13,14 @@ from claude_force.error_helpers import (
     format_api_key_error,
     format_config_not_found_error,
     format_tracking_not_enabled_error,
-    format_missing_dependency_error
+    format_missing_dependency_error,
 )
 
 
 @dataclass
 class AgentResult:
     """Result from an agent execution"""
+
     agent_name: str
     success: bool
     output: str
@@ -40,11 +41,14 @@ class AgentOrchestrator:
         results = orchestrator.run_workflow("full-stack-feature", task="Build auth")
     """
 
-    def __init__(self, config_path: str = ".claude/claude.json",
-                 anthropic_api_key: Optional[str] = None,
-                 enable_tracking: bool = True,
-                 enable_memory: bool = True,
-                 validate_api_key: bool = False):
+    def __init__(
+        self,
+        config_path: str = ".claude/claude.json",
+        anthropic_api_key: Optional[str] = None,
+        enable_tracking: bool = True,
+        enable_memory: bool = True,
+        validate_api_key: bool = False,
+    ):
         """
         Initialize orchestrator with configuration.
 
@@ -85,6 +89,7 @@ class AgentOrchestrator:
 
             try:
                 import anthropic
+
                 self._client = anthropic.Client(api_key=self.api_key)
             except ImportError:
                 raise ImportError(
@@ -98,6 +103,7 @@ class AgentOrchestrator:
         if self._tracker is None and self.enable_tracking:
             try:
                 from claude_force.performance_tracker import PerformanceTracker
+
                 self._tracker = PerformanceTracker()
             except Exception as e:
                 print(f"Warning: Performance tracking disabled: {e}")
@@ -109,6 +115,7 @@ class AgentOrchestrator:
         if self._memory is None and self.enable_memory:
             try:
                 from claude_force.agent_memory import AgentMemory
+
                 memory_path = self.config_path.parent / "sessions.db"
                 self._memory = AgentMemory(db_path=str(memory_path))
             except Exception as e:
@@ -118,12 +125,10 @@ class AgentOrchestrator:
     def _load_config(self) -> Dict:
         """Load claude.json configuration"""
         if not self.config_path.exists():
-            raise FileNotFoundError(
-                format_config_not_found_error(str(self.config_path))
-            )
+            raise FileNotFoundError(format_config_not_found_error(str(self.config_path)))
 
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, "r") as f:
                 config = json.load(f)
             return config
         except json.JSONDecodeError as e:
@@ -131,35 +136,39 @@ class AgentOrchestrator:
 
     def _load_agent_definition(self, agent_name: str) -> str:
         """Load agent definition from markdown file"""
-        agent_config = self.config['agents'].get(agent_name)
+        agent_config = self.config["agents"].get(agent_name)
         if not agent_config:
-            all_agents = list(self.config['agents'].keys())
-            raise ValueError(
-                format_agent_not_found_error(agent_name, all_agents)
-            )
+            all_agents = list(self.config["agents"].keys())
+            raise ValueError(format_agent_not_found_error(agent_name, all_agents))
 
-        agent_file = self.config_path.parent / agent_config['file']
+        agent_file = self.config_path.parent / agent_config["file"]
         if not agent_file.exists():
             raise FileNotFoundError(f"Agent file not found: {agent_file}")
 
-        with open(agent_file, 'r') as f:
+        with open(agent_file, "r") as f:
             return f.read()
 
     def _load_agent_contract(self, agent_name: str) -> str:
         """Load agent contract"""
-        agent_config = self.config['agents'].get(agent_name)
-        if not agent_config or 'contract' not in agent_config:
+        agent_config = self.config["agents"].get(agent_name)
+        if not agent_config or "contract" not in agent_config:
             return ""
 
-        contract_file = self.config_path.parent / agent_config['contract']
+        contract_file = self.config_path.parent / agent_config["contract"]
         if not contract_file.exists():
             return ""
 
-        with open(contract_file, 'r') as f:
+        with open(contract_file, "r") as f:
             return f.read()
 
-    def _build_prompt(self, agent_definition: str, agent_contract: str, task: str,
-                     agent_name: str, use_memory: bool = True) -> str:
+    def _build_prompt(
+        self,
+        agent_definition: str,
+        agent_contract: str,
+        task: str,
+        agent_name: str,
+        use_memory: bool = True,
+    ) -> str:
         """Build complete prompt for agent with optional memory context"""
         prompt_parts = [
             "# Agent Definition",
@@ -168,31 +177,32 @@ class AgentOrchestrator:
         ]
 
         if agent_contract:
-            prompt_parts.extend([
-                "# Agent Contract",
-                agent_contract,
-                "",
-            ])
+            prompt_parts.extend(
+                [
+                    "# Agent Contract",
+                    agent_contract,
+                    "",
+                ]
+            )
 
         # Inject memory context if available
         if use_memory and self.memory:
             try:
                 context = self.memory.get_context_for_task(task, agent_name)
                 if context:
-                    prompt_parts.extend([
-                        context,
-                        ""
-                    ])
+                    prompt_parts.extend([context, ""])
             except Exception:
                 # If memory retrieval fails, continue without it
                 pass
 
-        prompt_parts.extend([
-            "# Task",
-            task,
-            "",
-            "Please execute this task following your agent definition and contract.",
-        ])
+        prompt_parts.extend(
+            [
+                "# Task",
+                task,
+                "",
+                "Please execute this task following your agent definition and contract.",
+            ]
+        )
 
         return "\n".join(prompt_parts)
 
@@ -204,7 +214,7 @@ class AgentOrchestrator:
         max_tokens: int = 4096,
         temperature: float = 1.0,
         workflow_name: Optional[str] = None,
-        workflow_position: Optional[int] = None
+        workflow_position: Optional[int] = None,
     ) -> AgentResult:
         """
         Run a single agent on a task.
@@ -246,16 +256,13 @@ class AgentOrchestrator:
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                messages=[{
-                    "role": "user",
-                    "content": prompt
-                }]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             # Extract text from response
             output = ""
             for block in response.content:
-                if hasattr(block, 'text'):
+                if hasattr(block, "text"):
                     output += block.text
 
             execution_time_ms = (time.time() - start_time) * 1000
@@ -271,7 +278,7 @@ class AgentOrchestrator:
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
                     workflow_name=workflow_name,
-                    workflow_position=workflow_position
+                    workflow_position=workflow_position,
                 )
 
             # Store in memory
@@ -288,8 +295,8 @@ class AgentOrchestrator:
                         output_tokens=response.usage.output_tokens,
                         metadata={
                             "workflow_name": workflow_name,
-                            "workflow_position": workflow_position
-                        }
+                            "workflow_position": workflow_position,
+                        },
                     )
                 except Exception:
                     # Memory storage failures shouldn't break execution
@@ -304,8 +311,8 @@ class AgentOrchestrator:
                     "tokens_used": response.usage.input_tokens + response.usage.output_tokens,
                     "input_tokens": response.usage.input_tokens,
                     "output_tokens": response.usage.output_tokens,
-                    "execution_time_ms": execution_time_ms
-                }
+                    "execution_time_ms": execution_time_ms,
+                },
             )
 
         except Exception as e:
@@ -324,7 +331,7 @@ class AgentOrchestrator:
                     output_tokens=0,
                     error_type=error_type,
                     workflow_name=workflow_name,
-                    workflow_position=workflow_position
+                    workflow_position=workflow_position,
                 )
 
             # Store failed session in memory
@@ -342,8 +349,8 @@ class AgentOrchestrator:
                         metadata={
                             "error_type": error_type,
                             "workflow_name": workflow_name,
-                            "workflow_position": workflow_position
-                        }
+                            "workflow_position": workflow_position,
+                        },
                     )
                 except Exception:
                     # Memory storage failures shouldn't break execution
@@ -354,14 +361,11 @@ class AgentOrchestrator:
                 success=False,
                 output="",
                 metadata={"execution_time_ms": execution_time_ms},
-                errors=[str(e)]
+                errors=[str(e)],
             )
 
     def run_workflow(
-        self,
-        workflow_name: str,
-        task: str,
-        pass_output_to_next: bool = True
+        self, workflow_name: str, task: str, pass_output_to_next: bool = True
     ) -> List[AgentResult]:
         """
         Run a multi-agent workflow.
@@ -382,12 +386,10 @@ class AgentOrchestrator:
             for result in results:
                 print(f"{result.agent_name}: {result.success}")
         """
-        workflow = self.config['workflows'].get(workflow_name)
+        workflow = self.config["workflows"].get(workflow_name)
         if workflow is None:
-            all_workflows = list(self.config['workflows'].keys())
-            raise ValueError(
-                format_workflow_not_found_error(workflow_name, all_workflows)
-            )
+            all_workflows = list(self.config["workflows"].keys())
+            raise ValueError(format_workflow_not_found_error(workflow_name, all_workflows))
 
         results = []
         current_task = task
@@ -396,10 +398,7 @@ class AgentOrchestrator:
             print(f"Running agent {i+1}/{len(workflow)}: {agent_name}...")
 
             result = self.run_agent(
-                agent_name,
-                current_task,
-                workflow_name=workflow_name,
-                workflow_position=i+1
+                agent_name, current_task, workflow_name=workflow_name, workflow_position=i + 1
             )
             results.append(result)
 
@@ -429,35 +428,35 @@ Continue from the previous agent's output. Original task: {task}
     def list_agents(self) -> List[Dict[str, Any]]:
         """List all available agents"""
         agents = []
-        for name, config in self.config['agents'].items():
-            agents.append({
-                "name": name,
-                "file": config.get("file", ""),
-                "domains": config.get("domains", []),
-                "priority": config.get("priority", 3)
-            })
-        return sorted(agents, key=lambda x: x['priority'])
+        for name, config in self.config["agents"].items():
+            agents.append(
+                {
+                    "name": name,
+                    "file": config.get("file", ""),
+                    "domains": config.get("domains", []),
+                    "priority": config.get("priority", 3),
+                }
+            )
+        return sorted(agents, key=lambda x: x["priority"])
 
     def list_workflows(self) -> Dict[str, List[str]]:
         """List all available workflows"""
-        return self.config.get('workflows', {})
+        return self.config.get("workflows", {})
 
     def get_agent_info(self, agent_name: str) -> Dict[str, Any]:
         """Get detailed information about an agent"""
-        if agent_name not in self.config['agents']:
-            all_agents = list(self.config['agents'].keys())
-            raise ValueError(
-                format_agent_not_found_error(agent_name, all_agents)
-            )
+        if agent_name not in self.config["agents"]:
+            all_agents = list(self.config["agents"].keys())
+            raise ValueError(format_agent_not_found_error(agent_name, all_agents))
 
-        agent_config = self.config['agents'][agent_name]
+        agent_config = self.config["agents"][agent_name]
 
         # Try to load agent definition to extract role
         try:
             definition = self._load_agent_definition(agent_name)
             # Extract first few lines as description
-            lines = definition.split('\n')[:10]
-            description = '\n'.join(lines)
+            lines = definition.split("\n")[:10]
+            description = "\n".join(lines)
         except Exception as e:
             logger.warning(f"Could not load description for agent '{agent_name}': {e}")
             description = "No description available"
@@ -468,11 +467,12 @@ Continue from the previous agent's output. Original task: {task}
             "contract": agent_config.get("contract", ""),
             "domains": agent_config.get("domains", []),
             "priority": agent_config.get("priority", 3),
-            "description": description
+            "description": description,
         }
 
-    def recommend_agents(self, task: str, top_k: int = 3,
-                        min_confidence: float = 0.3) -> List[Dict[str, Any]]:
+    def recommend_agents(
+        self, task: str, top_k: int = 3, min_confidence: float = 0.3
+    ) -> List[Dict[str, Any]]:
         """
         Recommend agents for a task using semantic similarity.
 
@@ -503,8 +503,7 @@ Continue from the previous agent's output. Original task: {task}
         except ImportError:
             raise ImportError(
                 format_missing_dependency_error(
-                    "sentence-transformers",
-                    "pip install sentence-transformers"
+                    "sentence-transformers", "pip install sentence-transformers"
                 )
             )
 
@@ -517,7 +516,7 @@ Continue from the previous agent's output. Original task: {task}
                 "confidence": round(match.confidence, 3),
                 "reasoning": match.reasoning,
                 "domains": match.domains,
-                "priority": match.priority
+                "priority": match.priority,
             }
             for match in matches
         ]
@@ -550,8 +549,7 @@ Continue from the previous agent's output. Original task: {task}
         except ImportError:
             raise ImportError(
                 format_missing_dependency_error(
-                    "sentence-transformers",
-                    "pip install sentence-transformers"
+                    "sentence-transformers", "pip install sentence-transformers"
                 )
             )
 

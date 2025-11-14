@@ -17,6 +17,7 @@ from datetime import datetime
 try:
     from sentence_transformers import SentenceTransformer
     import numpy as np
+
     SEMANTIC_AVAILABLE = True
 except ImportError:
     SEMANTIC_AVAILABLE = False
@@ -25,6 +26,7 @@ except ImportError:
 @dataclass
 class ProjectTemplate:
     """Project template definition."""
+
     id: str
     name: str
     description: str
@@ -43,6 +45,7 @@ class ProjectTemplate:
 @dataclass
 class ProjectConfig:
     """Generated project configuration."""
+
     name: str
     description: str
     template_id: str
@@ -65,11 +68,7 @@ class QuickStartOrchestrator:
     - Governance setup
     """
 
-    def __init__(
-        self,
-        templates_path: Optional[str] = None,
-        use_semantic: bool = True
-    ):
+    def __init__(self, templates_path: Optional[str] = None, use_semantic: bool = True):
         """
         Initialize QuickStartOrchestrator.
 
@@ -83,7 +82,7 @@ class QuickStartOrchestrator:
 
         if self.use_semantic:
             try:
-                self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+                self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
                 self._precompute_embeddings()
             except Exception as e:
                 print(f"Warning: Could not load semantic model: {e}")
@@ -97,39 +96,48 @@ class QuickStartOrchestrator:
     def _load_templates(self) -> List[ProjectTemplate]:
         """Load templates from YAML file."""
         try:
-            with open(self.templates_path, 'r') as f:
+            with open(self.templates_path, "r") as f:
                 data = yaml.safe_load(f)
 
             templates = []
             required_fields = [
-                'id', 'name', 'description', 'category', 'difficulty',
-                'estimated_setup_time', 'agents', 'workflows', 'skills',
-                'keywords', 'tech_stack', 'use_cases'
+                "id",
+                "name",
+                "description",
+                "category",
+                "difficulty",
+                "estimated_setup_time",
+                "agents",
+                "workflows",
+                "skills",
+                "keywords",
+                "tech_stack",
+                "use_cases",
             ]
 
-            for idx, template_data in enumerate(data.get('templates', [])):
+            for idx, template_data in enumerate(data.get("templates", [])):
                 # Validate required fields
                 missing_fields = [f for f in required_fields if f not in template_data]
                 if missing_fields:
-                    template_id = template_data.get('id', f'template-{idx}')
+                    template_id = template_data.get("id", f"template-{idx}")
                     raise ValueError(
                         f"Template '{template_id}' is missing required field(s): "
                         f"{', '.join(missing_fields)}"
                     )
 
                 template = ProjectTemplate(
-                    id=template_data['id'],
-                    name=template_data['name'],
-                    description=template_data['description'],
-                    category=template_data['category'],
-                    difficulty=template_data['difficulty'],
-                    estimated_setup_time=template_data['estimated_setup_time'],
-                    agents=template_data['agents'],
-                    workflows=template_data['workflows'],
-                    skills=template_data['skills'],
-                    keywords=template_data['keywords'],
-                    tech_stack=template_data['tech_stack'],
-                    use_cases=template_data['use_cases']
+                    id=template_data["id"],
+                    name=template_data["name"],
+                    description=template_data["description"],
+                    category=template_data["category"],
+                    difficulty=template_data["difficulty"],
+                    estimated_setup_time=template_data["estimated_setup_time"],
+                    agents=template_data["agents"],
+                    workflows=template_data["workflows"],
+                    skills=template_data["skills"],
+                    keywords=template_data["keywords"],
+                    tech_stack=template_data["tech_stack"],
+                    use_cases=template_data["use_cases"],
                 )
                 templates.append(template)
 
@@ -158,10 +166,7 @@ class QuickStartOrchestrator:
             self.template_embeddings[template.id] = embedding
 
     def match_templates(
-        self,
-        description: str,
-        tech_stack: Optional[List[str]] = None,
-        top_k: int = 3
+        self, description: str, tech_stack: Optional[List[str]] = None, top_k: int = 3
     ) -> List[ProjectTemplate]:
         """
         Match templates to project description using semantic similarity.
@@ -180,10 +185,7 @@ class QuickStartOrchestrator:
             return self._keyword_match(description, tech_stack, top_k)
 
     def _semantic_match(
-        self,
-        description: str,
-        tech_stack: Optional[List[str]],
-        top_k: int
+        self, description: str, tech_stack: Optional[List[str]], top_k: int
     ) -> List[ProjectTemplate]:
         """Match templates using semantic similarity."""
         # Encode description
@@ -211,11 +213,7 @@ class QuickStartOrchestrator:
             similarities[template.id] = similarity
 
         # Sort by similarity
-        sorted_templates = sorted(
-            self.templates,
-            key=lambda t: similarities[t.id],
-            reverse=True
-        )
+        sorted_templates = sorted(self.templates, key=lambda t: similarities[t.id], reverse=True)
 
         # Set confidence scores
         for template in sorted_templates[:top_k]:
@@ -224,10 +222,7 @@ class QuickStartOrchestrator:
         return sorted_templates[:top_k]
 
     def _keyword_match(
-        self,
-        description: str,
-        tech_stack: Optional[List[str]],
-        top_k: int
+        self, description: str, tech_stack: Optional[List[str]], top_k: int
     ) -> List[ProjectTemplate]:
         """Match templates using keyword overlap (fallback)."""
         description_lower = description.lower()
@@ -257,11 +252,7 @@ class QuickStartOrchestrator:
             scores[template.id] = min(score / max_score, 1.0)
 
         # Sort by score
-        sorted_templates = sorted(
-            self.templates,
-            key=lambda t: scores[t.id],
-            reverse=True
-        )
+        sorted_templates = sorted(self.templates, key=lambda t: scores[t.id], reverse=True)
 
         # Set confidence scores
         for template in sorted_templates[:top_k]:
@@ -269,11 +260,7 @@ class QuickStartOrchestrator:
 
         return sorted_templates[:top_k]
 
-    def _compute_tech_stack_boost(
-        self,
-        template: ProjectTemplate,
-        tech_stack: List[str]
-    ) -> float:
+    def _compute_tech_stack_boost(self, template: ProjectTemplate, tech_stack: List[str]) -> float:
         """Compute tech stack match boost."""
         if not tech_stack:
             return 0.0
@@ -291,9 +278,7 @@ class QuickStartOrchestrator:
         return matches / total if total > 0 else 0.0
 
     def analyze_project(
-        self,
-        description: str,
-        tech_stack: Optional[List[str]] = None
+        self, description: str, tech_stack: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Analyze project description to extract metadata.
@@ -312,7 +297,7 @@ class QuickStartOrchestrator:
             "tech_stack": tech_stack or [],
             "detected_features": [],
             "complexity": "intermediate",
-            "category": "general"
+            "category": "general",
         }
 
         # Detect features
@@ -350,7 +335,7 @@ class QuickStartOrchestrator:
         template: ProjectTemplate,
         project_name: str,
         description: str,
-        customizations: Optional[Dict[str, Any]] = None
+        customizations: Optional[Dict[str, Any]] = None,
     ) -> ProjectConfig:
         """
         Generate project configuration from template.
@@ -371,16 +356,13 @@ class QuickStartOrchestrator:
             agents=template.agents.copy(),
             workflows=template.workflows.copy(),
             skills=template.skills.copy(),
-            customizations=customizations or {}
+            customizations=customizations or {},
         )
 
         return config
 
     def initialize_project(
-        self,
-        config: ProjectConfig,
-        output_dir: str = ".claude",
-        create_examples: bool = True
+        self, config: ProjectConfig, output_dir: str = ".claude", create_examples: bool = True
     ) -> Dict[str, Any]:
         """
         Initialize .claude/ directory structure.
@@ -402,7 +384,7 @@ class QuickStartOrchestrator:
         claude_json_path = output_path / "claude.json"
         claude_json = self._generate_claude_json(config)
 
-        with open(claude_json_path, 'w') as f:
+        with open(claude_json_path, "w") as f:
             json.dump(claude_json, f, indent=2)
         created_files.append(str(claude_json_path))
 
@@ -410,7 +392,7 @@ class QuickStartOrchestrator:
         task_md_path = output_path / "task.md"
         task_md = self._generate_task_template(config)
 
-        with open(task_md_path, 'w') as f:
+        with open(task_md_path, "w") as f:
             f.write(task_md)
         created_files.append(str(task_md_path))
 
@@ -418,7 +400,7 @@ class QuickStartOrchestrator:
         readme_path = output_path / "README.md"
         readme = self._generate_readme(config)
 
-        with open(readme_path, 'w') as f:
+        with open(readme_path, "w") as f:
             f.write(readme)
         created_files.append(str(readme_path))
 
@@ -426,12 +408,12 @@ class QuickStartOrchestrator:
         scorecard_path = output_path / "scorecard.md"
         scorecard = self._generate_scorecard(config)
 
-        with open(scorecard_path, 'w') as f:
+        with open(scorecard_path, "w") as f:
             f.write(scorecard)
         created_files.append(str(scorecard_path))
 
         # 5. Create directories
-        for directory in ['agents', 'contracts', 'hooks', 'skills', 'tasks', 'metrics']:
+        for directory in ["agents", "contracts", "hooks", "skills", "tasks", "metrics"]:
             dir_path = output_path / directory
             dir_path.mkdir(exist_ok=True)
 
@@ -451,7 +433,7 @@ class QuickStartOrchestrator:
                 else:
                     # Create a basic agent template if no template exists
                     basic_agent = self._generate_basic_agent_template(agent_name, config)
-                    with open(agent_dest, 'w') as f:
+                    with open(agent_dest, "w") as f:
                         f.write(basic_agent)
                     created_files.append(str(agent_dest))
 
@@ -465,7 +447,7 @@ class QuickStartOrchestrator:
                 else:
                     # Create a basic contract template if no template exists
                     basic_contract = self._generate_basic_contract_template(agent_name, config)
-                    with open(contract_dest, 'w') as f:
+                    with open(contract_dest, "w") as f:
                         f.write(basic_contract)
                     created_files.append(str(contract_dest))
 
@@ -475,7 +457,7 @@ class QuickStartOrchestrator:
             example_task_path.parent.mkdir(exist_ok=True)
 
             example_task = self._generate_example_task(config)
-            with open(example_task_path, 'w') as f:
+            with open(example_task_path, "w") as f:
                 f.write(example_task)
             created_files.append(str(example_task_path))
 
@@ -483,7 +465,7 @@ class QuickStartOrchestrator:
             "success": True,
             "config": config,
             "created_files": created_files,
-            "output_dir": str(output_path)
+            "output_dir": str(output_path),
         }
 
     def _generate_claude_json(self, config: ProjectConfig) -> Dict[str, Any]:
@@ -494,32 +476,24 @@ class QuickStartOrchestrator:
             "description": config.description,
             "template": config.template_id,
             "created_at": config.created_at,
-
             "agents": {
-                agent: {
-                    "file": f"agents/{agent}.md",
-                    "contract": f"contracts/{agent}.contract"
-                }
+                agent: {"file": f"agents/{agent}.md", "contract": f"contracts/{agent}.contract"}
                 for agent in config.agents
             },
-
             "workflows": {
                 workflow: config.agents  # Simplified - use all agents
                 for workflow in config.workflows
             },
-
             "governance": {
                 "hooks_enabled": True,
                 "pre_run_required": True,
-                "post_run_validation": True
+                "post_run_validation": True,
             },
-
             "skills_integration": {
                 "enabled": True,
                 "skills_path": "skills/",
-                "available_skills": config.skills
+                "available_skills": config.skills,
             },
-
             "paths": {
                 "task": "task.md",
                 "work": "work.md",
@@ -528,8 +502,8 @@ class QuickStartOrchestrator:
                 "agents": "agents/",
                 "contracts": "contracts/",
                 "hooks": "hooks/",
-                "skills": "skills/"
-            }
+                "skills": "skills/",
+            },
         }
 
     def _generate_task_template(self, config: ProjectConfig) -> str:
@@ -691,7 +665,7 @@ Template: {config.template_id}
 
     def _generate_basic_agent_template(self, agent_name: str, config: ProjectConfig) -> str:
         """Generate a basic agent template when no template file exists."""
-        agent_title = agent_name.replace('-', ' ').title()
+        agent_title = agent_name.replace("-", " ").title()
         return f"""# {agent_title} Agent
 
 ## Role
@@ -756,7 +730,7 @@ Write to `.claude/work.md` with:
 
     def _generate_basic_contract_template(self, agent_name: str, config: ProjectConfig) -> str:
         """Generate a basic contract template when no template file exists."""
-        agent_title = agent_name.replace('-', ' ').title()
+        agent_title = agent_name.replace("-", " ").title()
         return f"""# {agent_title} - Agent Contract
 
 ## Agent Identity
@@ -856,8 +830,7 @@ Changes to this contract require:
 
 
 def get_quick_start_orchestrator(
-    templates_path: Optional[str] = None,
-    use_semantic: bool = True
+    templates_path: Optional[str] = None, use_semantic: bool = True
 ) -> QuickStartOrchestrator:
     """
     Get QuickStartOrchestrator instance.
@@ -869,7 +842,4 @@ def get_quick_start_orchestrator(
     Returns:
         QuickStartOrchestrator instance
     """
-    return QuickStartOrchestrator(
-        templates_path=templates_path,
-        use_semantic=use_semantic
-    )
+    return QuickStartOrchestrator(templates_path=templates_path, use_semantic=use_semantic)

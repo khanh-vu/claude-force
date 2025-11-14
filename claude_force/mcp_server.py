@@ -101,6 +101,7 @@ class RateLimiter:
 @dataclass
 class MCPCapability:
     """MCP capability definition"""
+
     name: str
     type: str  # "agent", "workflow", "skill"
     description: str
@@ -111,6 +112,7 @@ class MCPCapability:
 @dataclass
 class MCPRequest:
     """MCP request structure"""
+
     capability: str
     action: str
     parameters: Dict[str, Any]
@@ -120,6 +122,7 @@ class MCPRequest:
 @dataclass
 class MCPResponse:
     """MCP response structure"""
+
     success: bool
     request_id: Optional[str]
     data: Optional[Any]
@@ -142,7 +145,7 @@ class MCPServer:
         mcp_api_key: Optional[str] = None,
         allowed_origins: Optional[List[str]] = None,
         rate_limit_requests: int = 100,
-        rate_limit_window: int = 3600
+        rate_limit_window: int = 3600,
     ):
         """
         Initialize MCP server
@@ -157,8 +160,7 @@ class MCPServer:
             rate_limit_window: Rate limit window in seconds (default: 3600 = 1 hour)
         """
         self.orchestrator = orchestrator or AgentOrchestrator(
-            config_path=config_path,
-            anthropic_api_key=anthropic_api_key
+            config_path=config_path, anthropic_api_key=anthropic_api_key
         )
         # Generate or use provided MCP API key
         self.mcp_api_key = mcp_api_key or os.getenv("MCP_API_KEY") or self._generate_api_key()
@@ -174,8 +176,7 @@ class MCPServer:
         self.allowed_origins = allowed_origins or ["http://localhost:3000", "http://localhost:8080"]
         # Initialize rate limiter
         self.rate_limiter = RateLimiter(
-            max_requests=rate_limit_requests,
-            window_seconds=rate_limit_window
+            max_requests=rate_limit_requests, window_seconds=rate_limit_window
         )
         self.server_instance = None
         self.server_thread = None
@@ -230,98 +231,108 @@ class MCPServer:
         # Add agents as capabilities
         for agent_name in self.orchestrator.list_agents():
             agent_info = self.orchestrator.get_agent_info(agent_name)
-            capabilities.append(MCPCapability(
-                name=agent_name,
-                type="agent",
-                description=agent_info.get("description", f"Agent: {agent_name}"),
-                parameters={
-                    "task": {
-                        "type": "string",
-                        "required": True,
-                        "description": "Task description for the agent"
+            capabilities.append(
+                MCPCapability(
+                    name=agent_name,
+                    type="agent",
+                    description=agent_info.get("description", f"Agent: {agent_name}"),
+                    parameters={
+                        "task": {
+                            "type": "string",
+                            "required": True,
+                            "description": "Task description for the agent",
+                        },
+                        "model": {
+                            "type": "string",
+                            "required": False,
+                            "default": "claude-3-5-sonnet-20241022",
+                            "description": "Claude model to use",
+                        },
+                        "max_tokens": {
+                            "type": "integer",
+                            "required": False,
+                            "default": 4096,
+                            "description": "Maximum tokens in response",
+                        },
                     },
-                    "model": {
-                        "type": "string",
-                        "required": False,
-                        "default": "claude-3-5-sonnet-20241022",
-                        "description": "Claude model to use"
+                    metadata={
+                        "domains": agent_info.get("domains", []),
+                        "priority": agent_info.get("priority", 5),
                     },
-                    "max_tokens": {
-                        "type": "integer",
-                        "required": False,
-                        "default": 4096,
-                        "description": "Maximum tokens in response"
-                    }
-                },
-                metadata={
-                    "domains": agent_info.get("domains", []),
-                    "priority": agent_info.get("priority", 5)
-                }
-            ))
+                )
+            )
 
         # Add workflows as capabilities
         for workflow_name in self.orchestrator.list_workflows():
-            capabilities.append(MCPCapability(
-                name=workflow_name,
-                type="workflow",
-                description=f"Multi-agent workflow: {workflow_name}",
+            capabilities.append(
+                MCPCapability(
+                    name=workflow_name,
+                    type="workflow",
+                    description=f"Multi-agent workflow: {workflow_name}",
+                    parameters={
+                        "task": {
+                            "type": "string",
+                            "required": True,
+                            "description": "Initial task for the workflow",
+                        },
+                        "model": {
+                            "type": "string",
+                            "required": False,
+                            "default": "claude-3-5-sonnet-20241022",
+                        },
+                    },
+                    metadata={
+                        "agents": self.orchestrator.config.get("workflows", {}).get(
+                            workflow_name, []
+                        )
+                    },
+                )
+            )
+
+        # Add special capabilities
+        capabilities.append(
+            MCPCapability(
+                name="recommend-agents",
+                type="skill",
+                description="Recommend agents using semantic similarity",
                 parameters={
                     "task": {
                         "type": "string",
                         "required": True,
-                        "description": "Initial task for the workflow"
+                        "description": "Task description for recommendation",
                     },
-                    "model": {
-                        "type": "string",
+                    "top_k": {
+                        "type": "integer",
                         "required": False,
-                        "default": "claude-3-5-sonnet-20241022"
+                        "default": 3,
+                        "description": "Number of recommendations",
+                    },
+                    "min_confidence": {
+                        "type": "number",
+                        "required": False,
+                        "default": 0.3,
+                        "description": "Minimum confidence threshold",
+                    },
+                },
+                metadata={"requires": "semantic-selection"},
+            )
+        )
+
+        capabilities.append(
+            MCPCapability(
+                name="performance-summary",
+                type="skill",
+                description="Get performance metrics summary",
+                parameters={
+                    "hours": {
+                        "type": "integer",
+                        "required": False,
+                        "description": "Filter metrics from last N hours",
                     }
                 },
-                metadata={
-                    "agents": self.orchestrator.config.get("workflows", {}).get(workflow_name, [])
-                }
-            ))
-
-        # Add special capabilities
-        capabilities.append(MCPCapability(
-            name="recommend-agents",
-            type="skill",
-            description="Recommend agents using semantic similarity",
-            parameters={
-                "task": {
-                    "type": "string",
-                    "required": True,
-                    "description": "Task description for recommendation"
-                },
-                "top_k": {
-                    "type": "integer",
-                    "required": False,
-                    "default": 3,
-                    "description": "Number of recommendations"
-                },
-                "min_confidence": {
-                    "type": "number",
-                    "required": False,
-                    "default": 0.3,
-                    "description": "Minimum confidence threshold"
-                }
-            },
-            metadata={"requires": "semantic-selection"}
-        ))
-
-        capabilities.append(MCPCapability(
-            name="performance-summary",
-            type="skill",
-            description="Get performance metrics summary",
-            parameters={
-                "hours": {
-                    "type": "integer",
-                    "required": False,
-                    "description": "Filter metrics from last N hours"
-                }
-            },
-            metadata={"requires": "performance-tracking"}
-        ))
+                metadata={"requires": "performance-tracking"},
+            )
+        )
 
         return capabilities
 
@@ -347,21 +358,18 @@ class MCPServer:
                     task=params.get("task", ""),
                     model=params.get("model", "claude-3-5-sonnet-20241022"),
                     max_tokens=params.get("max_tokens", 4096),
-                    temperature=params.get("temperature", 1.0)
+                    temperature=params.get("temperature", 1.0),
                 )
 
                 return MCPResponse(
                     success=result.success,
                     request_id=request.request_id,
-                    data={
-                        "output": result.output,
-                        "metadata": result.metadata
-                    },
+                    data={"output": result.output, "metadata": result.metadata},
                     error=result.errors[0] if result.errors else None,
                     metadata={
                         "agent": capability_name,
-                        "execution_time": result.metadata.get("execution_time_ms", 0)
-                    }
+                        "execution_time": result.metadata.get("execution_time_ms", 0),
+                    },
                 )
 
             # Handle workflow execution
@@ -369,21 +377,18 @@ class MCPServer:
                 result = self.orchestrator.run_workflow(
                     workflow_name=capability_name,
                     initial_task=params.get("task", ""),
-                    model=params.get("model", "claude-3-5-sonnet-20241022")
+                    model=params.get("model", "claude-3-5-sonnet-20241022"),
                 )
 
                 return MCPResponse(
                     success=result.success,
                     request_id=request.request_id,
-                    data={
-                        "output": result.output,
-                        "metadata": result.metadata
-                    },
+                    data={"output": result.output, "metadata": result.metadata},
                     error=result.errors[0] if result.errors else None,
                     metadata={
                         "workflow": capability_name,
-                        "agents_executed": len(result.metadata.get("workflow_steps", []))
-                    }
+                        "agents_executed": len(result.metadata.get("workflow_steps", [])),
+                    },
                 )
 
             # Handle agent recommendation
@@ -391,7 +396,7 @@ class MCPServer:
                 recommendations = self.orchestrator.recommend_agents(
                     task=params.get("task", ""),
                     top_k=params.get("top_k", 3),
-                    min_confidence=params.get("min_confidence", 0.3)
+                    min_confidence=params.get("min_confidence", 0.3),
                 )
 
                 return MCPResponse(
@@ -399,21 +404,19 @@ class MCPServer:
                     request_id=request.request_id,
                     data={"recommendations": recommendations},
                     error=None,
-                    metadata={"count": len(recommendations)}
+                    metadata={"count": len(recommendations)},
                 )
 
             # Handle performance summary
             elif action == "get_performance" or capability_name == "performance-summary":
-                summary = self.orchestrator.get_performance_summary(
-                    hours=params.get("hours")
-                )
+                summary = self.orchestrator.get_performance_summary(hours=params.get("hours"))
 
                 return MCPResponse(
                     success=True,
                     request_id=request.request_id,
                     data=summary,
                     error=None,
-                    metadata={"type": "performance-summary"}
+                    metadata={"type": "performance-summary"},
                 )
 
             else:
@@ -422,17 +425,13 @@ class MCPServer:
                     request_id=request.request_id,
                     data=None,
                     error=f"Unknown action: {action}",
-                    metadata={}
+                    metadata={},
                 )
 
         except Exception as e:
             logger.error(f"Error executing capability: {e}")
             return MCPResponse(
-                success=False,
-                request_id=request.request_id,
-                data=None,
-                error=str(e),
-                metadata={}
+                success=False, request_id=request.request_id, data=None, error=str(e), metadata={}
             )
 
     def start(self, host: str = "0.0.0.0", port: int = 8080, blocking: bool = True):
@@ -457,9 +456,7 @@ class MCPServer:
                 logger.info("MCP Server shutting down...")
                 self.server_instance.shutdown()
         else:
-            self.server_thread = threading.Thread(
-                target=self.server_instance.serve_forever
-            )
+            self.server_thread = threading.Thread(target=self.server_instance.serve_forever)
             self.server_thread.daemon = True
             self.server_thread.start()
             logger.info("MCP Server running in background thread")
@@ -487,22 +484,22 @@ class MCPServer:
             def _send_json_response(self, data: dict, status_code: int = 200):
                 """Send JSON response with security headers"""
                 self.send_response(status_code)
-                self.send_header('Content-Type', 'application/json')
+                self.send_header("Content-Type", "application/json")
 
                 # CORS - use configured allowed origins
-                origin = self.headers.get('Origin')
+                origin = self.headers.get("Origin")
                 allowed_origin = mcp_server._get_allowed_origin(origin)
-                self.send_header('Access-Control-Allow-Origin', allowed_origin)
-                self.send_header('Access-Control-Allow-Credentials', 'true')
+                self.send_header("Access-Control-Allow-Origin", allowed_origin)
+                self.send_header("Access-Control-Allow-Credentials", "true")
 
                 # Security headers
-                self.send_header('X-Content-Type-Options', 'nosniff')
-                self.send_header('X-Frame-Options', 'DENY')
-                self.send_header('Content-Security-Policy', "default-src 'none'; script-src 'none'")
-                self.send_header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.send_header("X-Frame-Options", "DENY")
+                self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'none'")
+                self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 
                 self.end_headers()
-                self.wfile.write(json.dumps(data, indent=2).encode('utf-8'))
+                self.wfile.write(json.dumps(data, indent=2).encode("utf-8"))
 
             def _verify_authentication(self) -> bool:
                 """
@@ -511,8 +508,8 @@ class MCPServer:
                 Returns:
                     True if authenticated, False otherwise
                 """
-                auth_header = self.headers.get('Authorization', '')
-                if not auth_header.startswith('Bearer '):
+                auth_header = self.headers.get("Authorization", "")
+                if not auth_header.startswith("Bearer "):
                     return False
 
                 api_key = auth_header[7:]  # Remove 'Bearer ' prefix
@@ -523,71 +520,81 @@ class MCPServer:
                 parsed_path = urlparse(self.path)
 
                 # List capabilities
-                if parsed_path.path == '/capabilities':
+                if parsed_path.path == "/capabilities":
                     capabilities = mcp_server.get_capabilities()
-                    self._send_json_response({
-                        "capabilities": [asdict(cap) for cap in capabilities],
-                        "count": len(capabilities),
-                        "server": "claude-force-mcp",
-                        "version": "2.1.0-p1"
-                    })
+                    self._send_json_response(
+                        {
+                            "capabilities": [asdict(cap) for cap in capabilities],
+                            "count": len(capabilities),
+                            "server": "claude-force-mcp",
+                            "version": "2.1.0-p1",
+                        }
+                    )
 
                 # Health check
-                elif parsed_path.path == '/health':
-                    self._send_json_response({
-                        "status": "healthy",
-                        "server": "claude-force-mcp",
-                        "version": "2.1.0-p1",
-                        "capabilities": len(mcp_server.get_capabilities())
-                    })
+                elif parsed_path.path == "/health":
+                    self._send_json_response(
+                        {
+                            "status": "healthy",
+                            "server": "claude-force-mcp",
+                            "version": "2.1.0-p1",
+                            "capabilities": len(mcp_server.get_capabilities()),
+                        }
+                    )
 
                 # Root info
-                elif parsed_path.path == '/':
-                    self._send_json_response({
-                        "server": "claude-force-mcp",
-                        "version": "2.1.0-p1",
-                        "protocol": "MCP (Model Context Protocol)",
-                        "endpoints": {
-                            "GET /capabilities": "List all capabilities",
-                            "POST /execute": "Execute a capability",
-                            "GET /health": "Health check"
-                        },
-                        "documentation": "https://github.com/anthropics/claude-force"
-                    })
+                elif parsed_path.path == "/":
+                    self._send_json_response(
+                        {
+                            "server": "claude-force-mcp",
+                            "version": "2.1.0-p1",
+                            "protocol": "MCP (Model Context Protocol)",
+                            "endpoints": {
+                                "GET /capabilities": "List all capabilities",
+                                "POST /execute": "Execute a capability",
+                                "GET /health": "Health check",
+                            },
+                            "documentation": "https://github.com/anthropics/claude-force",
+                        }
+                    )
 
                 else:
-                    self._send_json_response({
-                        "error": "Not found"
-                    }, status_code=404)
+                    self._send_json_response({"error": "Not found"}, status_code=404)
 
             def do_POST(self):
                 """Handle POST requests"""
                 parsed_path = urlparse(self.path)
 
-                if parsed_path.path == '/execute':
+                if parsed_path.path == "/execute":
                     # Check rate limit
                     client_ip = self.client_address[0]
                     allowed, retry_after = mcp_server.rate_limiter.is_allowed(client_ip)
 
                     if not allowed:
-                        self._send_json_response({
-                            "success": False,
-                            "error": f"Rate limit exceeded. Please retry after {retry_after} seconds.",
-                            "retry_after": retry_after
-                        }, status_code=429)
+                        self._send_json_response(
+                            {
+                                "success": False,
+                                "error": f"Rate limit exceeded. Please retry after {retry_after} seconds.",
+                                "retry_after": retry_after,
+                            },
+                            status_code=429,
+                        )
                         return
 
                     # Verify authentication for execute endpoint
                     if not self._verify_authentication():
-                        self._send_json_response({
-                            "success": False,
-                            "error": "Unauthorized. Please provide valid API key in Authorization header (Bearer <key>)"
-                        }, status_code=401)
+                        self._send_json_response(
+                            {
+                                "success": False,
+                                "error": "Unauthorized. Please provide valid API key in Authorization header (Bearer <key>)",
+                            },
+                            status_code=401,
+                        )
                         return
 
                     # Read request body
-                    content_length = int(self.headers.get('Content-Length', 0))
-                    body = self.rfile.read(content_length).decode('utf-8')
+                    content_length = int(self.headers.get("Content-Length", 0))
+                    body = self.rfile.read(content_length).decode("utf-8")
 
                     try:
                         request_data = json.loads(body)
@@ -597,7 +604,7 @@ class MCPServer:
                             capability=request_data.get("capability", ""),
                             action=request_data.get("action", ""),
                             parameters=request_data.get("parameters", {}),
-                            request_id=request_data.get("request_id")
+                            request_id=request_data.get("request_id"),
                         )
 
                         # Execute capability
@@ -607,29 +614,25 @@ class MCPServer:
                         self._send_json_response(asdict(response))
 
                     except json.JSONDecodeError:
-                        self._send_json_response({
-                            "error": "Invalid JSON in request body"
-                        }, status_code=400)
+                        self._send_json_response(
+                            {"error": "Invalid JSON in request body"}, status_code=400
+                        )
                     except Exception as e:
                         logger.error(f"Error processing request: {e}")
-                        self._send_json_response({
-                            "error": str(e)
-                        }, status_code=500)
+                        self._send_json_response({"error": str(e)}, status_code=500)
                 else:
-                    self._send_json_response({
-                        "error": "Not found"
-                    }, status_code=404)
+                    self._send_json_response({"error": "Not found"}, status_code=404)
 
             def do_OPTIONS(self):
                 """Handle CORS preflight"""
                 self.send_response(200)
                 # Use configured allowed origins
-                origin = self.headers.get('Origin')
+                origin = self.headers.get("Origin")
                 allowed_origin = mcp_server._get_allowed_origin(origin)
-                self.send_header('Access-Control-Allow-Origin', allowed_origin)
-                self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-                self.send_header('Access-Control-Allow-Credentials', 'true')
+                self.send_header("Access-Control-Allow-Origin", allowed_origin)
+                self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+                self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                self.send_header("Access-Control-Allow-Credentials", "true")
                 self.end_headers()
 
         return MCPRequestHandler
@@ -656,10 +659,7 @@ def main():
         return 1
 
     # Create and start server
-    server = MCPServer(
-        config_path=args.config,
-        anthropic_api_key=api_key
-    )
+    server = MCPServer(config_path=args.config, anthropic_api_key=api_key)
 
     try:
         server.start(host=args.host, port=args.port, blocking=True)

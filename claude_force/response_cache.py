@@ -9,6 +9,7 @@ All critical and high-priority fixes from expert review applied:
 - ✅ Improved error handling for file operations
 - ✅ Structured logging
 """
+
 import hashlib
 import hmac
 import json
@@ -31,6 +32,7 @@ class CacheEntry:
 
     ✅ Added signature field for HMAC verification
     """
+
     key: str
     agent_name: str
     task: str
@@ -70,7 +72,7 @@ class ResponseCache:
         max_size_mb: int = 100,
         enabled: bool = True,
         cache_secret: Optional[str] = None,
-        exclude_agents: Optional[list] = None
+        exclude_agents: Optional[list] = None,
     ):
         """
         Initialize response cache.
@@ -90,9 +92,7 @@ class ResponseCache:
             # Allow /tmp and current directory for testing
             allowed_bases = [str(base), "/tmp", str(Path.cwd())]
             if not any(str(cache_dir).startswith(allowed_base) for allowed_base in allowed_bases):
-                raise ValueError(
-                    f"Cache directory must be under {base} or /tmp. Got: {cache_dir}"
-                )
+                raise ValueError(f"Cache directory must be under {base} or /tmp. Got: {cache_dir}")
 
         self.cache_dir = cache_dir or Path.home() / ".claude" / "cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -104,8 +104,7 @@ class ResponseCache:
 
         # ✅ HMAC secret for integrity verification
         self.cache_secret = cache_secret or os.getenv(
-            "CLAUDE_CACHE_SECRET",
-            "default_secret_change_in_production"
+            "CLAUDE_CACHE_SECRET", "default_secret_change_in_production"
         )
 
         # ✅ FIXED: Security warning for default secret
@@ -115,7 +114,7 @@ class ResponseCache:
                 "Cache integrity is NOT protected. "
                 "Set CLAUDE_CACHE_SECRET environment variable or pass cache_secret parameter. "
                 "Attackers can forge cache entries with the default secret.",
-                extra={"security_risk": "HIGH", "cvss_score": 8.1}
+                extra={"security_risk": "HIGH", "cvss_score": 8.1},
             )
 
         # In-memory cache for fast access
@@ -123,11 +122,11 @@ class ResponseCache:
 
         # Statistics
         self.stats = {
-            'hits': 0,
-            'misses': 0,
-            'evictions': 0,
-            'size_bytes': 0,
-            'integrity_failures': 0  # ✅ Track integrity check failures
+            "hits": 0,
+            "misses": 0,
+            "evictions": 0,
+            "size_bytes": 0,
+            "integrity_failures": 0,  # ✅ Track integrity check failures
         }
 
         # Load existing cache index
@@ -140,8 +139,8 @@ class ResponseCache:
                 "ttl_hours": ttl_hours,
                 "max_size_mb": max_size_mb,
                 "enabled": enabled,
-                "entries_loaded": len(self._memory_cache)
-            }
+                "entries_loaded": len(self._memory_cache),
+            },
         )
 
     def _cache_key(self, agent_name: str, task: str, model: str) -> str:
@@ -165,17 +164,15 @@ class ResponseCache:
         """
         # Remove mutable fields that shouldn't affect signature
         entry_copy = entry_dict.copy()
-        entry_copy.pop('signature', None)
-        entry_copy.pop('hit_count', None)  # Exclude mutable stat
+        entry_copy.pop("signature", None)
+        entry_copy.pop("hit_count", None)  # Exclude mutable stat
 
         # Create canonical JSON representation (sorted keys for consistency)
         canonical = json.dumps(entry_copy, sort_keys=True)
 
         # Compute HMAC-SHA256
         signature = hmac.new(
-            key=self.cache_secret.encode(),
-            msg=canonical.encode(),
-            digestmod=hashlib.sha256
+            key=self.cache_secret.encode(), msg=canonical.encode(), digestmod=hashlib.sha256
         ).hexdigest()
 
         return signature
@@ -188,10 +185,7 @@ class ResponseCache:
         """
         if not entry.signature:
             # Old cache entries without signature - consider invalid
-            logger.warning(
-                "Cache entry missing signature",
-                extra={"key": entry.key[:8]}
-            )
+            logger.warning("Cache entry missing signature", extra={"key": entry.key[:8]})
             return False
 
         expected_sig = entry.signature
@@ -199,21 +193,13 @@ class ResponseCache:
         actual_sig = self._compute_signature(entry_dict)
 
         if expected_sig != actual_sig:
-            logger.warning(
-                "Cache integrity check failed",
-                extra={"key": entry.key[:8]}
-            )
-            self.stats['integrity_failures'] += 1
+            logger.warning("Cache integrity check failed", extra={"key": entry.key[:8]})
+            self.stats["integrity_failures"] += 1
             return False
 
         return True
 
-    def get(
-        self,
-        agent_name: str,
-        task: str,
-        model: str
-    ) -> Optional[Dict[str, Any]]:
+    def get(self, agent_name: str, task: str, model: str) -> Optional[Dict[str, Any]]:
         """
         Retrieve cached response.
 
@@ -231,7 +217,7 @@ class ResponseCache:
             # ✅ Verify integrity
             if not self._verify_signature(entry):
                 self._evict(key)
-                self.stats['misses'] += 1
+                self.stats["misses"] += 1
                 return None
 
             # Check TTL
@@ -239,16 +225,13 @@ class ResponseCache:
             if age > self.ttl_seconds:
                 # Expired
                 self._evict(key)
-                self.stats['misses'] += 1
-                logger.debug(
-                    "Cache entry expired",
-                    extra={"key": key[:8], "age_seconds": age}
-                )
+                self.stats["misses"] += 1
+                logger.debug("Cache entry expired", extra={"key": key[:8], "age_seconds": age})
                 return None
 
             # Cache hit
             entry.hit_count += 1
-            self.stats['hits'] += 1
+            self.stats["hits"] += 1
 
             logger.debug(
                 "Cache hit",
@@ -256,18 +239,18 @@ class ResponseCache:
                     "key": key[:8],
                     "agent": agent_name,
                     "age_seconds": age,
-                    "hit_count": entry.hit_count
-                }
+                    "hit_count": entry.hit_count,
+                },
             )
 
             return {
-                'response': entry.response,
-                'input_tokens': entry.input_tokens,
-                'output_tokens': entry.output_tokens,
-                'estimated_cost': entry.estimated_cost,
-                'cached': True,
-                'cache_age_seconds': age,
-                'hit_count': entry.hit_count
+                "response": entry.response,
+                "input_tokens": entry.input_tokens,
+                "output_tokens": entry.output_tokens,
+                "estimated_cost": entry.estimated_cost,
+                "cached": True,
+                "cache_age_seconds": age,
+                "hit_count": entry.hit_count,
             }
 
         # Check disk cache
@@ -278,45 +261,39 @@ class ResponseCache:
                 age = time.time() - cache_file.stat().st_mtime
                 if age > self.ttl_seconds:
                     cache_file.unlink()
-                    self.stats['misses'] += 1
+                    self.stats["misses"] += 1
                     return None
 
                 # Load from disk
-                with open(cache_file, 'r') as f:
+                with open(cache_file, "r") as f:
                     entry_dict = json.load(f)
                     entry = CacheEntry(**entry_dict)
 
                 # ✅ Verify integrity
                 if not self._verify_signature(entry):
                     self._evict(key)
-                    self.stats['misses'] += 1
+                    self.stats["misses"] += 1
                     return None
 
                 # Load into memory cache
                 self._memory_cache[key] = entry
                 entry.hit_count += 1
-                self.stats['hits'] += 1
+                self.stats["hits"] += 1
 
-                logger.debug(
-                    "Cache hit (from disk)",
-                    extra={"key": key[:8], "age_seconds": age}
-                )
+                logger.debug("Cache hit (from disk)", extra={"key": key[:8], "age_seconds": age})
 
                 return {
-                    'response': entry.response,
-                    'input_tokens': entry.input_tokens,
-                    'output_tokens': entry.output_tokens,
-                    'estimated_cost': entry.estimated_cost,
-                    'cached': True,
-                    'cache_age_seconds': age,
-                    'hit_count': entry.hit_count
+                    "response": entry.response,
+                    "input_tokens": entry.input_tokens,
+                    "output_tokens": entry.output_tokens,
+                    "estimated_cost": entry.estimated_cost,
+                    "cached": True,
+                    "cache_age_seconds": age,
+                    "hit_count": entry.hit_count,
                 }
 
             except Exception as e:
-                logger.warning(
-                    "Failed to load cache file",
-                    extra={"key": key[:8], "error": str(e)}
-                )
+                logger.warning("Failed to load cache file", extra={"key": key[:8], "error": str(e)})
                 # ✅ Clean up corrupt file
                 try:
                     cache_file.unlink()
@@ -324,7 +301,7 @@ class ResponseCache:
                     pass
 
         # Cache miss
-        self.stats['misses'] += 1
+        self.stats["misses"] += 1
         logger.debug("Cache miss", extra={"key": key[:8], "agent": agent_name})
         return None
 
@@ -336,7 +313,7 @@ class ResponseCache:
         response: str,
         input_tokens: int,
         output_tokens: int,
-        estimated_cost: float
+        estimated_cost: float,
     ):
         """
         Cache a response.
@@ -357,7 +334,7 @@ class ResponseCache:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             estimated_cost=estimated_cost,
-            timestamp=time.time()
+            timestamp=time.time(),
         )
 
         # ✅ Compute signature
@@ -372,27 +349,20 @@ class ResponseCache:
 
         # ✅ Improved error handling for file write
         try:
-            with open(cache_file, 'w') as f:
+            with open(cache_file, "w") as f:
                 json.dump(asdict(entry), f, indent=2)
 
             # Update size only if write succeeded
             actual_size = cache_file.stat().st_size
-            self.stats['size_bytes'] += actual_size
+            self.stats["size_bytes"] += actual_size
 
             logger.debug(
                 "Cache entry stored",
-                extra={
-                    "key": key[:8],
-                    "agent": agent_name,
-                    "size_bytes": actual_size
-                }
+                extra={"key": key[:8], "agent": agent_name, "size_bytes": actual_size},
             )
 
         except Exception as e:
-            logger.error(
-                "Failed to write cache file",
-                extra={"key": key[:8], "error": str(e)}
-            )
+            logger.error("Failed to write cache file", extra={"key": key[:8], "error": str(e)})
             # ✅ Don't update size if write failed
             if cache_file.exists():
                 try:
@@ -403,7 +373,7 @@ class ResponseCache:
             raise
 
         # Check size limit and evict if needed
-        if self.stats['size_bytes'] > self.max_size_bytes:
+        if self.stats["size_bytes"] > self.max_size_bytes:
             self._evict_lru()
 
     def _evict(self, key: str):
@@ -416,15 +386,14 @@ class ResponseCache:
             try:
                 size = cache_file.stat().st_size
                 cache_file.unlink()
-                self.stats['size_bytes'] -= size
-                self.stats['evictions'] += 1
+                self.stats["size_bytes"] -= size
+                self.stats["evictions"] += 1
 
                 logger.debug("Cache entry evicted", extra={"key": key[:8]})
 
             except OSError as e:
                 logger.warning(
-                    "Failed to evict cache file",
-                    extra={"key": key[:8], "error": str(e)}
+                    "Failed to evict cache file", extra={"key": key[:8], "error": str(e)}
                 )
 
     def _evict_lru(self):
@@ -444,16 +413,14 @@ class ResponseCache:
             extra={
                 "num_to_evict": num_to_evict,
                 "total_entries": len(self._memory_cache),
-                "current_size_mb": self.stats['size_bytes'] / (1024 * 1024)
-            }
+                "current_size_mb": self.stats["size_bytes"] / (1024 * 1024),
+            },
         )
 
         # ✅ Use heapq.nsmallest for O(k log n) performance
         # Find k smallest by (hit_count, timestamp) - least used, oldest first
         to_evict = heapq.nsmallest(
-            num_to_evict,
-            self._memory_cache.items(),
-            key=lambda x: (x[1].hit_count, x[1].timestamp)
+            num_to_evict, self._memory_cache.items(), key=lambda x: (x[1].hit_count, x[1].timestamp)
         )
 
         for key, _ in to_evict:
@@ -464,8 +431,8 @@ class ResponseCache:
             extra={
                 "evicted": num_to_evict,
                 "remaining_entries": len(self._memory_cache),
-                "new_size_mb": self.stats['size_bytes'] / (1024 * 1024)
-            }
+                "new_size_mb": self.stats["size_bytes"] / (1024 * 1024),
+            },
         )
 
     def clear(self):
@@ -477,31 +444,30 @@ class ResponseCache:
                 cache_file.unlink()
             except OSError as e:
                 logger.warning(
-                    "Failed to clear cache file",
-                    extra={"file": cache_file.name, "error": str(e)}
+                    "Failed to clear cache file", extra={"file": cache_file.name, "error": str(e)}
                 )
 
         self._memory_cache.clear()
-        self.stats['size_bytes'] = 0
+        self.stats["size_bytes"] = 0
 
         logger.info("Cache cleared")
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
-        total_requests = self.stats['hits'] + self.stats['misses']
-        hit_rate = (self.stats['hits'] / total_requests * 100) if total_requests > 0 else 0
+        total_requests = self.stats["hits"] + self.stats["misses"]
+        hit_rate = (self.stats["hits"] / total_requests * 100) if total_requests > 0 else 0
 
         return {
-            'enabled': self.enabled,
-            'hits': self.stats['hits'],
-            'misses': self.stats['misses'],
-            'hit_rate': f"{hit_rate:.1f}%",
-            'evictions': self.stats['evictions'],
-            'integrity_failures': self.stats['integrity_failures'],
-            'size_mb': round(self.stats['size_bytes'] / (1024 * 1024), 2),
-            'entries': len(self._memory_cache),
-            'ttl_hours': self.ttl_seconds / 3600,
-            'max_size_mb': self.max_size_bytes / (1024 * 1024)
+            "enabled": self.enabled,
+            "hits": self.stats["hits"],
+            "misses": self.stats["misses"],
+            "hit_rate": f"{hit_rate:.1f}%",
+            "evictions": self.stats["evictions"],
+            "integrity_failures": self.stats["integrity_failures"],
+            "size_mb": round(self.stats["size_bytes"] / (1024 * 1024), 2),
+            "entries": len(self._memory_cache),
+            "ttl_hours": self.ttl_seconds / 3600,
+            "max_size_mb": self.max_size_bytes / (1024 * 1024),
         }
 
     def _load_cache_index(self):
@@ -514,28 +480,26 @@ class ResponseCache:
 
         for cache_file in self.cache_dir.glob("*.json"):
             try:
-                with open(cache_file, 'r') as f:
+                with open(cache_file, "r") as f:
                     entry_dict = json.load(f)
                     entry = CacheEntry(**entry_dict)
 
                     # ✅ Verify integrity on load
                     if entry.signature and not self._verify_signature(entry):
                         logger.warning(
-                            "Removing corrupt cache file",
-                            extra={"file": cache_file.name}
+                            "Removing corrupt cache file", extra={"file": cache_file.name}
                         )
                         cache_file.unlink()
                         corrupted += 1
                         continue
 
                     self._memory_cache[entry.key] = entry
-                    self.stats['size_bytes'] += cache_file.stat().st_size
+                    self.stats["size_bytes"] += cache_file.stat().st_size
                     loaded += 1
 
             except Exception as e:
                 logger.warning(
-                    "Failed to load cache file",
-                    extra={"file": cache_file.name, "error": str(e)}
+                    "Failed to load cache file", extra={"file": cache_file.name, "error": str(e)}
                 )
                 # ✅ Remove corrupt cache file
                 try:
@@ -550,6 +514,6 @@ class ResponseCache:
                 extra={
                     "loaded": loaded,
                     "corrupted": corrupted,
-                    "size_mb": round(self.stats['size_bytes'] / (1024 * 1024), 2)
-                }
+                    "size_mb": round(self.stats["size_bytes"] / (1024 * 1024), 2),
+                },
             )

@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class PluginSource(Enum):
     """Plugin source types."""
+
     BUILTIN = "builtin"  # claude-force built-in plugins
     WSHOBSON = "wshobson"  # wshobson/agents marketplace
     EXTERNAL = "external"  # Other external sources
@@ -27,6 +28,7 @@ class PluginSource(Enum):
 
 class PluginCategory(Enum):
     """Plugin categories for organization."""
+
     DEVELOPMENT = "development"
     AI_ML = "ai-ml"
     DATA_ENGINEERING = "data-engineering"
@@ -80,7 +82,7 @@ class Plugin:
             "author": self.author,
             "repository": self.repository,
             "installed": self.installed,
-            "installed_version": self.installed_version
+            "installed_version": self.installed_version,
         }
 
     @classmethod
@@ -102,7 +104,7 @@ class Plugin:
             author=data.get("author"),
             repository=data.get("repository"),
             installed=data.get("installed", False),
-            installed_version=data.get("installed_version")
+            installed_version=data.get("installed_version"),
         )
 
 
@@ -132,10 +134,7 @@ class MarketplaceManager:
     - Version management
     """
 
-    OFFICIAL_REPOS = {
-        "claude-force": "khanh-vu/claude-force",
-        "wshobson": "wshobson/agents"
-    }
+    OFFICIAL_REPOS = {"claude-force": "khanh-vu/claude-force", "wshobson": "wshobson/agents"}
 
     def __init__(self, claude_dir: Optional[Path] = None):
         """
@@ -166,8 +165,7 @@ class MarketplaceManager:
                 data = json.load(f)
 
             return {
-                plugin_id: Plugin.from_dict(plugin_data)
-                for plugin_id, plugin_data in data.items()
+                plugin_id: Plugin.from_dict(plugin_data) for plugin_id, plugin_data in data.items()
             }
         except Exception as e:
             logger.error(f"Failed to load installed plugins: {e}")
@@ -175,12 +173,9 @@ class MarketplaceManager:
 
     def _save_installed(self):
         """Save installed plugins to file."""
-        data = {
-            plugin_id: plugin.to_dict()
-            for plugin_id, plugin in self.installed_plugins.items()
-        }
+        data = {plugin_id: plugin.to_dict() for plugin_id, plugin in self.installed_plugins.items()}
 
-        with open(self.installed_file, 'w') as f:
+        with open(self.installed_file, "w") as f:
             json.dump(data, f, indent=2)
 
     def _load_registry(self) -> Dict[str, Plugin]:
@@ -195,7 +190,9 @@ class MarketplaceManager:
 
             plugins = {}
             for category_data in data.get("categories", []):
-                category = PluginCategory(category_data["name"].lower().replace(" ", "-").replace("&", ""))
+                category = PluginCategory(
+                    category_data["name"].lower().replace(" ", "-").replace("&", "")
+                )
 
                 for plugin_data in category_data.get("plugins", []):
                     plugin_data["category"] = category.value
@@ -229,7 +226,7 @@ class MarketplaceManager:
                             "source": "wshobson",
                             "agents": ["python-developer", "python-senior"],
                             "skills": ["async-patterns", "testing", "packaging"],
-                            "keywords": ["python", "development", "async", "testing"]
+                            "keywords": ["python", "development", "async", "testing"],
                         },
                         {
                             "id": "frontend-complete",
@@ -237,12 +234,16 @@ class MarketplaceManager:
                             "description": "Complete frontend stack with React/Vue/Angular",
                             "version": "1.0.0",
                             "source": "builtin",
-                            "agents": ["frontend-architect", "ui-components-expert", "frontend-developer"],
+                            "agents": [
+                                "frontend-architect",
+                                "ui-components-expert",
+                                "frontend-developer",
+                            ],
                             "skills": ["test-generation"],
                             "workflows": ["frontend-feature"],
-                            "keywords": ["frontend", "react", "vue", "angular", "ui"]
-                        }
-                    ]
+                            "keywords": ["frontend", "react", "vue", "angular", "ui"],
+                        },
+                    ],
                 },
                 {
                     "name": "AI-ML",
@@ -255,7 +256,7 @@ class MarketplaceManager:
                             "source": "wshobson",
                             "agents": ["ai-engineer", "prompt-engineer"],
                             "skills": ["prompt-engineering"],
-                            "keywords": ["llm", "ai", "rag", "prompts", "chatbot"]
+                            "keywords": ["llm", "ai", "rag", "prompts", "chatbot"],
                         },
                         {
                             "id": "ai-ml-complete",
@@ -266,9 +267,9 @@ class MarketplaceManager:
                             "agents": ["ai-engineer", "prompt-engineer", "data-engineer"],
                             "workflows": ["ai-ml-development", "llm-integration"],
                             "skills": ["create-agent", "create-skill"],
-                            "keywords": ["ai", "ml", "training", "deployment", "mlops"]
-                        }
-                    ]
+                            "keywords": ["ai", "ml", "training", "deployment", "mlops"],
+                        },
+                    ],
                 },
                 {
                     "name": "Data-Engineering",
@@ -282,9 +283,9 @@ class MarketplaceManager:
                             "agents": ["data-engineer", "backend-architect"],
                             "workflows": ["data-pipeline"],
                             "skills": ["git-workflow"],
-                            "keywords": ["data", "etl", "pipeline", "analytics"]
+                            "keywords": ["data", "etl", "pipeline", "analytics"],
                         }
-                    ]
+                    ],
                 },
                 {
                     "name": "Infrastructure",
@@ -297,7 +298,7 @@ class MarketplaceManager:
                             "source": "wshobson",
                             "agents": ["kubernetes-engineer"],
                             "skills": ["k8s-manifests", "helm-charts", "gitops"],
-                            "keywords": ["kubernetes", "k8s", "helm", "gitops", "deployment"]
+                            "keywords": ["kubernetes", "k8s", "helm", "gitops", "deployment"],
                         },
                         {
                             "id": "devops-complete",
@@ -308,21 +309,21 @@ class MarketplaceManager:
                             "agents": ["devops-architect", "google-cloud-expert"],
                             "workflows": ["deployment"],
                             "skills": ["dockerfile", "git-workflow"],
-                            "keywords": ["devops", "docker", "cloud", "ci/cd", "deployment"]
-                        }
-                    ]
-                }
+                            "keywords": ["devops", "docker", "cloud", "ci/cd", "deployment"],
+                        },
+                    ],
+                },
             ]
         }
 
-        with open(self.registry_file, 'w') as f:
+        with open(self.registry_file, "w") as f:
             yaml.dump(default_registry, f, default_flow_style=False, sort_keys=False)
 
     def list_available(
         self,
         category: Optional[str] = None,
         source: Optional[str] = None,
-        installed_only: bool = False
+        installed_only: bool = False,
     ) -> List[Plugin]:
         """
         List available plugins.
@@ -370,7 +371,7 @@ class MarketplaceManager:
                 plugin.description.lower(),
                 *[k.lower() for k in plugin.keywords],
                 *[a.lower() for a in plugin.agents],
-                *[s.lower() for s in plugin.skills]
+                *[s.lower() for s in plugin.skills],
             ]
 
             if any(query_lower in text for text in searchable):
@@ -382,11 +383,7 @@ class MarketplaceManager:
         """Get plugin by ID."""
         return self.available_plugins.get(plugin_id)
 
-    def install_plugin(
-        self,
-        plugin_id: str,
-        force: bool = False
-    ) -> InstallationResult:
+    def install_plugin(self, plugin_id: str, force: bool = False) -> InstallationResult:
         """
         Install a plugin and its dependencies.
 
@@ -407,10 +404,10 @@ class MarketplaceManager:
                     description="",
                     version="0.0.0",
                     source=PluginSource.BUILTIN,
-                    category=PluginCategory.DEVELOPMENT
+                    category=PluginCategory.DEVELOPMENT,
                 ),
                 success=False,
-                errors=[f"Plugin '{plugin_id}' not found in marketplace"]
+                errors=[f"Plugin '{plugin_id}' not found in marketplace"],
             )
 
         # Check if already installed
@@ -418,7 +415,9 @@ class MarketplaceManager:
             return InstallationResult(
                 plugin=plugin,
                 success=False,
-                warnings=[f"Plugin '{plugin_id}' is already installed (version {plugin.installed_version})"]
+                warnings=[
+                    f"Plugin '{plugin_id}' is already installed (version {plugin.installed_version})"
+                ],
             )
 
         result = InstallationResult(plugin=plugin)

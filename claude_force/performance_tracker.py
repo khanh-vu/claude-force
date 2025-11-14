@@ -18,27 +18,28 @@ from collections import defaultdict
 # https://www.anthropic.com/pricing
 PRICING = {
     "claude-3-5-sonnet-20241022": {
-        "input": 0.003,   # $3 per million tokens
-        "output": 0.015   # $15 per million tokens
+        "input": 0.003,  # $3 per million tokens
+        "output": 0.015,  # $15 per million tokens
     },
     "claude-3-opus-20240229": {
-        "input": 0.015,   # $15 per million tokens
-        "output": 0.075   # $75 per million tokens
+        "input": 0.015,  # $15 per million tokens
+        "output": 0.075,  # $75 per million tokens
     },
     "claude-3-sonnet-20240229": {
-        "input": 0.003,   # $3 per million tokens
-        "output": 0.015   # $15 per million tokens
+        "input": 0.003,  # $3 per million tokens
+        "output": 0.015,  # $15 per million tokens
     },
     "claude-3-haiku-20240307": {
         "input": 0.00025,  # $0.25 per million tokens
-        "output": 0.00125  # $1.25 per million tokens
-    }
+        "output": 0.00125,  # $1.25 per million tokens
+    },
 }
 
 
 @dataclass
 class ExecutionMetrics:
     """Metrics for a single execution"""
+
     timestamp: str
     agent_name: str
     task_hash: str  # Hash of task for grouping
@@ -85,7 +86,7 @@ class PerformanceTracker:
             return
 
         try:
-            with open(self.metrics_file, 'r') as f:
+            with open(self.metrics_file, "r") as f:
                 for line in f:
                     if line.strip():
                         data = json.loads(line)
@@ -96,6 +97,7 @@ class PerformanceTracker:
     def _task_hash(self, task: str) -> str:
         """Generate hash for task (for grouping similar tasks)"""
         import hashlib
+
         return hashlib.md5(task.encode()).hexdigest()[:8]
 
     def _estimate_cost(self, model: str, input_tokens: int, output_tokens: int) -> float:
@@ -137,7 +139,7 @@ class PerformanceTracker:
         output_tokens: int,
         error_type: Optional[str] = None,
         workflow_name: Optional[str] = None,
-        workflow_position: Optional[int] = None
+        workflow_position: Optional[int] = None,
     ) -> ExecutionMetrics:
         """
         Record a single agent execution
@@ -170,7 +172,7 @@ class PerformanceTracker:
             estimated_cost=self._estimate_cost(model, input_tokens, output_tokens),
             error_type=error_type,
             workflow_name=workflow_name,
-            workflow_position=workflow_position
+            workflow_position=workflow_position,
         )
 
         # Add to cache
@@ -178,8 +180,8 @@ class PerformanceTracker:
 
         # Append to file (JSONL format)
         try:
-            with open(self.metrics_file, 'a') as f:
-                f.write(json.dumps(asdict(metrics)) + '\n')
+            with open(self.metrics_file, "a") as f:
+                f.write(json.dumps(asdict(metrics)) + "\n")
         except Exception as e:
             print(f"Warning: Could not save metrics: {e}")
 
@@ -201,17 +203,11 @@ class PerformanceTracker:
         if hours:
             cutoff = datetime.now().timestamp() - (hours * 3600)
             metrics = [
-                m for m in metrics
-                if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
+                m for m in metrics if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
             ]
 
         if not metrics:
-            return {
-                "total_executions": 0,
-                "success_rate": 0,
-                "total_cost": 0,
-                "total_tokens": 0
-            }
+            return {"total_executions": 0, "success_rate": 0, "total_cost": 0, "total_tokens": 0}
 
         total = len(metrics)
         successful = sum(1 for m in metrics if m.success)
@@ -227,7 +223,7 @@ class PerformanceTracker:
             "total_cost": sum(m.estimated_cost for m in metrics),
             "avg_execution_time_ms": sum(m.execution_time_ms for m in metrics) / total,
             "avg_cost_per_execution": sum(m.estimated_cost for m in metrics) / total,
-            "time_period": f"last {hours} hours" if hours else "all time"
+            "time_period": f"last {hours} hours" if hours else "all time",
         }
 
     def get_agent_stats(self, agent_name: Optional[str] = None) -> Dict[str, Any]:
@@ -262,7 +258,7 @@ class PerformanceTracker:
                 "success_rate": successful / total if total > 0 else 0,
                 "total_cost": sum(m.estimated_cost for m in agent_metrics),
                 "avg_execution_time_ms": sum(m.execution_time_ms for m in agent_metrics) / total,
-                "total_tokens": sum(m.total_tokens for m in agent_metrics)
+                "total_tokens": sum(m.total_tokens for m in agent_metrics),
             }
 
         return stats
@@ -279,7 +275,7 @@ class PerformanceTracker:
         return {
             "by_agent": dict(sorted(by_agent.items(), key=lambda x: x[1], reverse=True)),
             "by_model": dict(sorted(by_model.items(), key=lambda x: x[1], reverse=True)),
-            "total": sum(by_agent.values())
+            "total": sum(by_agent.values()),
         }
 
     def get_trends(self, interval_hours: int = 24) -> Dict[str, List]:
@@ -324,7 +320,7 @@ class PerformanceTracker:
             "timestamps": timestamps,
             "executions": executions,
             "costs": costs,
-            "success_rates": success_rates
+            "success_rates": success_rates,
         }
 
     def export_csv(self, output_path: str):
@@ -332,7 +328,7 @@ class PerformanceTracker:
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_file, 'w', newline='') as f:
+        with open(output_file, "w", newline="") as f:
             if not self._cache:
                 return
 
@@ -352,10 +348,10 @@ class PerformanceTracker:
             "agent_stats": self.get_agent_stats(),
             "cost_breakdown": self.get_cost_breakdown(),
             "trends": self.get_trends(),
-            "executions": [asdict(m) for m in self._cache]
+            "executions": [asdict(m) for m in self._cache],
         }
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(data, f, indent=2)
 
     def clear_old_metrics(self, days: int = 30):
@@ -369,14 +365,13 @@ class PerformanceTracker:
 
         # Filter cache
         self._cache = [
-            m for m in self._cache
-            if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
+            m for m in self._cache if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
         ]
 
         # Rewrite file
-        with open(self.metrics_file, 'w') as f:
+        with open(self.metrics_file, "w") as f:
             for metrics in self._cache:
-                f.write(json.dumps(asdict(metrics)) + '\n')
+                f.write(json.dumps(asdict(metrics)) + "\n")
 
 
 def get_tracker(metrics_dir: str = ".claude/metrics") -> PerformanceTracker:

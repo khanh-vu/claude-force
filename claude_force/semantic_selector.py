@@ -17,6 +17,7 @@ import numpy as np
 @dataclass
 class AgentMatch:
     """Result of agent matching"""
+
     agent_name: str
     confidence: float
     reasoning: str
@@ -32,9 +33,12 @@ class SemanticAgentSelector:
     semantic similarity rather than keyword matching, resulting in better accuracy.
     """
 
-    def __init__(self, config_path: str = ".claude/claude.json",
-                 model_name: str = "all-MiniLM-L6-v2",
-                 use_cache: bool = True):
+    def __init__(
+        self,
+        config_path: str = ".claude/claude.json",
+        model_name: str = "all-MiniLM-L6-v2",
+        use_cache: bool = True,
+    ):
         """
         Initialize semantic selector
 
@@ -71,6 +75,7 @@ class SemanticAgentSelector:
 
         try:
             from sentence_transformers import SentenceTransformer
+
             self.model = SentenceTransformer(self.model_name)
             self._lazy_init = True
         except ImportError:
@@ -94,18 +99,26 @@ class SemanticAgentSelector:
             with open(agent_path) as f:
                 content = f.read()
                 # Extract key sections for embedding
-                lines = content.split('\n')
+                lines = content.split("\n")
                 description_parts = []
 
                 # Look for purpose, responsibilities, capabilities
                 for i, line in enumerate(lines):
-                    if any(keyword in line.lower() for keyword in
-                          ['purpose', 'responsibility', 'capability', 'expertise', 'specialization']):
+                    if any(
+                        keyword in line.lower()
+                        for keyword in [
+                            "purpose",
+                            "responsibility",
+                            "capability",
+                            "expertise",
+                            "specialization",
+                        ]
+                    ):
                         # Get next few lines
-                        description_parts.extend(lines[i:min(i+10, len(lines))])
+                        description_parts.extend(lines[i : min(i + 10, len(lines))])
 
                 if description_parts:
-                    return '\n'.join(description_parts)
+                    return "\n".join(description_parts)
 
                 # Fallback: use first 1000 chars
                 return content[:1000]
@@ -136,21 +149,22 @@ class SemanticAgentSelector:
             return False
 
         try:
-            with open(self._embeddings_cache_file, 'r') as f:
+            with open(self._embeddings_cache_file, "r") as f:
                 cache_data = json.load(f)
 
             # Verify HMAC signature
-            stored_hmac = cache_data.get('hmac', '')
-            cache_content = json.dumps({
-                'config_hash': cache_data.get('config_hash'),
-                'model_name': cache_data.get('model_name'),
-                'embeddings': cache_data.get('embeddings')
-            }, sort_keys=True)
+            stored_hmac = cache_data.get("hmac", "")
+            cache_content = json.dumps(
+                {
+                    "config_hash": cache_data.get("config_hash"),
+                    "model_name": cache_data.get("model_name"),
+                    "embeddings": cache_data.get("embeddings"),
+                },
+                sort_keys=True,
+            )
 
             expected_hmac = hmac.new(
-                self._cache_key.encode(),
-                cache_content.encode(),
-                hashlib.sha256
+                self._cache_key.encode(), cache_content.encode(), hashlib.sha256
             ).hexdigest()
 
             if not hmac.compare_digest(stored_hmac, expected_hmac):
@@ -158,17 +172,16 @@ class SemanticAgentSelector:
                 return False
 
             # Validate cache
-            if cache_data.get('config_hash') != self._get_config_hash():
+            if cache_data.get("config_hash") != self._get_config_hash():
                 return False
 
-            if cache_data.get('model_name') != self.model_name:
+            if cache_data.get("model_name") != self.model_name:
                 return False
 
             # Load embeddings (convert lists back to numpy arrays)
-            embeddings_data = cache_data.get('embeddings', {})
+            embeddings_data = cache_data.get("embeddings", {})
             self.agent_embeddings = {
-                agent: np.array(embedding)
-                for agent, embedding in embeddings_data.items()
+                agent: np.array(embedding) for agent, embedding in embeddings_data.items()
             }
             return True
 
@@ -184,28 +197,25 @@ class SemanticAgentSelector:
 
             # Convert numpy arrays to lists for JSON serialization
             embeddings_serializable = {
-                agent: embedding.tolist()
-                for agent, embedding in self.agent_embeddings.items()
+                agent: embedding.tolist() for agent, embedding in self.agent_embeddings.items()
             }
 
             cache_content = {
-                'config_hash': self._get_config_hash(),
-                'model_name': self.model_name,
-                'embeddings': embeddings_serializable
+                "config_hash": self._get_config_hash(),
+                "model_name": self.model_name,
+                "embeddings": embeddings_serializable,
             }
 
             # Generate HMAC signature for integrity
             cache_content_str = json.dumps(cache_content, sort_keys=True)
             signature = hmac.new(
-                self._cache_key.encode(),
-                cache_content_str.encode(),
-                hashlib.sha256
+                self._cache_key.encode(), cache_content_str.encode(), hashlib.sha256
             ).hexdigest()
 
             # Add signature to cache data
-            cache_data = {**cache_content, 'hmac': signature}
+            cache_data = {**cache_content, "hmac": signature}
 
-            with open(self._embeddings_cache_file, 'w') as f:
+            with open(self._embeddings_cache_file, "w") as f:
                 json.dump(cache_data, f, indent=2)
         except Exception:
             # Cache save failure should not break functionality
@@ -250,8 +260,9 @@ class SemanticAgentSelector:
 
         return float(dot_product / (norm1 * norm2))
 
-    def select_agents(self, task: str, top_k: int = 3,
-                     min_confidence: float = 0.3) -> List[AgentMatch]:
+    def select_agents(
+        self, task: str, top_k: int = 3, min_confidence: float = 0.3
+    ) -> List[AgentMatch]:
         """
         Select best agents for a task using semantic similarity
 
@@ -287,13 +298,15 @@ class SemanticAgentSelector:
             # Generate reasoning
             reasoning = self._generate_reasoning(task, agent_name, similarity, domains)
 
-            similarities.append(AgentMatch(
-                agent_name=agent_name,
-                confidence=similarity,
-                reasoning=reasoning,
-                domains=domains,
-                priority=priority
-            ))
+            similarities.append(
+                AgentMatch(
+                    agent_name=agent_name,
+                    confidence=similarity,
+                    reasoning=reasoning,
+                    domains=domains,
+                    priority=priority,
+                )
+            )
 
         # Sort by confidence (with slight priority boost)
         similarities.sort(key=lambda x: (x.confidence + (0.05 * (4 - x.priority))), reverse=True)
@@ -302,8 +315,9 @@ class SemanticAgentSelector:
         filtered = [m for m in similarities if m.confidence >= min_confidence]
         return filtered[:top_k]
 
-    def _generate_reasoning(self, task: str, agent_name: str,
-                           confidence: float, domains: List[str]) -> str:
+    def _generate_reasoning(
+        self, task: str, agent_name: str, confidence: float, domains: List[str]
+    ) -> str:
         """Generate human-readable reasoning for agent selection"""
         task_lower = task.lower()
 
@@ -357,7 +371,7 @@ class SemanticAgentSelector:
             return {
                 "agent": agent_name,
                 "selected": False,
-                "reason": "Agent not found or confidence too low"
+                "reason": "Agent not found or confidence too low",
             }
 
         return {
@@ -368,12 +382,8 @@ class SemanticAgentSelector:
             "reasoning": agent_match.reasoning,
             "domains": agent_match.domains,
             "all_candidates": [
-                {
-                    "agent": m.agent_name,
-                    "confidence": round(m.confidence, 3)
-                }
-                for m in matches[:5]
-            ]
+                {"agent": m.agent_name, "confidence": round(m.confidence, 3)} for m in matches[:5]
+            ],
         }
 
     def benchmark_selection(self, test_cases: List[Dict]) -> Dict:
@@ -409,25 +419,28 @@ class SemanticAgentSelector:
             if accuracy >= 0.5:  # At least 50% of expected agents selected
                 correct += 1
 
-            results.append({
-                "task": task[:100],
-                "expected": list(expected),
-                "selected": list(selected),
-                "accuracy": accuracy,
-                "top_match": matches[0].agent_name if matches else None,
-                "top_confidence": round(matches[0].confidence, 3) if matches else 0
-            })
+            results.append(
+                {
+                    "task": task[:100],
+                    "expected": list(expected),
+                    "selected": list(selected),
+                    "accuracy": accuracy,
+                    "top_match": matches[0].agent_name if matches else None,
+                    "top_confidence": round(matches[0].confidence, 3) if matches else 0,
+                }
+            )
 
         return {
             "total_tests": total,
             "correct": correct,
             "accuracy": round(correct / total, 3) if total > 0 else 0,
-            "detailed_results": results
+            "detailed_results": results,
         }
 
 
-def get_selector(config_path: str = ".claude/claude.json",
-                 model_name: str = "all-MiniLM-L6-v2") -> SemanticAgentSelector:
+def get_selector(
+    config_path: str = ".claude/claude.json", model_name: str = "all-MiniLM-L6-v2"
+) -> SemanticAgentSelector:
     """
     Factory function to create semantic selector
 

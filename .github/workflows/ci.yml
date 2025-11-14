@@ -31,7 +31,10 @@ jobs:
 
     - name: Run tests
       run: |
+        # Run system structure tests
         pytest test_claude_system.py -v --cov=claude_force --cov-report=xml --cov-report=term
+        # Run performance tests
+        ANTHROPIC_API_KEY="test-key" pytest tests/test_async_orchestrator.py tests/test_response_cache.py tests/test_performance_integration.py -v --override-ini="addopts="
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -131,7 +134,7 @@ jobs:
         python3 benchmarks/scripts/generate_dashboard.py
 
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark-results
         path: |
@@ -165,7 +168,7 @@ jobs:
         twine check dist/*
 
     - name: Upload package artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: python-package
         path: dist/

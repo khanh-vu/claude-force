@@ -34,13 +34,15 @@ class DemoOrchestrator:
             config_path: Path to claude.json configuration file
         """
         from claude_force.orchestrator import AgentOrchestrator
+
         # Load config without API key requirement
         self.config_path = Path(config_path)
         if not self.config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
         import json
-        with open(self.config_path, 'r') as f:
+
+        with open(self.config_path, "r") as f:
             self.config = json.load(f)
 
     def _generate_mock_response(self, agent_name: str, task: str) -> str:
@@ -55,19 +57,19 @@ class DemoOrchestrator:
             Simulated agent response
         """
         # Get agent configuration
-        agent_config = self.config['agents'].get(agent_name, {})
-        domains = agent_config.get('domains', [])
+        agent_config = self.config["agents"].get(agent_name, {})
+        domains = agent_config.get("domains", [])
 
         # Generate response based on agent domains
-        if 'code-review' in domains or 'review' in agent_name:
+        if "code-review" in domains or "review" in agent_name:
             return self._mock_code_review(task)
-        elif 'test' in domains or 'test' in agent_name:
+        elif "test" in domains or "test" in agent_name:
             return self._mock_test_writer(task)
-        elif 'doc' in domains or 'doc' in agent_name:
+        elif "doc" in domains or "doc" in agent_name:
             return self._mock_documentation(task)
-        elif 'security' in domains or 'security' in agent_name:
+        elif "security" in domains or "security" in agent_name:
             return self._mock_security_review(task)
-        elif 'api' in domains or 'api' in agent_name:
+        elif "api" in domains or "api" in agent_name:
             return self._mock_api_designer(task)
         else:
             return self._mock_generic_response(task)
@@ -470,7 +472,7 @@ I've analyzed your request and here's my recommendation.
         task: str,
         model: str = "claude-3-5-sonnet-20241022",
         max_tokens: int = 4096,
-        temperature: float = 1.0
+        temperature: float = 1.0,
     ) -> AgentResult:
         """
         Simulate running an agent (demo mode).
@@ -486,7 +488,7 @@ I've analyzed your request and here's my recommendation.
             AgentResult with simulated output
         """
         # Validate agent exists
-        if agent_name not in self.config['agents']:
+        if agent_name not in self.config["agents"]:
             raise ValueError(
                 f"Agent '{agent_name}' not found. "
                 f"Available agents: {', '.join(self.config['agents'].keys())}"
@@ -504,20 +506,17 @@ I've analyzed your request and here's my recommendation.
             success=True,
             output=output,
             metadata={
-                'demo_mode': True,
-                'model': model,
-                'simulated_tokens': random.randint(500, 2000),
-                'simulated_duration_ms': random.randint(800, 2500),
-                'task_preview': task[:100] + ('...' if len(task) > 100 else '')
+                "demo_mode": True,
+                "model": model,
+                "simulated_tokens": random.randint(500, 2000),
+                "simulated_duration_ms": random.randint(800, 2500),
+                "task_preview": task[:100] + ("..." if len(task) > 100 else ""),
             },
-            errors=[]
+            errors=[],
         )
 
     def run_workflow(
-        self,
-        workflow_name: str,
-        task: str,
-        model: str = "claude-3-5-sonnet-20241022"
+        self, workflow_name: str, task: str, model: str = "claude-3-5-sonnet-20241022"
     ) -> List[AgentResult]:
         """
         Simulate running a workflow (demo mode).
@@ -531,13 +530,13 @@ I've analyzed your request and here's my recommendation.
             List of AgentResults from simulated workflow
         """
         # Validate workflow exists
-        if workflow_name not in self.config['workflows']:
+        if workflow_name not in self.config["workflows"]:
             raise ValueError(
                 f"Workflow '{workflow_name}' not found. "
                 f"Available workflows: {', '.join(self.config['workflows'].keys())}"
             )
 
-        workflow = self.config['workflows'][workflow_name]
+        workflow = self.config["workflows"][workflow_name]
         results = []
 
         current_task = task
@@ -552,33 +551,36 @@ I've analyzed your request and here's my recommendation.
     def list_agents(self) -> List[Dict[str, Any]]:
         """List all available agents."""
         from claude_force.orchestrator import AgentOrchestrator
+
         # Create temporary orchestrator just to use list_agents
         # This doesn't require API key
         agents = []
-        for name, config in self.config['agents'].items():
-            agents.append({
-                'name': name,
-                'file': config['file'],
-                'priority': config['priority'],
-                'domains': config['domains']
-            })
+        for name, config in self.config["agents"].items():
+            agents.append(
+                {
+                    "name": name,
+                    "file": config["file"],
+                    "priority": config["priority"],
+                    "domains": config["domains"],
+                }
+            )
         return agents
 
     def list_workflows(self) -> Dict[str, List[str]]:
         """List all available workflows."""
-        return self.config.get('workflows', {})
+        return self.config.get("workflows", {})
 
     def get_agent_info(self, agent_name: str) -> Dict[str, Any]:
         """Get detailed information about an agent."""
-        if agent_name not in self.config['agents']:
+        if agent_name not in self.config["agents"]:
             raise ValueError(f"Agent '{agent_name}' not found")
 
-        agent_config = self.config['agents'][agent_name]
+        agent_config = self.config["agents"][agent_name]
         return {
-            'name': agent_name,
-            'file': agent_config['file'],
-            'contract': agent_config.get('contract', 'unknown'),
-            'priority': agent_config['priority'],
-            'domains': agent_config['domains'],
-            'description': f"Demo agent: {agent_name}"
+            "name": agent_name,
+            "file": agent_config["file"],
+            "contract": agent_config.get("contract", "unknown"),
+            "priority": agent_config["priority"],
+            "domains": agent_config["domains"],
+            "description": f"Demo agent: {agent_name}",
         }

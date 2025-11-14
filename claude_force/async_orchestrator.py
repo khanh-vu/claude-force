@@ -11,6 +11,7 @@ All critical and high-priority fixes from expert review applied:
 - ✅ Async performance tracking
 - ✅ Structured logging
 """
+
 import os
 import json
 import re
@@ -46,6 +47,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AsyncAgentResult:
     """Result from an async agent execution"""
+
     agent_name: str
     success: bool
     output: str
@@ -80,7 +82,7 @@ class AsyncAgentOrchestrator:
         enable_memory: bool = True,
         enable_cache: bool = True,
         cache_ttl_hours: int = 24,
-        cache_max_size_mb: int = 100
+        cache_max_size_mb: int = 100,
     ):
         """
         Initialize async orchestrator.
@@ -143,7 +145,7 @@ class AsyncAgentOrchestrator:
                 cache_dir=cache_dir,
                 ttl_hours=self.cache_ttl_hours,
                 max_size_mb=self.cache_max_size_mb,
-                enabled=self.enable_cache
+                enabled=self.enable_cache,
             )
         return self._response_cache
 
@@ -167,7 +169,7 @@ class AsyncAgentOrchestrator:
 
             # Use asyncio.to_thread for file I/O to avoid blocking
             def _read_config():
-                with open(self.config_path, 'r') as f:
+                with open(self.config_path, "r") as f:
                     return json.load(f)
 
             self._config = await asyncio.to_thread(_read_config)
@@ -177,22 +179,22 @@ class AsyncAgentOrchestrator:
     async def load_agent_definition(self, agent_name: str) -> str:
         """Load agent definition asynchronously."""
         config = await self.load_config()
-        agent_config = config['agents'].get(agent_name)
+        agent_config = config["agents"].get(agent_name)
 
         if not agent_config:
-            all_agents = list(config['agents'].keys())
+            all_agents = list(config["agents"].keys())
             raise ValueError(
                 f"Agent '{agent_name}' not found. Available agents: {', '.join(all_agents)}"
             )
 
-        agent_file = self.config_path.parent / agent_config['file']
+        agent_file = self.config_path.parent / agent_config["file"]
 
         if not agent_file.exists():
             raise FileNotFoundError(f"Agent file not found: {agent_file}")
 
         # Use asyncio.to_thread for file I/O
         def _read_file():
-            with open(agent_file, 'r') as f:
+            with open(agent_file, "r") as f:
                 return f.read()
 
         return await asyncio.to_thread(_read_file)
@@ -203,20 +205,17 @@ class AsyncAgentOrchestrator:
             # No retry - return identity decorator
             def no_retry(func):
                 return func
+
             return no_retry
 
         return retry(
             stop=stop_after_attempt(self.max_retries),
             wait=wait_exponential(multiplier=1, min=2, max=10),
-            reraise=True
+            reraise=True,
         )
 
     async def _call_api_with_retry(
-        self,
-        model: str,
-        max_tokens: int,
-        temperature: float,
-        messages: List[Dict[str, str]]
+        self, model: str, max_tokens: int, temperature: float, messages: List[Dict[str, str]]
     ):
         """
         Call API with retry logic and timeout protection.
@@ -236,7 +235,7 @@ class AsyncAgentOrchestrator:
                         model=model,
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        messages=messages
+                        messages=messages,
                     )
 
                 # Wrap with timeout using asyncio.wait_for (Python 3.8+)
@@ -248,16 +247,13 @@ class AsyncAgentOrchestrator:
                         model=model,
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        messages=messages
+                        messages=messages,
                     ),
-                    timeout=self.timeout_seconds
+                    timeout=self.timeout_seconds,
                 )
 
         except asyncio.TimeoutError:
-            logger.error(
-                "API call timed out",
-                extra={"timeout_seconds": self.timeout_seconds}
-            )
+            logger.error("API call timed out", extra={"timeout_seconds": self.timeout_seconds})
             raise TimeoutError(f"API call timed out after {self.timeout_seconds}s")
 
     def _sanitize_task(self, task: str) -> str:
@@ -292,19 +288,16 @@ class AsyncAgentOrchestrator:
         for pattern in dangerous_patterns:
             # Case-insensitive replacement
             sanitized = re.sub(
-                re.escape(pattern),
-                f"[SANITIZED: {pattern}]",
-                sanitized,
-                flags=re.IGNORECASE
+                re.escape(pattern), f"[SANITIZED: {pattern}]", sanitized, flags=re.IGNORECASE
             )
 
         # Limit consecutive newlines (prevent prompt structure manipulation)
-        sanitized = re.sub(r'\n{4,}', '\n\n\n', sanitized)
+        sanitized = re.sub(r"\n{4,}", "\n\n\n", sanitized)
 
         if sanitized != task:
             logger.warning(
                 "Task content sanitized - potential prompt injection detected",
-                extra={"original_length": len(task), "sanitized_length": len(sanitized)}
+                extra={"original_length": len(task), "sanitized_length": len(sanitized)},
             )
 
         return sanitized
@@ -317,7 +310,7 @@ class AsyncAgentOrchestrator:
         max_tokens: int = 4096,
         temperature: float = 1.0,
         workflow_name: Optional[str] = None,
-        workflow_position: Optional[int] = None
+        workflow_position: Optional[int] = None,
     ) -> AsyncAgentResult:
         """
         Execute agent asynchronously.
@@ -345,7 +338,7 @@ class AsyncAgentOrchestrator:
         start_time = time.time()
 
         # ✅ Input validation
-        if not re.match(r'^[a-zA-Z0-9_-]+$', agent_name):
+        if not re.match(r"^[a-zA-Z0-9_-]+$", agent_name):
             raise ValueError(
                 f"Invalid agent name: {agent_name}. "
                 "Agent names must contain only alphanumeric characters, hyphens, and underscores."
@@ -353,8 +346,7 @@ class AsyncAgentOrchestrator:
 
         if len(task) > 100_000:
             raise ValueError(
-                f"Task too large: {len(task)} chars (max 100,000). "
-                "Please reduce task size."
+                f"Task too large: {len(task)} chars (max 100,000). " "Please reduce task size."
             )
 
         # ✅ Sanitize task to prevent prompt injection
@@ -370,24 +362,24 @@ class AsyncAgentOrchestrator:
                     "Cache hit - returning cached response",
                     extra={
                         "agent_name": agent_name,
-                        "cache_age_seconds": cached_result.get('cache_age_seconds', 0),
-                        "execution_time_ms": execution_time_ms
-                    }
+                        "cache_age_seconds": cached_result.get("cache_age_seconds", 0),
+                        "execution_time_ms": execution_time_ms,
+                    },
                 )
 
                 return AsyncAgentResult(
                     agent_name=agent_name,
                     success=True,
-                    output=cached_result['response'],
+                    output=cached_result["response"],
                     metadata={
                         "model": model,
-                        "input_tokens": cached_result['input_tokens'],
-                        "output_tokens": cached_result['output_tokens'],
+                        "input_tokens": cached_result["input_tokens"],
+                        "output_tokens": cached_result["output_tokens"],
                         "execution_time_ms": execution_time_ms,
                         "cached": True,
-                        "cache_age_seconds": cached_result.get('cache_age_seconds', 0),
-                        "estimated_cost": cached_result.get('estimated_cost', 0)
-                    }
+                        "cache_age_seconds": cached_result.get("cache_age_seconds", 0),
+                        "estimated_cost": cached_result.get("estimated_cost", 0),
+                    },
                 )
 
         # ✅ Structured logging
@@ -399,8 +391,8 @@ class AsyncAgentOrchestrator:
                 "model": model,
                 "workflow_name": workflow_name,
                 "workflow_position": workflow_position,
-                "cache_enabled": self.enable_cache
-            }
+                "cache_enabled": self.enable_cache,
+            },
         )
 
         try:
@@ -415,13 +407,13 @@ class AsyncAgentOrchestrator:
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             # Extract result
             output = ""
             for block in response.content:
-                if hasattr(block, 'text'):
+                if hasattr(block, "text"):
                     output += block.text
 
             execution_time_ms = (time.time() - start_time) * 1000
@@ -437,7 +429,7 @@ class AsyncAgentOrchestrator:
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
                     workflow_name=workflow_name,
-                    workflow_position=workflow_position
+                    workflow_position=workflow_position,
                 )
 
             # ✅ Calculate estimated cost (rough estimate)
@@ -456,18 +448,14 @@ class AsyncAgentOrchestrator:
                         response=output,
                         input_tokens=response.usage.input_tokens,
                         output_tokens=response.usage.output_tokens,
-                        estimated_cost=estimated_cost
+                        estimated_cost=estimated_cost,
                     )
                     logger.debug(
-                        "Response cached",
-                        extra={"agent_name": agent_name, "model": model}
+                        "Response cached", extra={"agent_name": agent_name, "model": model}
                     )
                 except Exception as cache_error:
                     # Don't fail execution if caching fails
-                    logger.warning(
-                        "Failed to cache response",
-                        extra={"error": str(cache_error)}
-                    )
+                    logger.warning("Failed to cache response", extra={"error": str(cache_error)})
 
             logger.info(
                 "Agent execution completed",
@@ -477,8 +465,8 @@ class AsyncAgentOrchestrator:
                     "success": True,
                     "input_tokens": response.usage.input_tokens,
                     "output_tokens": response.usage.output_tokens,
-                    "cached": False
-                }
+                    "cached": False,
+                },
             )
 
             return AsyncAgentResult(
@@ -494,8 +482,8 @@ class AsyncAgentOrchestrator:
                     "workflow_name": workflow_name,
                     "workflow_position": workflow_position,
                     "cached": False,
-                    "estimated_cost": estimated_cost
-                }
+                    "estimated_cost": estimated_cost,
+                },
             )
 
         except Exception as e:
@@ -508,9 +496,9 @@ class AsyncAgentOrchestrator:
                     "agent_name": agent_name,
                     "error": str(e),
                     "error_type": error_type,
-                    "execution_time_ms": execution_time_ms
+                    "execution_time_ms": execution_time_ms,
                 },
-                exc_info=True
+                exc_info=True,
             )
 
             # Track failed execution
@@ -525,7 +513,7 @@ class AsyncAgentOrchestrator:
                     output_tokens=0,
                     error_type=error_type,
                     workflow_name=workflow_name,
-                    workflow_position=workflow_position
+                    workflow_position=workflow_position,
                 )
 
             return AsyncAgentResult(
@@ -533,14 +521,11 @@ class AsyncAgentOrchestrator:
                 success=False,
                 output="",
                 metadata={"execution_time_ms": execution_time_ms},
-                errors=[str(e)]
+                errors=[str(e)],
             )
 
     async def execute_with_semaphore(
-        self,
-        agent_name: str,
-        task: str,
-        **kwargs
+        self, agent_name: str, task: str, **kwargs
     ) -> AsyncAgentResult:
         """
         Execute agent with semaphore for concurrency control.
@@ -553,9 +538,7 @@ class AsyncAgentOrchestrator:
             return await self.execute_agent(agent_name, task, **kwargs)
 
     async def execute_multiple(
-        self,
-        tasks: List[Tuple[str, str]],
-        **kwargs
+        self, tasks: List[Tuple[str, str]], **kwargs
     ) -> List[AsyncAgentResult]:
         """
         Execute multiple agents concurrently with rate limiting.
@@ -572,16 +555,12 @@ class AsyncAgentOrchestrator:
         """
         logger.info(
             "Executing multiple agents",
-            extra={
-                "num_agents": len(tasks),
-                "max_concurrent": self.max_concurrent
-            }
+            extra={"num_agents": len(tasks), "max_concurrent": self.max_concurrent},
         )
 
-        results = await asyncio.gather(*[
-            self.execute_with_semaphore(agent_name, task, **kwargs)
-            for agent_name, task in tasks
-        ])
+        results = await asyncio.gather(
+            *[self.execute_with_semaphore(agent_name, task, **kwargs) for agent_name, task in tasks]
+        )
 
         success_count = sum(1 for r in results if r.success)
         logger.info(
@@ -589,8 +568,8 @@ class AsyncAgentOrchestrator:
             extra={
                 "total": len(results),
                 "successful": success_count,
-                "failed": len(results) - success_count
-            }
+                "failed": len(results) - success_count,
+            },
         )
 
         return results
@@ -608,10 +587,7 @@ class AsyncAgentOrchestrator:
             self._performance_tracker = PerformanceTracker()
 
         # Run in executor to avoid blocking event loop
-        await asyncio.to_thread(
-            self._performance_tracker.record_execution,
-            **kwargs
-        )
+        await asyncio.to_thread(self._performance_tracker.record_execution, **kwargs)
 
     async def close(self):
         """Close async client and cleanup resources."""

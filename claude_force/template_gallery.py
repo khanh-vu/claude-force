@@ -86,20 +86,24 @@ class TemplateGalleryItem:
                     "description": ex.description,
                     "expected_output": ex.expected_output,
                     "estimated_time": ex.estimated_time,
-                    "complexity": ex.complexity
+                    "complexity": ex.complexity,
                 }
                 for ex in self.examples
             ],
-            "metrics": {
-                "uses_count": self.metrics.uses_count if self.metrics else 0,
-                "success_rate": self.metrics.success_rate if self.metrics else 0.0,
-                "avg_rating": self.metrics.avg_rating if self.metrics else 0.0,
-                "total_ratings": self.metrics.total_ratings if self.metrics else 0
-            } if self.metrics else None,
+            "metrics": (
+                {
+                    "uses_count": self.metrics.uses_count if self.metrics else 0,
+                    "success_rate": self.metrics.success_rate if self.metrics else 0.0,
+                    "avg_rating": self.metrics.avg_rating if self.metrics else 0.0,
+                    "total_ratings": self.metrics.total_ratings if self.metrics else 0,
+                }
+                if self.metrics
+                else None
+            ),
             "screenshot_path": self.screenshot_path,
             "readme_path": self.readme_path,
             "best_for": self.best_for,
-            "not_recommended_for": self.not_recommended_for
+            "not_recommended_for": self.not_recommended_for,
         }
 
 
@@ -145,13 +149,15 @@ class TemplateGallery:
                 # Parse examples
                 examples = []
                 for ex_data in item_data.get("examples", []):
-                    examples.append(TemplateExample(
-                        task=ex_data["task"],
-                        description=ex_data["description"],
-                        expected_output=ex_data["expected_output"],
-                        estimated_time=ex_data.get("estimated_time", "15-30 minutes"),
-                        complexity=ex_data.get("complexity", "medium")
-                    ))
+                    examples.append(
+                        TemplateExample(
+                            task=ex_data["task"],
+                            description=ex_data["description"],
+                            expected_output=ex_data["expected_output"],
+                            estimated_time=ex_data.get("estimated_time", "15-30 minutes"),
+                            complexity=ex_data.get("complexity", "medium"),
+                        )
+                    )
 
                 # Parse metrics
                 metrics = None
@@ -160,7 +166,7 @@ class TemplateGallery:
                         uses_count=item_data["metrics"].get("uses_count", 0),
                         success_rate=item_data["metrics"].get("success_rate", 0.0),
                         avg_rating=item_data["metrics"].get("avg_rating", 0.0),
-                        total_ratings=item_data["metrics"].get("total_ratings", 0)
+                        total_ratings=item_data["metrics"].get("total_ratings", 0),
                     )
 
                 item = TemplateGalleryItem(
@@ -180,7 +186,7 @@ class TemplateGallery:
                     screenshot_path=item_data.get("screenshot_path"),
                     readme_path=item_data.get("readme_path"),
                     best_for=item_data.get("best_for", []),
-                    not_recommended_for=item_data.get("not_recommended_for", [])
+                    not_recommended_for=item_data.get("not_recommended_for", []),
                 )
 
                 items[item.template_id] = item
@@ -210,12 +216,12 @@ class TemplateGallery:
                         "SaaS applications",
                         "E-commerce platforms",
                         "User dashboards",
-                        "Admin panels"
+                        "Admin panels",
                     ],
                     "best_for": [
                         "Teams building complete web applications",
                         "Projects requiring both frontend and backend",
-                        "Applications with complex data models"
+                        "Applications with complex data models",
                     ],
                     "examples": [
                         {
@@ -225,18 +231,18 @@ class TemplateGallery:
                                 "Frontend: Login/signup components",
                                 "Backend: Auth endpoints with JWT",
                                 "Database: Users and sessions tables",
-                                "Tests: 15+ unit and integration tests"
+                                "Tests: 15+ unit and integration tests",
                             ],
                             "estimated_time": "45-60 minutes",
-                            "complexity": "complex"
+                            "complexity": "complex",
                         }
                     ],
                     "metrics": {
                         "uses_count": 127,
                         "success_rate": 0.89,
                         "avg_rating": 4.5,
-                        "total_ratings": 42
-                    }
+                        "total_ratings": 42,
+                    },
                 },
                 {
                     "template_id": "llm-app",
@@ -253,12 +259,12 @@ class TemplateGallery:
                         "Customer support chatbots",
                         "Document Q&A systems",
                         "Semantic search engines",
-                        "AI assistants"
+                        "AI assistants",
                     ],
                     "best_for": [
                         "Building chatbots and conversational AI",
                         "Document retrieval systems",
-                        "Semantic search applications"
+                        "Semantic search applications",
                     ],
                     "examples": [
                         {
@@ -268,18 +274,18 @@ class TemplateGallery:
                                 "Vector database setup and ingestion",
                                 "RAG pipeline with retrieval",
                                 "Chatbot API endpoints",
-                                "Prompt templates and evaluation"
+                                "Prompt templates and evaluation",
                             ],
                             "estimated_time": "30-45 minutes",
-                            "complexity": "complex"
+                            "complexity": "complex",
                         }
                     ],
                     "metrics": {
                         "uses_count": 89,
                         "success_rate": 0.91,
                         "avg_rating": 4.7,
-                        "total_ratings": 31
-                    }
+                        "total_ratings": 31,
+                    },
                 },
                 {
                     "template_id": "api-service",
@@ -296,12 +302,12 @@ class TemplateGallery:
                         "RESTful APIs",
                         "Microservices",
                         "Backend for mobile apps",
-                        "Third-party integrations"
+                        "Third-party integrations",
                     ],
                     "best_for": [
                         "Backend-focused projects",
                         "Microservices architecture",
-                        "Mobile app backends"
+                        "Mobile app backends",
                     ],
                     "examples": [
                         {
@@ -312,18 +318,18 @@ class TemplateGallery:
                                 "CRUD endpoints (GET, POST, PUT, DELETE)",
                                 "Input validation and error handling",
                                 "API documentation (OpenAPI/Swagger)",
-                                "Unit and integration tests"
+                                "Unit and integration tests",
                             ],
                             "estimated_time": "20-30 minutes",
-                            "complexity": "simple"
+                            "complexity": "simple",
                         }
                     ],
                     "metrics": {
                         "uses_count": 156,
                         "success_rate": 0.93,
                         "avg_rating": 4.6,
-                        "total_ratings": 58
-                    }
+                        "total_ratings": 58,
+                    },
                 },
                 {
                     "template_id": "ml-project",
@@ -340,12 +346,12 @@ class TemplateGallery:
                         "Classification models",
                         "Regression models",
                         "NLP models",
-                        "Computer vision"
+                        "Computer vision",
                     ],
                     "best_for": [
                         "Machine learning experimentation",
                         "Model training and evaluation",
-                        "ML model deployment"
+                        "ML model deployment",
                     ],
                     "examples": [
                         {
@@ -356,30 +362,30 @@ class TemplateGallery:
                                 "Model training script with hyperparameters",
                                 "Evaluation metrics and visualizations",
                                 "Model export and deployment code",
-                                "Inference API endpoint"
+                                "Inference API endpoint",
                             ],
                             "estimated_time": "60-90 minutes",
-                            "complexity": "complex"
+                            "complexity": "complex",
                         }
                     ],
                     "metrics": {
                         "uses_count": 73,
                         "success_rate": 0.85,
                         "avg_rating": 4.4,
-                        "total_ratings": 28
-                    }
-                }
+                        "total_ratings": 28,
+                    },
+                },
             ]
         }
 
-        with open(self.gallery_file, 'w') as f:
+        with open(self.gallery_file, "w") as f:
             json.dump(default_gallery, f, indent=2)
 
     def list_templates(
         self,
         category: Optional[str] = None,
         difficulty: Optional[str] = None,
-        min_rating: Optional[float] = None
+        min_rating: Optional[float] = None,
     ) -> List[TemplateGalleryItem]:
         """
         List templates with filtering.
@@ -401,16 +407,10 @@ class TemplateGallery:
             templates = [t for t in templates if t.difficulty == difficulty]
 
         if min_rating is not None:
-            templates = [
-                t for t in templates
-                if t.metrics and t.metrics.avg_rating >= min_rating
-            ]
+            templates = [t for t in templates if t.metrics and t.metrics.avg_rating >= min_rating]
 
         # Sort by popularity (uses_count)
-        templates.sort(
-            key=lambda t: t.metrics.uses_count if t.metrics else 0,
-            reverse=True
-        )
+        templates.sort(key=lambda t: t.metrics.uses_count if t.metrics else 0, reverse=True)
 
         return templates
 
@@ -440,7 +440,7 @@ class TemplateGallery:
                 template.description.lower(),
                 *[k.lower() for k in template.keywords],
                 *[u.lower() for u in template.use_cases],
-                *[t.lower() for t in template.tech_stack]
+                *[t.lower() for t in template.tech_stack],
             ]
 
             if any(query_lower in text for text in searchable):
@@ -451,9 +451,9 @@ class TemplateGallery:
             key=lambda t: (
                 query_lower in t.name.lower(),
                 query_lower in t.description.lower(),
-                t.metrics.uses_count if t.metrics else 0
+                t.metrics.uses_count if t.metrics else 0,
             ),
-            reverse=True
+            reverse=True,
         )
 
         return results
@@ -469,10 +469,7 @@ class TemplateGallery:
             List of top templates by usage
         """
         templates = list(self.items.values())
-        templates.sort(
-            key=lambda t: t.metrics.uses_count if t.metrics else 0,
-            reverse=True
-        )
+        templates.sort(key=lambda t: t.metrics.uses_count if t.metrics else 0, reverse=True)
         return templates[:top_k]
 
     def get_top_rated_templates(self, top_k: int = 5) -> List[TemplateGalleryItem]:
@@ -486,10 +483,7 @@ class TemplateGallery:
             List of top templates by rating
         """
         templates = [t for t in self.items.values() if t.metrics and t.metrics.total_ratings >= 5]
-        templates.sort(
-            key=lambda t: t.metrics.avg_rating if t.metrics else 0,
-            reverse=True
-        )
+        templates.sort(key=lambda t: t.metrics.avg_rating if t.metrics else 0, reverse=True)
         return templates[:top_k]
 
 

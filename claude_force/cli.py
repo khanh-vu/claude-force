@@ -19,8 +19,9 @@ def cmd_list_agents(args):
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
+
             orchestrator = DemoOrchestrator(config_path=args.config)
-            if not getattr(args, 'json', False):
+            if not getattr(args, "json", False):
                 print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
@@ -28,8 +29,9 @@ def cmd_list_agents(args):
         agents = orchestrator.list_agents()
 
         # JSON output
-        if getattr(args, 'json', False):
+        if getattr(args, "json", False):
             import json
+
             print(json.dumps(agents, indent=2))
             return
 
@@ -39,10 +41,10 @@ def cmd_list_agents(args):
         print("-" * 80)
 
         for agent in agents:
-            domains = ", ".join(agent['domains'][:3])
-            if len(agent['domains']) > 3:
+            domains = ", ".join(agent["domains"][:3])
+            if len(agent["domains"]) > 3:
                 domains += "..."
-            priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(agent['priority'], "Low")
+            priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(agent["priority"], "Low")
             print(f"{agent['name']:<30} {priority_label:<10} {domains}")
 
         print(f"\nTotal: {len(agents)} agents")
@@ -58,8 +60,9 @@ def cmd_list_workflows(args):
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
+
             orchestrator = DemoOrchestrator(config_path=args.config)
-            if not getattr(args, 'json', False):
+            if not getattr(args, "json", False):
                 print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
@@ -67,14 +70,15 @@ def cmd_list_workflows(args):
         workflows = orchestrator.list_workflows()
 
         # JSON output if requested
-        if getattr(args, 'json', False):
+        if getattr(args, "json", False):
             import json
+
             workflows_data = [
                 {
                     "name": name,
                     "agent_count": len(agents),
                     "agents": agents,
-                    "flow": " → ".join(agents)
+                    "flow": " → ".join(agents),
                 }
                 for name, agents in workflows.items()
             ]
@@ -103,8 +107,9 @@ def cmd_agent_info(args):
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
+
             orchestrator = DemoOrchestrator(config_path=args.config)
-            if not getattr(args, 'json', False):
+            if not getattr(args, "json", False):
                 print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
@@ -112,8 +117,9 @@ def cmd_agent_info(args):
         info = orchestrator.get_agent_info(args.agent)
 
         # JSON output
-        if getattr(args, 'json', False):
+        if getattr(args, "json", False):
             import json
+
             print(json.dumps(info, indent=2))
             return
 
@@ -139,13 +145,16 @@ def cmd_run_agent(args):
         # Read task from file or stdin if not provided
         task = args.task
         if args.task_file:
-            with open(args.task_file, 'r') as f:
+            with open(args.task_file, "r") as f:
                 task = f.read()
         elif not task and not sys.stdin.isatty():
             task = sys.stdin.read()
 
         if not task:
-            print("❌ Error: No task provided. Use --task, --task-file, or pipe input", file=sys.stderr)
+            print(
+                "❌ Error: No task provided. Use --task, --task-file, or pipe input",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         print(f"🚀 Running agent: {args.agent}\n")
@@ -153,6 +162,7 @@ def cmd_run_agent(args):
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
+
             print("🎭 DEMO MODE - Simulated responses, no API calls\n")
             orchestrator = DemoOrchestrator(config_path=args.config)
             result = orchestrator.run_agent(
@@ -160,7 +170,7 @@ def cmd_run_agent(args):
                 task=task,
                 model=args.model or "claude-3-5-sonnet-20241022",
                 max_tokens=args.max_tokens,
-                temperature=args.temperature
+                temperature=args.temperature,
             )
         # Use HybridOrchestrator if auto-select-model is enabled
         elif args.auto_select_model:
@@ -171,7 +181,7 @@ def cmd_run_agent(args):
                 anthropic_api_key=args.api_key,
                 auto_select_model=True,
                 prefer_cheaper=True,
-                cost_threshold=args.cost_threshold
+                cost_threshold=args.cost_threshold,
             )
 
             # Show cost estimate if requested
@@ -180,12 +190,14 @@ def cmd_run_agent(args):
 
                 print("📊 Cost Estimate:\n")
                 print(f"   Model: {estimate.model}")
-                print(f"   Estimated tokens: {estimate.estimated_input_tokens:,} input + {estimate.estimated_output_tokens:,} output")
+                print(
+                    f"   Estimated tokens: {estimate.estimated_input_tokens:,} input + {estimate.estimated_output_tokens:,} output"
+                )
                 print(f"   Estimated cost: ${estimate.estimated_cost:.6f}\n")
 
                 if not args.yes:
                     proceed = input("Proceed? [Y/n]: ").strip().lower()
-                    if proceed and proceed != 'y':
+                    if proceed and proceed != "y":
                         print("Cancelled")
                         sys.exit(0)
 
@@ -195,14 +207,13 @@ def cmd_run_agent(args):
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
-                auto_select=True
+                auto_select=True,
             )
 
         else:
             # Use standard orchestrator
             orchestrator = AgentOrchestrator(
-                config_path=args.config,
-                anthropic_api_key=args.api_key
+                config_path=args.config, anthropic_api_key=args.api_key
             )
 
             result = orchestrator.run_agent(
@@ -210,7 +221,7 @@ def cmd_run_agent(args):
                 task=task,
                 model=args.model,
                 max_tokens=args.max_tokens,
-                temperature=args.temperature
+                temperature=args.temperature,
             )
 
         if result.success:
@@ -218,7 +229,7 @@ def cmd_run_agent(args):
             print(result.output)
 
             if args.output:
-                with open(args.output, 'w') as f:
+                with open(args.output, "w") as f:
                     f.write(result.output)
                 print(f"\n📝 Output saved to: {args.output}")
 
@@ -242,7 +253,7 @@ def cmd_run_workflow(args):
         # Read task
         task = args.task
         if args.task_file:
-            with open(args.task_file, 'r') as f:
+            with open(args.task_file, "r") as f:
                 task = f.read()
 
         if not task:
@@ -254,18 +265,15 @@ def cmd_run_workflow(args):
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
+
             print("🎭 DEMO MODE - Simulated responses, no API calls\n")
             orchestrator = DemoOrchestrator(config_path=args.config)
         else:
             orchestrator = AgentOrchestrator(
-                config_path=args.config,
-                anthropic_api_key=args.api_key
+                config_path=args.config, anthropic_api_key=args.api_key
             )
 
-        results = orchestrator.run_workflow(
-            workflow_name=args.workflow,
-            task=task
-        )
+        results = orchestrator.run_workflow(workflow_name=args.workflow, task=task)
 
         print("\n" + "=" * 80)
         print("Workflow Summary")
@@ -276,7 +284,7 @@ def cmd_run_workflow(args):
             status = "✅" if result.success else "❌"
             print(f"{i}. {status} {result.agent_name}")
             if result.success:
-                total_tokens += result.metadata.get('tokens_used', 0)
+                total_tokens += result.metadata.get("tokens_used", 0)
 
         print(f"\nTotal tokens used: {total_tokens:,}")
 
@@ -285,9 +293,9 @@ def cmd_run_workflow(args):
             output_data = {
                 "workflow": args.workflow,
                 "task": task,
-                "results": [r.to_dict() for r in results]
+                "results": [r.to_dict() for r in results],
             }
-            with open(args.output, 'w') as f:
+            with open(args.output, "w") as f:
                 json.dump(output_data, f, indent=2)
             print(f"📝 Results saved to: {args.output}")
 
@@ -343,12 +351,16 @@ def cmd_metrics(args):
             print(f"{'Agent':<30} {'Runs':>6} {'Success':>8} {'Avg Time':>10} {'Cost':>10}")
             print("-" * 70)
 
-            for agent, data in sorted(stats.items(), key=lambda x: x[1]['total_cost'], reverse=True):
+            for agent, data in sorted(
+                stats.items(), key=lambda x: x[1]["total_cost"], reverse=True
+            ):
                 success_rate = f"{data['success_rate']:.1%}"
                 avg_time = f"{data['avg_execution_time_ms']:.0f}ms"
                 cost = f"${data['total_cost']:.4f}"
 
-                print(f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}")
+                print(
+                    f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}"
+                )
 
         # Cost breakdown
         elif args.command == "costs":
@@ -357,19 +369,19 @@ def cmd_metrics(args):
             print(f"Total Cost: ${costs['total']:.4f}\n")
 
             print("By Agent:")
-            for agent, cost in list(costs['by_agent'].items())[:10]:
-                pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+            for agent, cost in list(costs["by_agent"].items())[:10]:
+                pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
                 bar_length = int(pct / 2)  # 0-50 chars
                 bar = "█" * bar_length
 
                 print(f"  {agent:<30} ${cost:>8.4f} {bar} {pct:.1f}%")
 
-            if len(costs['by_agent']) > 10:
+            if len(costs["by_agent"]) > 10:
                 print(f"  ... and {len(costs['by_agent']) - 10} more agents")
 
             print("\nBy Model:")
-            for model, cost in costs['by_model'].items():
-                pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+            for model, cost in costs["by_model"].items():
+                pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
                 print(f"  {model:<40} ${cost:>8.4f} ({pct:.1f}%)")
 
         # Export
@@ -392,13 +404,15 @@ def cmd_init(args):
     try:
         from .quick_start import get_quick_start_orchestrator
 
-        target_dir = Path(args.directory if args.directory != '.' else Path.cwd())
+        target_dir = Path(args.directory if args.directory != "." else Path.cwd())
         claude_dir = target_dir / ".claude"
 
         # Check if .claude already exists
         if claude_dir.exists():
             if not args.force:
-                print(f"❌ Error: .claude directory already exists in {target_dir}", file=sys.stderr)
+                print(
+                    f"❌ Error: .claude directory already exists in {target_dir}", file=sys.stderr
+                )
                 print("   Use --force to reinitialize", file=sys.stderr)
                 sys.exit(1)
             else:
@@ -463,9 +477,7 @@ def cmd_init(args):
         else:
             # Auto-match templates
             matched_templates = orchestrator.match_templates(
-                description=description,
-                tech_stack=tech_stack,
-                top_k=3
+                description=description, tech_stack=tech_stack, top_k=3
             )
 
         # Display matched templates
@@ -479,7 +491,9 @@ def cmd_init(args):
                 print(f"{i}. {template.name}")
                 print(f"   Match: {bar} {confidence_pct:.1f}%")
                 print(f"   {template.description}")
-                print(f"   Difficulty: {template.difficulty} | Setup: {template.estimated_setup_time}")
+                print(
+                    f"   Difficulty: {template.difficulty} | Setup: {template.estimated_setup_time}"
+                )
                 print(f"   Agents: {len(template.agents)} | Workflows: {len(template.workflows)}")
                 print()
 
@@ -499,23 +513,19 @@ def cmd_init(args):
 
         # Generate configuration
         config = orchestrator.generate_config(
-            template=selected_template,
-            project_name=project_name,
-            description=description
+            template=selected_template, project_name=project_name, description=description
         )
 
         # Initialize project
         print("📁 Creating project structure...\n")
         result = orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir),
-            create_examples=not args.no_examples
+            config=config, output_dir=str(claude_dir), create_examples=not args.no_examples
         )
 
         # Display results
         print("✅ Project initialized successfully!\n")
         print(f"📂 Created {len(result['created_files'])} files:")
-        for file in result['created_files']:
+        for file in result["created_files"]:
             rel_path = Path(file).relative_to(target_dir)
             print(f"   ✓ {rel_path}")
 
@@ -529,7 +539,9 @@ def cmd_init(args):
         print(f"\n🚀 Next Steps:")
         print(f"   1. Edit {claude_dir / 'task.md'} with your first task")
         print(f"   2. Run: claude-force recommend --task-file {claude_dir / 'task.md'}")
-        print(f"   3. Run: claude-force run agent <agent-name> --task-file {claude_dir / 'task.md'}")
+        print(
+            f"   3. Run: claude-force run agent <agent-name> --task-file {claude_dir / 'task.md'}"
+        )
         print(f"   4. Review output in {claude_dir / 'work.md'}")
 
         print(f"\n📚 Learn More:")
@@ -547,6 +559,7 @@ def cmd_init(args):
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         import traceback
+
         if args.verbose:
             traceback.print_exc()
         sys.exit(1)
@@ -559,9 +572,7 @@ def cmd_marketplace_list(args):
 
         manager = get_marketplace_manager()
         plugins = manager.list_available(
-            category=args.category,
-            source=args.source,
-            installed_only=args.installed
+            category=args.category, source=args.source, installed_only=args.installed
         )
 
         if not plugins:
@@ -584,7 +595,9 @@ def cmd_marketplace_list(args):
             print(f"\n{plugin.name} ({plugin.id}) {status}")
             print(f"  {plugin.description}")
             print(f"  Source: {plugin.source.value} | Version: {plugin.version}")
-            print(f"  Agents: {len(plugin.agents)} | Skills: {len(plugin.skills)} | Workflows: {len(plugin.workflows)}")
+            print(
+                f"  Agents: {len(plugin.agents)} | Skills: {len(plugin.skills)} | Workflows: {len(plugin.workflows)}"
+            )
 
         print("\n" + "=" * 80)
         print(f"\n💡 Install: claude-force marketplace install <plugin-id>")
@@ -600,9 +613,12 @@ def cmd_marketplace_search(args):
         from .marketplace import get_marketplace_manager
 
         # Accept either positional query or --query flag
-        query = args.query or getattr(args, 'query_flag', None)
+        query = args.query or getattr(args, "query_flag", None)
         if not query:
-            print("❌ Error: Search query required (provide as argument or use --query)", file=sys.stderr)
+            print(
+                "❌ Error: Search query required (provide as argument or use --query)",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         manager = get_marketplace_manager()
@@ -620,7 +636,10 @@ def cmd_marketplace_search(args):
             print(f"\n📦 {plugin.name} ({plugin.id}) {status}")
             print(f"   {plugin.description}")
             print(f"   Source: {plugin.source.value} | Category: {plugin.category.value}")
-            print(f"   Agents: {', '.join(plugin.agents[:3])}" + (" ..." if len(plugin.agents) > 3 else ""))
+            print(
+                f"   Agents: {', '.join(plugin.agents[:3])}"
+                + (" ..." if len(plugin.agents) > 3 else "")
+            )
 
         print("\n" + "=" * 80)
         print(f"\n💡 Install: claude-force marketplace install <plugin-id>")
@@ -639,10 +658,7 @@ def cmd_marketplace_install(args):
 
         print(f"📦 Installing plugin '{args.plugin_id}'...\n")
 
-        result = manager.install_plugin(
-            plugin_id=args.plugin_id,
-            force=args.force
-        )
+        result = manager.install_plugin(plugin_id=args.plugin_id, force=args.force)
 
         if not result.success:
             print(f"❌ Installation failed", file=sys.stderr)
@@ -708,7 +724,9 @@ def cmd_marketplace_info(args):
         print(f"Version:     {plugin.version}")
         print(f"Source:      {plugin.source.value}")
         print(f"Category:    {plugin.category.value}")
-        print(f"Installed:   {'Yes (v' + plugin.installed_version + ')' if plugin.installed else 'No'}")
+        print(
+            f"Installed:   {'Yes (v' + plugin.installed_version + ')' if plugin.installed else 'No'}"
+        )
 
         if plugin.author:
             print(f"Author:      {plugin.author}")
@@ -758,9 +776,11 @@ def cmd_import_agent(args):
         tool = get_porting_tool()
 
         # Accept either positional file or --input flag
-        file_path = args.file or getattr(args, 'input', None)
+        file_path = args.file or getattr(args, "input", None)
         if not file_path:
-            print("❌ Error: File path required (provide as argument or use --input)", file=sys.stderr)
+            print(
+                "❌ Error: File path required (provide as argument or use --input)", file=sys.stderr
+            )
             sys.exit(1)
 
         agent_file = Path(file_path)
@@ -772,16 +792,14 @@ def cmd_import_agent(args):
         print(f"📥 Importing agent from {agent_file}...")
 
         result = tool.import_from_wshobson(
-            agent_file=agent_file,
-            generate_contract=not args.no_contract,
-            target_name=args.name
+            agent_file=agent_file, generate_contract=not args.no_contract, target_name=args.name
         )
 
         print(f"\n✅ Successfully imported '{result['name']}'")
         print(f"\n📁 Created files:")
         print(f"   Agent: {result['agent_path']}")
 
-        if result['contract_path']:
+        if result["contract_path"]:
             print(f"   Contract: {result['contract_path']}")
 
         if not args.no_contract:
@@ -793,6 +811,7 @@ def cmd_import_agent(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -813,7 +832,7 @@ def cmd_export_agent(args):
             output_file = tool.export_to_wshobson(
                 agent_name=args.agent_name,
                 output_dir=output_dir,
-                include_metadata=not args.no_metadata
+                include_metadata=not args.no_metadata,
             )
 
             print(f"\n✅ Successfully exported to {output_file}")
@@ -833,6 +852,7 @@ def cmd_export_agent(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -855,9 +875,7 @@ def cmd_import_bulk(args):
         print(f"   Pattern: {args.pattern}")
 
         results = tool.bulk_import(
-            source_dir=source_dir,
-            pattern=args.pattern,
-            generate_contracts=not args.no_contracts
+            source_dir=source_dir, pattern=args.pattern, generate_contracts=not args.no_contracts
         )
 
         print(f"\n📊 Import Results:")
@@ -865,23 +883,24 @@ def cmd_import_bulk(args):
         print(f"   ✅ Imported: {len(results['imported'])}")
         print(f"   ❌ Failed: {len(results['failed'])}")
 
-        if results['imported']:
+        if results["imported"]:
             print(f"\n✅ Successfully imported agents:")
-            for result in results['imported']:
+            for result in results["imported"]:
                 print(f"   • {result['name']}")
 
-        if results['failed']:
+        if results["failed"]:
             print(f"\n❌ Failed imports:")
-            for failure in results['failed']:
+            for failure in results["failed"]:
                 print(f"   • {failure['file']}: {failure['error']}")
 
-        if results['imported']:
+        if results["imported"]:
             print(f"\n💡 Try: claude-force list agents")
 
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -894,9 +913,7 @@ def cmd_gallery_browse(args):
         gallery = get_template_gallery()
 
         templates = gallery.list_templates(
-            category=args.category,
-            difficulty=args.difficulty,
-            min_rating=args.min_rating
+            category=args.category, difficulty=args.difficulty, min_rating=args.min_rating
         )
 
         if not templates:
@@ -912,9 +929,13 @@ def cmd_gallery_browse(args):
             uses = f"({template.metrics.uses_count} uses)" if template.metrics else ""
 
             print(f"\n{template.name} {rating} {uses}")
-            print(f"ID: {template.template_id} | Category: {template.category} | Difficulty: {template.difficulty}")
+            print(
+                f"ID: {template.template_id} | Category: {template.category} | Difficulty: {template.difficulty}"
+            )
             print(f"{template.description}")
-            print(f"Agents: {len(template.agents)} | Workflows: {len(template.workflows)} | Skills: {len(template.skills)}")
+            print(
+                f"Agents: {len(template.agents)} | Workflows: {len(template.workflows)} | Skills: {len(template.skills)}"
+            )
 
             if template.best_for:
                 print(f"✅ Best for: {', '.join(template.best_for[:2])}")
@@ -952,7 +973,9 @@ def cmd_gallery_show(args):
             print(f"\n📊 Metrics:")
             print(f"   Uses: {template.metrics.uses_count}")
             print(f"   Success Rate: {template.metrics.success_rate:.0%}")
-            print(f"   Rating: {template.metrics.avg_rating:.1f}/5.0 ({template.metrics.total_ratings} ratings)")
+            print(
+                f"   Rating: {template.metrics.avg_rating:.1f}/5.0 ({template.metrics.total_ratings} ratings)"
+            )
 
         print(f"\nDescription:")
         print(f"  {template.description}")
@@ -1064,7 +1087,7 @@ def cmd_recommend(args):
         # Read task from --task, --task-file, or stdin
         task = args.task
         if args.task_file:
-            with open(args.task_file, 'r') as f:
+            with open(args.task_file, "r") as f:
                 task = f.read()
         elif not task and not sys.stdin.isatty():
             task = sys.stdin.read()
@@ -1078,9 +1101,7 @@ def cmd_recommend(args):
 
         # Get recommendations
         matches = router.recommend_agents(
-            task=task,
-            top_k=args.top_k,
-            min_confidence=args.min_confidence
+            task=task, top_k=args.top_k, min_confidence=args.min_confidence
         )
 
         if not matches:
@@ -1090,6 +1111,7 @@ def cmd_recommend(args):
         # JSON output if requested
         if args.json:
             import json
+
             matches_data = [
                 {
                     "agent_name": m.agent_name,
@@ -1099,7 +1121,7 @@ def cmd_recommend(args):
                     "reason": m.reason,
                     "source": m.source,
                     "installed": m.installed,
-                    "plugin_id": getattr(m, 'plugin_id', None)
+                    "plugin_id": getattr(m, "plugin_id", None),
                 }
                 for m in matches
             ]
@@ -1148,7 +1170,7 @@ def cmd_recommend(args):
         if matches:
             first_match = matches[0]
             if first_match.source == "builtin" or first_match.installed:
-                print(f"   claude-force run agent {first_match.agent_id} --task \"Your task\"")
+                print(f'   claude-force run agent {first_match.agent_id} --task "Your task"')
             else:
                 print(f"   claude-force marketplace install {first_match.plugin_id}")
 
@@ -1156,6 +1178,7 @@ def cmd_recommend(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1175,37 +1198,36 @@ def cmd_analyze_task(args):
         analysis = router.analyze_task_complexity(args.task)
 
         # Complexity
-        complexity_emoji = {
-            "simple": "🟢",
-            "medium": "🟡",
-            "complex": "🔴"
-        }
-        print(f"Complexity: {complexity_emoji.get(analysis['complexity'], '⚪')} {analysis['complexity'].upper()}")
+        complexity_emoji = {"simple": "🟢", "medium": "🟡", "complex": "🔴"}
+        print(
+            f"Complexity: {complexity_emoji.get(analysis['complexity'], '⚪')} {analysis['complexity'].upper()}"
+        )
         print(f"Task Length: {analysis['task_length']} words")
         print(f"Estimated Agents: {analysis['estimated_agents']}")
         print(f"Multiple Agents: {'Yes' if analysis['requires_multiple_agents'] else 'No'}")
 
         # Categories
-        if analysis['categories']:
+        if analysis["categories"]:
             print(f"\nCategories:")
-            for category in analysis['categories']:
+            for category in analysis["categories"]:
                 print(f"   • {category}")
 
         # Recommendations
-        if analysis['recommendations']:
+        if analysis["recommendations"]:
             print(f"\n🤖 Recommended Agents:")
-            for i, match in enumerate(analysis['recommendations'], 1):
+            for i, match in enumerate(analysis["recommendations"], 1):
                 conf_percent = int(match.confidence * 100)
                 status = "✅" if match.source == "builtin" or match.installed else "📦"
                 print(f"   {i}. {status} {match.agent_name} ({conf_percent}% match)")
 
         print("\n" + "=" * 80)
-        print(f"\n💡 Run: claude-force recommend --task \"Your task\" for detailed recommendations")
+        print(f'\n💡 Run: claude-force recommend --task "Your task" for detailed recommendations')
 
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1220,8 +1242,7 @@ def cmd_contribute_validate(args):
         print(f"\n🔍 Validating {args.agent} for contribution...\n")
 
         validation = manager.validate_agent_for_contribution(
-            agent_name=args.agent,
-            target_repo=args.target
+            agent_name=args.agent, target_repo=args.target
         )
 
         # Show validation results
@@ -1259,6 +1280,7 @@ def cmd_contribute_validate(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1277,7 +1299,7 @@ def cmd_contribute_prepare(args):
             agent_name=args.agent,
             target_repo=args.target,
             include_metadata=not args.no_metadata,
-            validate=not args.skip_validation
+            validate=not args.skip_validation,
         )
 
         # Show results
@@ -1297,9 +1319,7 @@ def cmd_contribute_prepare(args):
 
         # Show instructions
         instructions = manager.get_contribution_instructions(
-            agent_name=args.agent,
-            target_repo=args.target,
-            package=package
+            agent_name=args.agent, target_repo=args.target, package=package
         )
         print(instructions)
 
@@ -1311,6 +1331,7 @@ def cmd_contribute_prepare(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1322,10 +1343,12 @@ def cmd_compose(args):
         import json
 
         # Check if using simple agent list mode
-        if hasattr(args, 'agents') and args.agents:
+        if hasattr(args, "agents") and args.agents:
             # Simple workflow from agent list
             workflow_name = args.workflow_name or "custom-workflow"
-            print(f"\n✨ Creating workflow '{workflow_name}' with agents: {', '.join(args.agents)}\n")
+            print(
+                f"\n✨ Creating workflow '{workflow_name}' with agents: {', '.join(args.agents)}\n"
+            )
 
             # For test compatibility, just print success
             print(f"✅ Workflow '{workflow_name}' created successfully")
@@ -1340,22 +1363,26 @@ def cmd_compose(args):
 
         composer = get_workflow_composer(include_marketplace=not args.no_marketplace)
 
-        print(f"\n🎯 Analyzing goal: \"{args.goal}\"\n")
+        print(f'\n🎯 Analyzing goal: "{args.goal}"\n')
         print("=" * 80)
 
         # Compose workflow
         workflow = composer.compose_workflow(
-            goal=args.goal,
-            max_agents=args.max_agents,
-            prefer_builtin=args.prefer_builtin
+            goal=args.goal, max_agents=args.max_agents, prefer_builtin=args.prefer_builtin
         )
 
         # Show workflow summary
         print(f"\n✨ Workflow: {workflow.name}\n")
         print(f"Description: {workflow.description}")
-        print(f"\nAgents: {workflow.agents_count} ({workflow.builtin_count} built-in, {workflow.marketplace_count} marketplace)")
-        print(f"Estimated Duration: {workflow.total_estimated_duration_min}-{workflow.total_estimated_duration_min + 30} minutes")
-        print(f"Estimated Cost: ${workflow.total_estimated_cost:.2f}-${workflow.total_estimated_cost * 1.5:.2f}")
+        print(
+            f"\nAgents: {workflow.agents_count} ({workflow.builtin_count} built-in, {workflow.marketplace_count} marketplace)"
+        )
+        print(
+            f"Estimated Duration: {workflow.total_estimated_duration_min}-{workflow.total_estimated_duration_min + 30} minutes"
+        )
+        print(
+            f"Estimated Cost: ${workflow.total_estimated_cost:.2f}-${workflow.total_estimated_cost * 1.5:.2f}"
+        )
 
         # Show workflow steps
         print(f"\n📋 Workflow Steps:")
@@ -1374,7 +1401,9 @@ def cmd_compose(args):
 
             print(f"\n{step.step_number}. {step.step_type.upper()} - {step.description}")
             print(f"   Agent: {status} {step.agent.agent_name} ({conf_percent}% match)")
-            print(f"   Duration: ~{step.estimated_duration_min} min | Cost: ~${step.estimated_cost:.2f}")
+            print(
+                f"   Duration: ~{step.estimated_duration_min} min | Cost: ~${step.estimated_cost:.2f}"
+            )
 
         # Show installation requirements
         if workflow.requires_installation:
@@ -1407,6 +1436,7 @@ def cmd_compose(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1425,9 +1455,7 @@ def cmd_analyze_compare(args):
 
         # Run comparison
         report = manager.compare_agents(
-            task=args.task,
-            agents=args.agents,
-            simulate=True  # Using simulation for demo
+            task=args.task, agents=args.agents, simulate=True  # Using simulation for demo
         )
 
         # Display results
@@ -1466,12 +1494,14 @@ def cmd_analyze_compare(args):
         # Output JSON if requested
         if args.json:
             import json
+
             print("\n" + json.dumps(report.to_dict(), indent=2))
 
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1489,10 +1519,7 @@ def cmd_analyze_recommend(args):
         print(f"Priority: {args.priority.upper()}\n")
 
         # Get recommendation
-        recommendation = manager.recommend_agent_for_task(
-            task=args.task,
-            priority=args.priority
-        )
+        recommendation = manager.recommend_agent_for_task(task=args.task, priority=args.priority)
 
         if not recommendation.get("recommendation"):
             print("❌ No suitable agents found for this task")
@@ -1503,12 +1530,15 @@ def cmd_analyze_recommend(args):
         print(f"\n{recommendation['guidance']}")
 
         print("\n" + "=" * 80)
-        print(f"\n💡 Next: claude-force run agent {recommendation['recommendation']} --task \"Your task\"")
+        print(
+            f"\n💡 Next: claude-force run agent {recommendation['recommendation']} --task \"Your task\""
+        )
 
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -1545,24 +1575,21 @@ Examples:
   claude-force metrics costs
 
 For more information: https://github.com/khanh-vu/claude-force
-        """
+        """,
     )
 
     parser.add_argument(
         "--config",
         default=".claude/claude.json",
-        help="Path to claude.json configuration (default: .claude/claude.json)"
+        help="Path to claude.json configuration (default: .claude/claude.json)",
     )
 
-    parser.add_argument(
-        "--api-key",
-        help="Anthropic API key (or set ANTHROPIC_API_KEY env var)"
-    )
+    parser.add_argument("--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)")
 
     parser.add_argument(
         "--demo",
         action="store_true",
-        help="Run in demo mode (simulated responses, no API key required)"
+        help="Run in demo mode (simulated responses, no API key required)",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
@@ -1586,15 +1613,32 @@ For more information: https://github.com/khanh-vu/claude-force
     info_parser.set_defaults(func=cmd_agent_info)
 
     # Recommend command
-    recommend_parser = subparsers.add_parser("recommend", help="Recommend agents for a task (semantic matching)")
+    recommend_parser = subparsers.add_parser(
+        "recommend", help="Recommend agents for a task (semantic matching)"
+    )
     recommend_parser.add_argument("--task", help="Task description")
     recommend_parser.add_argument("--task-file", help="Read task from file")
-    recommend_parser.add_argument("--top-k", type=int, default=3, help="Number of recommendations (default: 3)")
-    recommend_parser.add_argument("--min-confidence", type=float, default=0.3, help="Minimum confidence threshold 0-1 (default: 0.3)")
-    recommend_parser.add_argument("--explain", action="store_true", help="Explain top recommendation")
+    recommend_parser.add_argument(
+        "--top-k", type=int, default=3, help="Number of recommendations (default: 3)"
+    )
+    recommend_parser.add_argument(
+        "--min-confidence",
+        type=float,
+        default=0.3,
+        help="Minimum confidence threshold 0-1 (default: 0.3)",
+    )
+    recommend_parser.add_argument(
+        "--explain", action="store_true", help="Explain top recommendation"
+    )
     recommend_parser.add_argument("--json", action="store_true", help="Output as JSON")
-    recommend_parser.add_argument("--include-marketplace", action="store_true", help="Include marketplace agents in recommendations")
-    recommend_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    recommend_parser.add_argument(
+        "--include-marketplace",
+        action="store_true",
+        help="Include marketplace agents in recommendations",
+    )
+    recommend_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose error output"
+    )
     recommend_parser.set_defaults(func=cmd_recommend)
 
     # Run command
@@ -1602,20 +1646,36 @@ For more information: https://github.com/khanh-vu/claude-force
     run_subparsers = run_parser.add_subparsers(dest="run_type")
 
     # Run agent
-    run_agent_parser = run_subparsers.add_parser("agent", help="Run a single agent with optional hybrid model orchestration")
+    run_agent_parser = run_subparsers.add_parser(
+        "agent", help="Run a single agent with optional hybrid model orchestration"
+    )
     run_agent_parser.add_argument("agent", help="Agent name")
     run_agent_parser.add_argument("--task", help="Task description")
     run_agent_parser.add_argument("--task-file", help="Read task from file")
     run_agent_parser.add_argument("--output", "-o", help="Save output to file")
-    run_agent_parser.add_argument("--model", help="Claude model to use (auto-selected if --auto-select-model is enabled)")
+    run_agent_parser.add_argument(
+        "--model", help="Claude model to use (auto-selected if --auto-select-model is enabled)"
+    )
     run_agent_parser.add_argument("--max-tokens", type=int, default=4096, help="Maximum tokens")
-    run_agent_parser.add_argument("--temperature", type=float, default=1.0, help="Temperature (0.0-1.0)")
+    run_agent_parser.add_argument(
+        "--temperature", type=float, default=1.0, help="Temperature (0.0-1.0)"
+    )
     run_agent_parser.add_argument("--json", action="store_true", help="Output metadata as JSON")
     # Hybrid orchestration options
-    run_agent_parser.add_argument("--auto-select-model", action="store_true", help="Enable hybrid model orchestration (auto-select Haiku/Sonnet/Opus)")
-    run_agent_parser.add_argument("--estimate-cost", action="store_true", help="Show cost estimate before running")
-    run_agent_parser.add_argument("--cost-threshold", type=float, help="Maximum cost per task in USD")
-    run_agent_parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts")
+    run_agent_parser.add_argument(
+        "--auto-select-model",
+        action="store_true",
+        help="Enable hybrid model orchestration (auto-select Haiku/Sonnet/Opus)",
+    )
+    run_agent_parser.add_argument(
+        "--estimate-cost", action="store_true", help="Show cost estimate before running"
+    )
+    run_agent_parser.add_argument(
+        "--cost-threshold", type=float, help="Maximum cost per task in USD"
+    )
+    run_agent_parser.add_argument(
+        "--yes", "-y", action="store_true", help="Skip confirmation prompts"
+    )
     run_agent_parser.set_defaults(func=cmd_run_agent)
 
     # Run workflow
@@ -1624,7 +1684,9 @@ For more information: https://github.com/khanh-vu/claude-force
     run_workflow_parser.add_argument("--task", help="Task description")
     run_workflow_parser.add_argument("--task-file", help="Read task from file")
     run_workflow_parser.add_argument("--output", "-o", help="Save results to file (JSON)")
-    run_workflow_parser.add_argument("--no-pass-output", action="store_true", help="Don't pass output between agents")
+    run_workflow_parser.add_argument(
+        "--no-pass-output", action="store_true", help="Don't pass output between agents"
+    )
     run_workflow_parser.set_defaults(func=cmd_run_workflow)
 
     # Metrics command
@@ -1647,25 +1709,43 @@ For more information: https://github.com/khanh-vu/claude-force
     # Export metrics
     export_parser = metrics_subparsers.add_parser("export", help="Export metrics to file")
     export_parser.add_argument("output", help="Output file path")
-    export_parser.add_argument("--format", choices=["json", "csv"], default="json", help="Export format")
+    export_parser.add_argument(
+        "--format", choices=["json", "csv"], default="json", help="Export format"
+    )
     export_parser.set_defaults(func=cmd_metrics)
 
     # Init command
-    init_parser = subparsers.add_parser("init", help="Initialize a new claude-force project with intelligent template selection")
-    init_parser.add_argument("directory", nargs="?", default=".", help="Target directory (default: current directory)")
-    init_parser.add_argument("--description", "-d", help="Project description (required for non-interactive mode)")
+    init_parser = subparsers.add_parser(
+        "init", help="Initialize a new claude-force project with intelligent template selection"
+    )
+    init_parser.add_argument(
+        "directory", nargs="?", default=".", help="Target directory (default: current directory)"
+    )
+    init_parser.add_argument(
+        "--description", "-d", help="Project description (required for non-interactive mode)"
+    )
     init_parser.add_argument("--name", "-n", help="Project name (default: directory name)")
     init_parser.add_argument("--template", "-t", help="Template ID to use (skips auto-matching)")
     init_parser.add_argument("--tech", help="Tech stack (comma-separated)")
-    init_parser.add_argument("--interactive", "-i", action="store_true", help="Interactive mode with prompts")
-    init_parser.add_argument("--no-semantic", action="store_true", help="Disable semantic matching (use keyword-based)")
-    init_parser.add_argument("--no-examples", action="store_true", help="Don't create example files")
-    init_parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing .claude directory")
+    init_parser.add_argument(
+        "--interactive", "-i", action="store_true", help="Interactive mode with prompts"
+    )
+    init_parser.add_argument(
+        "--no-semantic", action="store_true", help="Disable semantic matching (use keyword-based)"
+    )
+    init_parser.add_argument(
+        "--no-examples", action="store_true", help="Don't create example files"
+    )
+    init_parser.add_argument(
+        "--force", "-f", action="store_true", help="Overwrite existing .claude directory"
+    )
     init_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     init_parser.set_defaults(func=cmd_init)
 
     # Marketplace command
-    marketplace_parser = subparsers.add_parser("marketplace", help="Manage plugins from marketplace")
+    marketplace_parser = subparsers.add_parser(
+        "marketplace", help="Manage plugins from marketplace"
+    )
     marketplace_subparsers = marketplace_parser.add_subparsers(dest="marketplace_command")
 
     # Marketplace list
@@ -1676,15 +1756,21 @@ For more information: https://github.com/khanh-vu/claude-force
     list_parser.set_defaults(func=cmd_marketplace_list)
 
     # Marketplace search
-    search_parser = marketplace_subparsers.add_parser("search", help="Search marketplace for plugins")
+    search_parser = marketplace_subparsers.add_parser(
+        "search", help="Search marketplace for plugins"
+    )
     search_parser.add_argument("query", nargs="?", help="Search query")
-    search_parser.add_argument("--query", "-q", dest="query_flag", help="Search query (alternative to positional)")
+    search_parser.add_argument(
+        "--query", "-q", dest="query_flag", help="Search query (alternative to positional)"
+    )
     search_parser.set_defaults(func=cmd_marketplace_search)
 
     # Marketplace install
     install_parser = marketplace_subparsers.add_parser("install", help="Install a plugin")
     install_parser.add_argument("plugin_id", help="Plugin ID to install")
-    install_parser.add_argument("--force", "-f", action="store_true", help="Force reinstall if already installed")
+    install_parser.add_argument(
+        "--force", "-f", action="store_true", help="Force reinstall if already installed"
+    )
     install_parser.set_defaults(func=cmd_marketplace_install)
 
     # Marketplace uninstall
@@ -1700,25 +1786,41 @@ For more information: https://github.com/khanh-vu/claude-force
     # Import/Export commands
     import_parser = subparsers.add_parser("import", help="Import agent from external source")
     import_parser.add_argument("file", nargs="?", help="Path to agent markdown file")
-    import_parser.add_argument("--input", "-i", help="Path to agent markdown file (alternative to positional)")
+    import_parser.add_argument(
+        "--input", "-i", help="Path to agent markdown file (alternative to positional)"
+    )
     import_parser.add_argument("--name", help="Override agent name")
-    import_parser.add_argument("--no-contract", action="store_true", help="Skip contract generation")
+    import_parser.add_argument(
+        "--no-contract", action="store_true", help="Skip contract generation"
+    )
     import_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     import_parser.set_defaults(func=cmd_import_agent)
 
     export_parser = subparsers.add_parser("export", help="Export agent to external format")
     export_parser.add_argument("agent_name", help="Name of agent to export")
-    export_parser.add_argument("--format", default="wshobson", help="Export format (default: wshobson)")
-    export_parser.add_argument("--output-dir", "-o", default="./exported", help="Output directory (default: ./exported)")
+    export_parser.add_argument(
+        "--format", default="wshobson", help="Export format (default: wshobson)"
+    )
+    export_parser.add_argument(
+        "--output-dir", "-o", default="./exported", help="Output directory (default: ./exported)"
+    )
     export_parser.add_argument("--no-metadata", action="store_true", help="Skip metadata header")
     export_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     export_parser.set_defaults(func=cmd_export_agent)
 
-    import_bulk_parser = subparsers.add_parser("import-bulk", help="Bulk import agents from directory")
+    import_bulk_parser = subparsers.add_parser(
+        "import-bulk", help="Bulk import agents from directory"
+    )
     import_bulk_parser.add_argument("directory", help="Source directory containing agent files")
-    import_bulk_parser.add_argument("--pattern", default="*.md", help="File pattern (default: *.md)")
-    import_bulk_parser.add_argument("--no-contracts", action="store_true", help="Skip contract generation")
-    import_bulk_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    import_bulk_parser.add_argument(
+        "--pattern", default="*.md", help="File pattern (default: *.md)"
+    )
+    import_bulk_parser.add_argument(
+        "--no-contracts", action="store_true", help="Skip contract generation"
+    )
+    import_bulk_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose error output"
+    )
     import_bulk_parser.set_defaults(func=cmd_import_bulk)
 
     # Template Gallery commands
@@ -1728,7 +1830,9 @@ For more information: https://github.com/khanh-vu/claude-force
     # Gallery browse
     browse_parser = gallery_subparsers.add_parser("browse", help="Browse all templates")
     browse_parser.add_argument("--category", help="Filter by category")
-    browse_parser.add_argument("--difficulty", help="Filter by difficulty (beginner, intermediate, advanced)")
+    browse_parser.add_argument(
+        "--difficulty", help="Filter by difficulty (beginner, intermediate, advanced)"
+    )
     browse_parser.add_argument("--min-rating", type=float, help="Minimum rating (0.0-5.0)")
     browse_parser.set_defaults(func=cmd_gallery_browse)
 
@@ -1744,48 +1848,96 @@ For more information: https://github.com/khanh-vu/claude-force
 
     # Gallery popular
     popular_parser = gallery_subparsers.add_parser("popular", help="Show popular templates")
-    popular_parser.add_argument("--top-k", type=int, default=5, help="Number of templates to show (default: 5)")
+    popular_parser.add_argument(
+        "--top-k", type=int, default=5, help="Number of templates to show (default: 5)"
+    )
     popular_parser.set_defaults(func=cmd_gallery_popular)
 
     # Task Complexity Analysis command
     analyze_parser = subparsers.add_parser("analyze-task", help="Analyze task complexity")
     analyze_parser.add_argument("--task", "-t", required=True, help="Task description")
-    analyze_parser.add_argument("--include-marketplace", action="store_true", default=True, help="Include marketplace agents")
-    analyze_parser.add_argument("--no-marketplace", dest="include_marketplace", action="store_false", help="Exclude marketplace agents")
+    analyze_parser.add_argument(
+        "--include-marketplace",
+        action="store_true",
+        default=True,
+        help="Include marketplace agents",
+    )
+    analyze_parser.add_argument(
+        "--no-marketplace",
+        dest="include_marketplace",
+        action="store_false",
+        help="Exclude marketplace agents",
+    )
     analyze_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     analyze_parser.set_defaults(func=cmd_analyze_task)
 
     # Contribution commands
-    contribute_parser = subparsers.add_parser("contribute", help="Contribute agents to community repositories")
+    contribute_parser = subparsers.add_parser(
+        "contribute", help="Contribute agents to community repositories"
+    )
     contribute_subparsers = contribute_parser.add_subparsers(dest="contribute_command")
 
     # Contribute validate
-    validate_parser = contribute_subparsers.add_parser("validate", help="Validate agent for contribution")
+    validate_parser = contribute_subparsers.add_parser(
+        "validate", help="Validate agent for contribution"
+    )
     validate_parser.add_argument("agent", help="Agent name to validate")
-    validate_parser.add_argument("--target", default="wshobson", choices=["wshobson", "claude-force"], help="Target repository (default: wshobson)")
-    validate_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    validate_parser.add_argument(
+        "--target",
+        default="wshobson",
+        choices=["wshobson", "claude-force"],
+        help="Target repository (default: wshobson)",
+    )
+    validate_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose error output"
+    )
     validate_parser.set_defaults(func=cmd_contribute_validate)
 
     # Contribute prepare
-    prepare_parser = contribute_subparsers.add_parser("prepare", help="Prepare agent for contribution")
+    prepare_parser = contribute_subparsers.add_parser(
+        "prepare", help="Prepare agent for contribution"
+    )
     prepare_parser.add_argument("agent", help="Agent name to prepare")
-    prepare_parser.add_argument("--target", default="wshobson", choices=["wshobson", "claude-force"], help="Target repository (default: wshobson)")
-    prepare_parser.add_argument("--output-dir", default="./exported", help="Output directory for export (default: ./exported)")
-    prepare_parser.add_argument("--no-metadata", action="store_true", help="Don't include metadata header")
-    prepare_parser.add_argument("--skip-validation", action="store_true", help="Skip validation checks")
+    prepare_parser.add_argument(
+        "--target",
+        default="wshobson",
+        choices=["wshobson", "claude-force"],
+        help="Target repository (default: wshobson)",
+    )
+    prepare_parser.add_argument(
+        "--output-dir",
+        default="./exported",
+        help="Output directory for export (default: ./exported)",
+    )
+    prepare_parser.add_argument(
+        "--no-metadata", action="store_true", help="Don't include metadata header"
+    )
+    prepare_parser.add_argument(
+        "--skip-validation", action="store_true", help="Skip validation checks"
+    )
     prepare_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     prepare_parser.set_defaults(func=cmd_contribute_prepare)
 
     # Workflow Composer commands
-    compose_parser = subparsers.add_parser("compose", help="Compose workflow from high-level goal or agent list")
+    compose_parser = subparsers.add_parser(
+        "compose", help="Compose workflow from high-level goal or agent list"
+    )
     compose_parser.add_argument("workflow_name", nargs="?", help="Workflow name (optional)")
     compose_parser.add_argument("--goal", "-g", help="High-level goal description")
     compose_parser.add_argument("--agents", "-a", nargs="+", help="List of agents for workflow")
-    compose_parser.add_argument("--max-agents", type=int, default=10, help="Maximum number of agents (default: 10)")
-    compose_parser.add_argument("--prefer-builtin", action="store_true", help="Prefer builtin agents over marketplace")
-    compose_parser.add_argument("--no-marketplace", action="store_true", help="Exclude marketplace agents")
+    compose_parser.add_argument(
+        "--max-agents", type=int, default=10, help="Maximum number of agents (default: 10)"
+    )
+    compose_parser.add_argument(
+        "--prefer-builtin", action="store_true", help="Prefer builtin agents over marketplace"
+    )
+    compose_parser.add_argument(
+        "--no-marketplace", action="store_true", help="Exclude marketplace agents"
+    )
     compose_parser.add_argument("--save", action="store_true", help="Save workflow to file")
-    compose_parser.add_argument("--output-dir", default=".claude/workflows", help="Output directory for saved workflow")
+    compose_parser.add_argument(
+        "--output-dir", default=".claude/workflows", help="Output directory for saved workflow"
+    )
     compose_parser.add_argument("--json", action="store_true", help="Output workflow as JSON")
     compose_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     compose_parser.set_defaults(func=cmd_compose)
@@ -1803,10 +1955,19 @@ For more information: https://github.com/khanh-vu/claude-force
     compare_parser.set_defaults(func=cmd_analyze_compare)
 
     # Analyze recommend
-    recommend_parser_analytics = analyze_subparsers.add_parser("recommend", help="Recommend agent based on priority")
+    recommend_parser_analytics = analyze_subparsers.add_parser(
+        "recommend", help="Recommend agent based on priority"
+    )
     recommend_parser_analytics.add_argument("--task", "-t", required=True, help="Task description")
-    recommend_parser_analytics.add_argument("--priority", choices=["speed", "cost", "quality", "balanced"], default="balanced", help="Optimization priority")
-    recommend_parser_analytics.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    recommend_parser_analytics.add_argument(
+        "--priority",
+        choices=["speed", "cost", "quality", "balanced"],
+        default="balanced",
+        help="Optimization priority",
+    )
+    recommend_parser_analytics.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose error output"
+    )
     recommend_parser_analytics.set_defaults(func=cmd_analyze_recommend)
 
     # Parse arguments
@@ -1816,7 +1977,7 @@ For more information: https://github.com/khanh-vu/claude-force
         parser.print_help()
         sys.exit(0)
 
-    if hasattr(args, 'func'):
+    if hasattr(args, "func"):
         args.func(args)
     else:
         parser.print_help()
