@@ -1166,6 +1166,111 @@ def cmd_analyze_task(args):
         sys.exit(1)
 
 
+def cmd_contribute_validate(args):
+    """Validate agent for contribution"""
+    try:
+        from .contribution import get_contribution_manager
+
+        manager = get_contribution_manager()
+
+        print(f"\n🔍 Validating {args.agent} for contribution...\n")
+
+        validation = manager.validate_agent_for_contribution(
+            agent_name=args.agent,
+            target_repo=args.target
+        )
+
+        # Show validation results
+        print("=" * 80)
+        print(f"\nValidation Result: {'✅ PASSED' if validation.valid else '❌ FAILED'}\n")
+
+        if validation.passed_checks:
+            print("✅ Passed Checks:")
+            for check in validation.passed_checks:
+                print(f"   • {check}")
+            print()
+
+        if validation.warnings:
+            print("⚠️  Warnings:")
+            for warning in validation.warnings:
+                print(f"   • {warning}")
+            print()
+
+        if validation.errors:
+            print("❌ Errors:")
+            for error in validation.errors:
+                print(f"   • {error}")
+            print()
+
+        print("=" * 80)
+
+        if validation.valid:
+            print(f"\n✅ {args.agent} is ready for contribution!")
+            print(f"\n💡 Next: claude-force contribute prepare {args.agent} --target {args.target}")
+        else:
+            print(f"\n❌ {args.agent} needs fixes before contribution")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_contribute_prepare(args):
+    """Prepare agent for contribution"""
+    try:
+        from .contribution import get_contribution_manager
+
+        manager = get_contribution_manager(export_dir=Path(args.output_dir))
+
+        print(f"\n🎁 Preparing {args.agent} for contribution to {args.target}/agents...\n")
+
+        # Prepare contribution package
+        package = manager.prepare_contribution(
+            agent_name=args.agent,
+            target_repo=args.target,
+            include_metadata=not args.no_metadata,
+            validate=not args.skip_validation
+        )
+
+        # Show results
+        print("=" * 80)
+        print("\n✅ Contribution package ready!\n")
+        print(f"📦 Package Location: {package.export_path}")
+        print(f"📄 PR Template: {package.pr_template_path}")
+        print(f"📋 Plugin Structure: {package.export_path}/plugin.json")
+
+        # Show validation summary
+        if package.validation:
+            print(f"\n✅ Validation: {'PASSED' if package.validation.valid else 'FAILED'}")
+            if package.validation.warnings:
+                print(f"⚠️  Warnings: {len(package.validation.warnings)}")
+
+        print("\n" + "=" * 80)
+
+        # Show instructions
+        instructions = manager.get_contribution_instructions(
+            agent_name=args.agent,
+            target_repo=args.target,
+            package=package
+        )
+        print(instructions)
+
+    except ValueError as e:
+        print(f"❌ Validation Error: {e}", file=sys.stderr)
+        print(f"\n💡 Fix the errors and try again, or use --skip-validation to bypass")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -1391,6 +1496,27 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     analyze_parser.add_argument("--no-marketplace", dest="include_marketplace", action="store_false", help="Exclude marketplace agents")
     analyze_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     analyze_parser.set_defaults(func=cmd_analyze_task)
+
+    # Contribution commands
+    contribute_parser = subparsers.add_parser("contribute", help="Contribute agents to community repositories")
+    contribute_subparsers = contribute_parser.add_subparsers(dest="contribute_command")
+
+    # Contribute validate
+    validate_parser = contribute_subparsers.add_parser("validate", help="Validate agent for contribution")
+    validate_parser.add_argument("agent", help="Agent name to validate")
+    validate_parser.add_argument("--target", default="wshobson", choices=["wshobson", "claude-force"], help="Target repository (default: wshobson)")
+    validate_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    validate_parser.set_defaults(func=cmd_contribute_validate)
+
+    # Contribute prepare
+    prepare_parser = contribute_subparsers.add_parser("prepare", help="Prepare agent for contribution")
+    prepare_parser.add_argument("agent", help="Agent name to prepare")
+    prepare_parser.add_argument("--target", default="wshobson", choices=["wshobson", "claude-force"], help="Target repository (default: wshobson)")
+    prepare_parser.add_argument("--output-dir", default="./exported", help="Output directory for export (default: ./exported)")
+    prepare_parser.add_argument("--no-metadata", action="store_true", help="Don't include metadata header")
+    prepare_parser.add_argument("--skip-validation", action="store_true", help="Skip validation checks")
+    prepare_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    prepare_parser.set_defaults(func=cmd_contribute_prepare)
 
     # Parse arguments
     args = parser.parse_args()
