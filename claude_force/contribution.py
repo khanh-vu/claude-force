@@ -431,8 +431,8 @@ I have tested this agent with the following tasks:
 3. Fork the target repository:
    $ gh repo fork {repo_url}
 
-4. Clone your fork:
-   $ git clone https://github.com/<YOUR_USERNAME>/agents
+4. Clone your fork (replace YOUR_USERNAME with your GitHub username):
+   $ git clone https://github.com/YOUR_USERNAME/agents
    $ cd agents
 
 5. Add the plugin to marketplace.json:
