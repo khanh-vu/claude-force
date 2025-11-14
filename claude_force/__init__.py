@@ -18,6 +18,22 @@ __license__ = "MIT"
 from .orchestrator import AgentOrchestrator, AgentResult
 from .cli import main as cli_main
 from .mcp_server import MCPServer, MCPCapability, MCPRequest, MCPResponse
+from .quick_start import (
+    QuickStartOrchestrator,
+    ProjectTemplate,
+    ProjectConfig,
+    get_quick_start_orchestrator
+)
+from .hybrid_orchestrator import (
+    HybridOrchestrator,
+    ModelPricing,
+    CostEstimate,
+    get_hybrid_orchestrator
+)
+from .skills_manager import (
+    ProgressiveSkillsManager,
+    get_skills_manager
+)
 
 # Optional: Semantic agent selection (requires sentence-transformers)
 try:
@@ -25,11 +41,21 @@ try:
     __all__ = [
         "AgentOrchestrator", "AgentResult", "cli_main",
         "SemanticAgentSelector", "AgentMatch",
-        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse"
+        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
+        "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
+        "get_quick_start_orchestrator",
+        "HybridOrchestrator", "ModelPricing", "CostEstimate",
+        "get_hybrid_orchestrator",
+        "ProgressiveSkillsManager", "get_skills_manager"
     ]
 except ImportError:
     # sentence-transformers not installed
     __all__ = [
         "AgentOrchestrator", "AgentResult", "cli_main",
-        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse"
+        "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
+        "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
+        "get_quick_start_orchestrator",
+        "HybridOrchestrator", "ModelPricing", "CostEstimate",
+        "get_hybrid_orchestrator",
+        "ProgressiveSkillsManager", "get_skills_manager"
     ]

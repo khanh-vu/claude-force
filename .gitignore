@@ -33,3 +33,6 @@ test_results.txt
 *.tmp
 *.bak
 *~
+
+# Claude-force user data
+.claude/
