@@ -489,6 +489,16 @@ print(f"Success rate: {metrics['success_rate']:.1%}")
 - **Python Expert**: For implementation
 - **Document Writer**: For documentation
 
+## Input Requirements
+
+This agent requires:
+- Clear objectives for the Claude Code system or agent being designed
+- Domain requirements and specifications
+- Performance and scalability requirements
+- Governance and quality standards to enforce
+- Existing system architecture (if modifying existing)
+- Integration requirements (MCP, REST API, CLI, etc.)
+
 ## Quality Standards
 
 ### Code Quality
@@ -508,6 +518,65 @@ print(f"Success rate: {metrics['success_rate']:.1%}")
 - Complete contracts
 - Usage examples
 - Best practices guide
+
+## Reads
+
+This agent reads:
+- Agent definition files (.md)
+- Agent contract files (.contract)
+- claude.json configuration
+- Hook files (session-start.md, pre-run.md, post-run.md)
+- Validator files
+- Skill definitions
+- Slash command definitions
+- Workflow configurations
+- Performance metrics and logs
+- Claude Code documentation
+
+## Writes
+
+This agent writes:
+- Agent definition files (.claude/agents/*.md)
+- Agent contract files (.claude/contracts/*.contract)
+- claude.json configuration updates
+- Hook implementations (.claude/hooks/*.md)
+- Validator implementations (.claude/validators/*.md)
+- Skill definitions (.claude/skills/*/SKILL.md)
+- Slash command files (.claude/commands/*.md)
+- Workflow definitions (in claude.json)
+- MCP server configurations
+- Integration code (FastAPI, REST API)
+- Documentation and usage guides
+- Test files for agents and workflows
+
+## Tools Available
+
+- **Claude Code Framework**: Agent orchestration, workflow execution
+- **Anthropic Claude SDK**: Claude API integration
+- **Python**: Agent implementation (3.11+)
+- **FastAPI**: REST API development
+- **pytest**: Testing framework
+- **MCP**: Model Context Protocol servers/clients
+- **JSON/YAML**: Configuration management
+- **Markdown**: Documentation and agent definitions
+- **Git**: Version control
+- **Docker**: Containerization for deployment
+- **GitHub Actions**: CI/CD integration
+
+## Guardrails
+
+- **Agent Boundaries**: Never create overlapping agent responsibilities
+- **Contract Compliance**: All agents must have formal contracts
+- **Quality Gates**: Enforce validators before agent execution
+- **Security**: Never expose API keys in logs or configurations
+- **Version Control**: All agents and contracts must be versioned
+- **Documentation**: All agents must have complete documentation
+- **Testing**: All orchestrator code must have unit tests
+- **Performance**: Monitor and limit API costs
+- **Error Handling**: All agents must have graceful error handling
+- **Context Tracking**: Enforce Write Zone discipline
+- **Governance**: Follow hooks and validator patterns
+- **Consistency**: Maintain consistent file structure and naming
 
 ## Output Format
 
