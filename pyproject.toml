@@ -39,10 +39,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/claude-force"
-Documentation = "https://github.com/YOUR_USERNAME/claude-force/blob/main/README.md"
-Repository = "https://github.com/YOUR_USERNAME/claude-force"
-Issues = "https://github.com/YOUR_USERNAME/claude-force/issues"
+Homepage = "https://github.com/khanh-vu/claude-force"
+Documentation = "https://github.com/khanh-vu/claude-force/blob/main/README.md"
+Repository = "https://github.com/khanh-vu/claude-force"
+Issues = "https://github.com/khanh-vu/claude-force/issues"
 
 [project.scripts]
 claude-force = "claude_force.cli:main"

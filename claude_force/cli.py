@@ -1480,7 +1480,7 @@ Examples:
   claude-force metrics agents
   claude-force metrics costs
 
-For more information: https://github.com/YOUR_USERNAME/claude-force
+For more information: https://github.com/khanh-vu/claude-force
         """
     )
 
