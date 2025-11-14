@@ -2,11 +2,14 @@
 
 > A production-ready multi-agent orchestration system for Claude with complete governance, skills integration, and comprehensive testing.
 
-![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen)
-![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
-![Status](https://img.shields.io/badge/status-production--ready-blue)
-![Version](https://img.shields.io/badge/version-2.2.0-blue)
-![Marketplace](https://img.shields.io/badge/marketplace-integrated-purple)
+[![PyPI version](https://badge.fury.io/py/claude-force.svg)](https://badge.fury.io/py/claude-force)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen)](https://github.com/khanh-vu/claude-force/actions)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/khanh-vu/claude-force)
+[![Status](https://img.shields.io/badge/status-production--ready-blue)](https://github.com/khanh-vu/claude-force)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue)](https://github.com/khanh-vu/claude-force)
+[![Marketplace](https://img.shields.io/badge/marketplace-integrated-purple)](https://github.com/khanh-vu/claude-force)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## 🎯 Overview
 
@@ -30,18 +33,32 @@ A comprehensive Claude multi-agent system featuring:
 
 ### Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/claude-force.git
-cd claude-force
+**Option 1: Install from PyPI (Recommended)**
 
+```bash
 # Install the package
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -e .
+pip install claude-force
 
 # Set your API key
 export ANTHROPIC_API_KEY='your-api-key-here'
+
+# Verify installation
+claude-force --help
+```
+
+**Option 2: Install from Source (Development)**
+
+```bash
+# Clone the repository
+git clone https://github.com/khanh-vu/claude-force.git
+cd claude-force
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+pip install -e .
 
 # Verify installation
 claude-force --help
@@ -49,7 +66,7 @@ python3 -m pytest test_claude_system.py -v
 # ✅ Expected: 26 passed
 ```
 
-See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions.
+See [INSTALLATION.md](INSTALLATION.md) for detailed setup instructions, troubleshooting, and advanced configuration.
 
 ### Project Initialization (NEW! 🎉)
 

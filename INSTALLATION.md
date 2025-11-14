@@ -19,11 +19,32 @@ python3 --version
 
 ## 🚀 Installation Methods
 
-### Method 1: Install from Source (Recommended for Development)
+### Method 1: Install from PyPI (Recommended)
+
+**Easiest and fastest way to get started:**
+
+```bash
+# Install the latest stable version
+pip install claude-force
+
+# Verify installation
+claude-force --help
+
+# Expected output: Multi-Agent Orchestration System for Claude
+```
+
+**Upgrade to latest version:**
+```bash
+pip install --upgrade claude-force
+```
+
+### Method 2: Install from Source (For Development)
+
+**For contributors and developers who want to modify the code:**
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/claude-force.git
+git clone https://github.com/khanh-vu/claude-force.git
 cd claude-force
 
 # 2. Create a virtual environment (recommended)
@@ -42,20 +63,12 @@ pip install -e .
 claude-force --help
 ```
 
-### Method 2: Install with pip (Coming Soon)
-
-```bash
-# Once published to PyPI:
-pip install claude-force
-
-# Verify installation
-claude-force --help
-```
-
 ### Method 3: Install from GitHub
 
+**Install directly from GitHub (latest development version):**
+
 ```bash
-pip install git+https://github.com/YOUR_USERNAME/claude-force.git
+pip install git+https://github.com/khanh-vu/claude-force.git
 ```
 
 ---
@@ -211,7 +224,7 @@ For contributors and developers:
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-force.git
+git clone https://github.com/khanh-vu/claude-force.git
 cd claude-force
 
 # Create virtual environment
@@ -320,11 +333,11 @@ pip uninstall claude-force
 # Install Poetry
 curl -sSL https://install.python-poetry.org | python3 -
 
-# Install claude-force
+# Install claude-force from PyPI
 poetry add claude-force
 
 # Or install from source
-git clone https://github.com/YOUR_USERNAME/claude-force.git
+git clone https://github.com/khanh-vu/claude-force.git
 cd claude-force
 poetry install
 ```
@@ -336,8 +349,11 @@ poetry install
 conda create -n claude-force python=3.11
 conda activate claude-force
 
-# Install from source
-git clone https://github.com/YOUR_USERNAME/claude-force.git
+# Install from PyPI
+pip install claude-force
+
+# Or install from source
+git clone https://github.com/khanh-vu/claude-force.git
 cd claude-force
 pip install -e .
 ```

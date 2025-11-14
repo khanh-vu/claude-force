@@ -27,7 +27,7 @@ setup(
     description="Multi-Agent Orchestration System for Claude",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/YOUR_USERNAME/claude-force",
+    url="https://github.com/khanh-vu/claude-force",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -54,8 +54,8 @@ setup(
     },
     keywords="claude anthropic ai agents multi-agent orchestration",
     project_urls={
-        "Bug Reports": "https://github.com/YOUR_USERNAME/claude-force/issues",
-        "Source": "https://github.com/YOUR_USERNAME/claude-force",
-        "Documentation": "https://github.com/YOUR_USERNAME/claude-force/blob/main/README.md",
+        "Bug Reports": "https://github.com/khanh-vu/claude-force/issues",
+        "Source": "https://github.com/khanh-vu/claude-force",
+        "Documentation": "https://github.com/khanh-vu/claude-force/blob/main/README.md",
     },
 )

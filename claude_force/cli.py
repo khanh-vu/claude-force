@@ -16,7 +16,14 @@ from .orchestrator import AgentOrchestrator
 def cmd_list_agents(args):
     """List all available agents"""
     try:
-        orchestrator = AgentOrchestrator(config_path=args.config)
+        # Use demo mode if requested
+        if args.demo:
+            from .demo_mode import DemoOrchestrator
+            orchestrator = DemoOrchestrator(config_path=args.config)
+            print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
+        else:
+            orchestrator = AgentOrchestrator(config_path=args.config)
+
         agents = orchestrator.list_agents()
 
         print("\n📋 Available Agents\n")
@@ -40,7 +47,14 @@ def cmd_list_agents(args):
 def cmd_list_workflows(args):
     """List all available workflows"""
     try:
-        orchestrator = AgentOrchestrator(config_path=args.config)
+        # Use demo mode if requested
+        if args.demo:
+            from .demo_mode import DemoOrchestrator
+            orchestrator = DemoOrchestrator(config_path=args.config)
+            print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
+        else:
+            orchestrator = AgentOrchestrator(config_path=args.config)
+
         workflows = orchestrator.list_workflows()
 
         print("\n🔄 Available Workflows\n")
@@ -61,7 +75,14 @@ def cmd_list_workflows(args):
 def cmd_agent_info(args):
     """Show detailed information about an agent"""
     try:
-        orchestrator = AgentOrchestrator(config_path=args.config)
+        # Use demo mode if requested
+        if args.demo:
+            from .demo_mode import DemoOrchestrator
+            orchestrator = DemoOrchestrator(config_path=args.config)
+            print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
+        else:
+            orchestrator = AgentOrchestrator(config_path=args.config)
+
         info = orchestrator.get_agent_info(args.agent)
 
         print(f"\n📄 Agent: {info['name']}\n")
@@ -168,8 +189,20 @@ def cmd_run_agent(args):
 
         print(f"🚀 Running agent: {args.agent}\n")
 
+        # Use demo mode if requested
+        if args.demo:
+            from .demo_mode import DemoOrchestrator
+            print("🎭 DEMO MODE - Simulated responses, no API calls\n")
+            orchestrator = DemoOrchestrator(config_path=args.config)
+            result = orchestrator.run_agent(
+                agent_name=args.agent,
+                task=task,
+                model=args.model or "claude-3-5-sonnet-20241022",
+                max_tokens=args.max_tokens,
+                temperature=args.temperature
+            )
         # Use HybridOrchestrator if auto-select-model is enabled
-        if args.auto_select_model:
+        elif args.auto_select_model:
             from .hybrid_orchestrator import HybridOrchestrator
 
             orchestrator = HybridOrchestrator(
@@ -257,15 +290,20 @@ def cmd_run_workflow(args):
 
         print(f"🔄 Running workflow: {args.workflow}\n")
 
-        orchestrator = AgentOrchestrator(
-            config_path=args.config,
-            anthropic_api_key=args.api_key
-        )
+        # Use demo mode if requested
+        if args.demo:
+            from .demo_mode import DemoOrchestrator
+            print("🎭 DEMO MODE - Simulated responses, no API calls\n")
+            orchestrator = DemoOrchestrator(config_path=args.config)
+        else:
+            orchestrator = AgentOrchestrator(
+                config_path=args.config,
+                anthropic_api_key=args.api_key
+            )
 
         results = orchestrator.run_workflow(
             workflow_name=args.workflow,
-            task=task,
-            pass_output_to_next=not args.no_pass_output
+            task=task
         )
 
         print("\n" + "=" * 80)
@@ -1463,6 +1501,9 @@ Examples:
   # List all agents
   claude-force list agents
 
+  # Try demo mode (no API key required)
+  claude-force --demo run agent code-reviewer --task "Review this code: def foo(): pass"
+
   # Recommend agents for a task (semantic matching)
   claude-force recommend --task "Fix authentication bug in login endpoint"
 
@@ -1480,7 +1521,7 @@ Examples:
   claude-force metrics agents
   claude-force metrics costs
 
-For more information: https://github.com/YOUR_USERNAME/claude-force
+For more information: https://github.com/khanh-vu/claude-force
         """
     )
 
@@ -1493,6 +1534,12 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     parser.add_argument(
         "--api-key",
         help="Anthropic API key (or set ANTHROPIC_API_KEY env var)"
+    )
+
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run in demo mode (simulated responses, no API key required)"
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
