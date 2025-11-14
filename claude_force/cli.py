@@ -20,12 +20,20 @@ def cmd_list_agents(args):
         if args.demo:
             from .demo_mode import DemoOrchestrator
             orchestrator = DemoOrchestrator(config_path=args.config)
-            print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
+            if not getattr(args, 'json', False):
+                print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
 
         agents = orchestrator.list_agents()
 
+        # JSON output
+        if getattr(args, 'json', False):
+            import json
+            print(json.dumps(agents, indent=2))
+            return
+
+        # Table output
         print("\n📋 Available Agents\n")
         print(f"{'Name':<30} {'Priority':<10} {'Domains'}")
         print("-" * 80)
@@ -79,12 +87,20 @@ def cmd_agent_info(args):
         if args.demo:
             from .demo_mode import DemoOrchestrator
             orchestrator = DemoOrchestrator(config_path=args.config)
-            print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
+            if not getattr(args, 'json', False):
+                print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
 
         info = orchestrator.get_agent_info(args.agent)
 
+        # JSON output
+        if getattr(args, 'json', False):
+            import json
+            print(json.dumps(info, indent=2))
+            return
+
+        # Table output
         print(f"\n📄 Agent: {info['name']}\n")
         print(f"File: {info['file']}")
         print(f"Contract: {info['contract']}")
@@ -1549,14 +1565,17 @@ For more information: https://github.com/khanh-vu/claude-force
     list_subparsers = list_parser.add_subparsers(dest="list_type")
 
     list_agents_parser = list_subparsers.add_parser("agents", help="List all agents")
+    list_agents_parser.add_argument("--json", action="store_true", help="Output as JSON")
     list_agents_parser.set_defaults(func=cmd_list_agents)
 
     list_workflows_parser = list_subparsers.add_parser("workflows", help="List all workflows")
+    list_workflows_parser.add_argument("--json", action="store_true", help="Output as JSON")
     list_workflows_parser.set_defaults(func=cmd_list_workflows)
 
     # Info command
     info_parser = subparsers.add_parser("info", help="Show agent information")
     info_parser.add_argument("agent", help="Agent name")
+    info_parser.add_argument("--json", action="store_true", help="Output as JSON")
     info_parser.set_defaults(func=cmd_agent_info)
 
     # Recommend command
@@ -1567,6 +1586,8 @@ For more information: https://github.com/khanh-vu/claude-force
     recommend_parser.add_argument("--min-confidence", type=float, default=0.3, help="Minimum confidence threshold 0-1 (default: 0.3)")
     recommend_parser.add_argument("--explain", action="store_true", help="Explain top recommendation")
     recommend_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    recommend_parser.add_argument("--include-marketplace", action="store_true", help="Include marketplace agents in recommendations")
+    recommend_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     recommend_parser.set_defaults(func=cmd_recommend)
 
     # Run command
