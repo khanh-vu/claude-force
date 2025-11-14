@@ -441,33 +441,33 @@ class QuickStartOrchestrator:
         contracts_template_path = templates_base_path / "contracts"
 
         for agent_name in config.agents:
-            # Copy agent definition file
-            agent_template = agents_template_path / f"{agent_name}.md"
-            if agent_template.exists():
-                agent_dest = output_path / "agents" / f"{agent_name}.md"
-                shutil.copy2(agent_template, agent_dest)
-                created_files.append(str(agent_dest))
-            else:
-                # Create a basic agent template if no template exists
-                agent_dest = output_path / "agents" / f"{agent_name}.md"
-                basic_agent = self._generate_basic_agent_template(agent_name, config)
-                with open(agent_dest, 'w') as f:
-                    f.write(basic_agent)
-                created_files.append(str(agent_dest))
+            # Copy agent definition file (skip if already exists to preserve customizations)
+            agent_dest = output_path / "agents" / f"{agent_name}.md"
+            if not agent_dest.exists():
+                agent_template = agents_template_path / f"{agent_name}.md"
+                if agent_template.exists():
+                    shutil.copy2(agent_template, agent_dest)
+                    created_files.append(str(agent_dest))
+                else:
+                    # Create a basic agent template if no template exists
+                    basic_agent = self._generate_basic_agent_template(agent_name, config)
+                    with open(agent_dest, 'w') as f:
+                        f.write(basic_agent)
+                    created_files.append(str(agent_dest))
 
-            # Copy contract file
-            contract_template = contracts_template_path / f"{agent_name}.contract"
-            if contract_template.exists():
-                contract_dest = output_path / "contracts" / f"{agent_name}.contract"
-                shutil.copy2(contract_template, contract_dest)
-                created_files.append(str(contract_dest))
-            else:
-                # Create a basic contract template if no template exists
-                contract_dest = output_path / "contracts" / f"{agent_name}.contract"
-                basic_contract = self._generate_basic_contract_template(agent_name, config)
-                with open(contract_dest, 'w') as f:
-                    f.write(basic_contract)
-                created_files.append(str(contract_dest))
+            # Copy contract file (skip if already exists to preserve customizations)
+            contract_dest = output_path / "contracts" / f"{agent_name}.contract"
+            if not contract_dest.exists():
+                contract_template = contracts_template_path / f"{agent_name}.contract"
+                if contract_template.exists():
+                    shutil.copy2(contract_template, contract_dest)
+                    created_files.append(str(contract_dest))
+                else:
+                    # Create a basic contract template if no template exists
+                    basic_contract = self._generate_basic_contract_template(agent_name, config)
+                    with open(contract_dest, 'w') as f:
+                        f.write(basic_contract)
+                    created_files.append(str(contract_dest))
 
         # 7. Create example task if requested
         if create_examples:
