@@ -55,26 +55,41 @@ class AgentOrchestrator:
         self.config = self._load_config()
         self.api_key = anthropic_api_key or os.getenv("ANTHROPIC_API_KEY")
 
-        if not self.api_key:
-            raise ValueError(format_api_key_error())
+        # Lazy initialization of anthropic client (only create when needed)
+        # API key validation happens when client is first accessed
+        self._client = None
+        self.enable_tracking = enable_tracking
 
-        # Lazy import anthropic to allow installation without API key
-        try:
-            import anthropic
-            self.client = anthropic.Client(api_key=self.api_key)
-        except ImportError:
-            raise ImportError(
-                format_missing_dependency_error("anthropic", "pip install anthropic")
-            )
+        # Lazy initialization of performance tracker
+        self._tracker = None
 
-        # Initialize performance tracker
-        self.tracker = None
-        if enable_tracking:
+    @property
+    def client(self):
+        """Lazy load anthropic client."""
+        if self._client is None:
+            # Validate API key when client is first needed
+            if not self.api_key:
+                raise ValueError(format_api_key_error())
+
+            try:
+                import anthropic
+                self._client = anthropic.Client(api_key=self.api_key)
+            except ImportError:
+                raise ImportError(
+                    format_missing_dependency_error("anthropic", "pip install anthropic")
+                )
+        return self._client
+
+    @property
+    def tracker(self):
+        """Lazy load performance tracker."""
+        if self._tracker is None and self.enable_tracking:
             try:
                 from claude_force.performance_tracker import PerformanceTracker
-                self.tracker = PerformanceTracker()
+                self._tracker = PerformanceTracker()
             except Exception as e:
                 print(f"Warning: Performance tracking disabled: {e}")
+        return self._tracker
 
     def _load_config(self) -> Dict:
         """Load claude.json configuration"""
