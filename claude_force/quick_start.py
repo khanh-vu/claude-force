@@ -394,7 +394,7 @@ class QuickStartOrchestrator:
             Initialization result with created files
         """
         output_path = Path(output_dir)
-        output_path.mkdir(exist_ok=True)
+        output_path.mkdir(parents=True, exist_ok=True)
 
         created_files = []
 

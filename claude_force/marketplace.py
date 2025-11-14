@@ -144,7 +144,7 @@ class MarketplaceManager:
         Args:
             claude_dir: Path to .claude directory (default: ./.claude)
         """
-        self.claude_dir = claude_dir or Path(".claude")
+        self.claude_dir = Path(claude_dir) if claude_dir else Path(".claude")
         self.marketplace_dir = self.claude_dir / "marketplace"
         self.registry_file = self.marketplace_dir / "registry.yaml"
         self.installed_file = self.marketplace_dir / "installed.json"

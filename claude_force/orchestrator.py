@@ -383,7 +383,7 @@ class AgentOrchestrator:
                 print(f"{result.agent_name}: {result.success}")
         """
         workflow = self.config['workflows'].get(workflow_name)
-        if not workflow:
+        if workflow is None:
             all_workflows = list(self.config['workflows'].keys())
             raise ValueError(
                 format_workflow_not_found_error(workflow_name, all_workflows)

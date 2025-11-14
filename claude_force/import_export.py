@@ -65,7 +65,7 @@ class AgentPortingTool:
         Args:
             agents_dir: Path to .claude/agents directory
         """
-        self.agents_dir = agents_dir or Path(".claude/agents")
+        self.agents_dir = Path(agents_dir) if agents_dir else Path(".claude/agents")
         self.contracts_dir = Path(".claude/contracts")
 
     def import_from_wshobson(
@@ -426,6 +426,7 @@ Outputs from this agent should be validated against:
         Returns:
             Dict with import results
         """
+        source_dir = Path(source_dir)
         if not source_dir.exists():
             raise FileNotFoundError(f"Source directory not found: {source_dir}")
 

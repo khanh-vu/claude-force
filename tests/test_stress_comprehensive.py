@@ -104,9 +104,9 @@ class TestConcurrentStress:
             op = random.choice(['list', 'search', 'get'])
             try:
                 if op == 'list':
-                    manager.list_plugins()
+                    manager.list_available()
                 elif op == 'search':
-                    manager.search_plugins(random.choice(['python', 'test', 'api']))
+                    manager.search(random.choice(['python', 'test', 'api']))
                 elif op == 'get':
                     manager.get_plugin('wshobson-python-toolkit')
                 return True
@@ -230,7 +230,7 @@ class TestLargeScaleOperations:
         manager = MarketplaceManager()
 
         # Search with very broad terms
-        results = manager.search_plugins("a")  # Single character
+        results = manager.search("a")  # Single character
 
         # Should return results without crashing
         assert isinstance(results, list)
@@ -255,7 +255,9 @@ class TestLargeScaleOperations:
 
     def test_bulk_agent_import(self, tmp_path):
         """Test importing many agents at once"""
-        tool = AgentPortingTool(claude_dir=str(tmp_path))
+        agents_dir = tmp_path / "agents"
+        agents_dir.mkdir()
+        tool = AgentPortingTool(agents_dir=agents_dir)
 
         # Create mock agent files
         wshobson_dir = tmp_path / "wshobson_agents"
