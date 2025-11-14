@@ -875,6 +875,176 @@ def cmd_import_bulk(args):
         sys.exit(1)
 
 
+def cmd_gallery_browse(args):
+    """Browse template gallery"""
+    try:
+        from .template_gallery import get_template_gallery
+
+        gallery = get_template_gallery()
+
+        templates = gallery.list_templates(
+            category=args.category,
+            difficulty=args.difficulty,
+            min_rating=args.min_rating
+        )
+
+        if not templates:
+            print("No templates found matching criteria")
+            return
+
+        print(f"\n📚 Template Gallery ({len(templates)} templates)\n")
+        print("=" * 80)
+
+        for template in templates:
+            # Rating stars
+            rating = "⭐" * int(template.metrics.avg_rating) if template.metrics else ""
+            uses = f"({template.metrics.uses_count} uses)" if template.metrics else ""
+
+            print(f"\n{template.name} {rating} {uses}")
+            print(f"ID: {template.template_id} | Category: {template.category} | Difficulty: {template.difficulty}")
+            print(f"{template.description}")
+            print(f"Agents: {len(template.agents)} | Workflows: {len(template.workflows)} | Skills: {len(template.skills)}")
+
+            if template.best_for:
+                print(f"✅ Best for: {', '.join(template.best_for[:2])}")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 View details: claude-force gallery show <template-id>")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_gallery_show(args):
+    """Show detailed template information"""
+    try:
+        from .template_gallery import get_template_gallery
+
+        gallery = get_template_gallery()
+        template = gallery.get_template(args.template_id)
+
+        if not template:
+            print(f"❌ Template '{args.template_id}' not found", file=sys.stderr)
+            sys.exit(1)
+
+        # Display detailed information
+        rating = "⭐" * int(template.metrics.avg_rating) if template.metrics else ""
+
+        print(f"\n📋 {template.name} {rating}")
+        print("=" * 80)
+        print(f"\nID: {template.template_id}")
+        print(f"Category: {template.category}")
+        print(f"Difficulty: {template.difficulty}")
+
+        if template.metrics:
+            print(f"\n📊 Metrics:")
+            print(f"   Uses: {template.metrics.uses_count}")
+            print(f"   Success Rate: {template.metrics.success_rate:.0%}")
+            print(f"   Rating: {template.metrics.avg_rating:.1f}/5.0 ({template.metrics.total_ratings} ratings)")
+
+        print(f"\nDescription:")
+        print(f"  {template.description}")
+
+        print(f"\n🔧 Components:")
+        print(f"   Agents ({len(template.agents)}): {', '.join(template.agents)}")
+        print(f"   Workflows ({len(template.workflows)}): {', '.join(template.workflows)}")
+        print(f"   Skills ({len(template.skills)}): {', '.join(template.skills)}")
+
+        print(f"\n💻 Tech Stack:")
+        for tech in template.tech_stack:
+            print(f"   • {tech}")
+
+        print(f"\n✨ Use Cases:")
+        for use_case in template.use_cases:
+            print(f"   • {use_case}")
+
+        if template.best_for:
+            print(f"\n✅ Best For:")
+            for item in template.best_for:
+                print(f"   • {item}")
+
+        if template.examples:
+            print(f"\n📝 Example Usage:")
+            for i, example in enumerate(template.examples, 1):
+                print(f"\n   Example {i}: {example.task}")
+                print(f"   Description: {example.description}")
+                print(f"   Estimated Time: {example.estimated_time}")
+                print(f"   Complexity: {example.complexity}")
+                print(f"   Expected Output:")
+                for output in example.expected_output:
+                    print(f"      • {output}")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 Initialize: claude-force init --template {template.template_id}")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_gallery_search(args):
+    """Search template gallery"""
+    try:
+        from .template_gallery import get_template_gallery
+
+        gallery = get_template_gallery()
+        results = gallery.search(args.query)
+
+        if not results:
+            print(f"No templates found matching '{args.query}'")
+            return
+
+        print(f"\n🔍 Search Results for '{args.query}' ({len(results)} found)\n")
+        print("=" * 80)
+
+        for template in results:
+            rating = "⭐" * int(template.metrics.avg_rating) if template.metrics else ""
+            print(f"\n{template.name} {rating}")
+            print(f"   {template.description}")
+            print(f"   ID: {template.template_id} | Category: {template.category}")
+            print(f"   Tech Stack: {', '.join(template.tech_stack[:3])}")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 View details: claude-force gallery show <template-id>")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def cmd_gallery_popular(args):
+    """Show popular templates"""
+    try:
+        from .template_gallery import get_template_gallery
+
+        gallery = get_template_gallery()
+        templates = gallery.get_popular_templates(top_k=args.top_k)
+
+        if not templates:
+            print("No templates available")
+            return
+
+        print(f"\n🔥 Most Popular Templates (Top {len(templates)})\n")
+        print("=" * 80)
+
+        for i, template in enumerate(templates, 1):
+            rating = "⭐" * int(template.metrics.avg_rating) if template.metrics else ""
+            uses = template.metrics.uses_count if template.metrics else 0
+
+            print(f"\n{i}. {template.name} {rating}")
+            print(f"   {uses} uses | {template.difficulty} difficulty")
+            print(f"   {template.description}")
+            print(f"   ID: {template.template_id}")
+
+        print("\n" + "=" * 80)
+        print(f"\n💡 Initialize: claude-force init --template <template-id>")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -1066,6 +1236,32 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     import_bulk_parser.add_argument("--no-contracts", action="store_true", help="Skip contract generation")
     import_bulk_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     import_bulk_parser.set_defaults(func=cmd_import_bulk)
+
+    # Template Gallery commands
+    gallery_parser = subparsers.add_parser("gallery", help="Browse template gallery")
+    gallery_subparsers = gallery_parser.add_subparsers(dest="gallery_command")
+
+    # Gallery browse
+    browse_parser = gallery_subparsers.add_parser("browse", help="Browse all templates")
+    browse_parser.add_argument("--category", help="Filter by category")
+    browse_parser.add_argument("--difficulty", help="Filter by difficulty (beginner, intermediate, advanced)")
+    browse_parser.add_argument("--min-rating", type=float, help="Minimum rating (0.0-5.0)")
+    browse_parser.set_defaults(func=cmd_gallery_browse)
+
+    # Gallery show
+    show_parser = gallery_subparsers.add_parser("show", help="Show template details")
+    show_parser.add_argument("template_id", help="Template ID")
+    show_parser.set_defaults(func=cmd_gallery_show)
+
+    # Gallery search
+    gallery_search_parser = gallery_subparsers.add_parser("search", help="Search templates")
+    gallery_search_parser.add_argument("query", help="Search query")
+    gallery_search_parser.set_defaults(func=cmd_gallery_search)
+
+    # Gallery popular
+    popular_parser = gallery_subparsers.add_parser("popular", help="Show popular templates")
+    popular_parser.add_argument("--top-k", type=int, default=5, help="Number of templates to show (default: 5)")
+    popular_parser.set_defaults(func=cmd_gallery_popular)
 
     # Parse arguments
     args = parser.parse_args()
