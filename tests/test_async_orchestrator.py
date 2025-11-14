@@ -149,7 +149,7 @@ async def test_valid_agent_names():
 @pytest.mark.asyncio
 async def test_timeout_protection():
     """Test that operations timeout correctly."""
-    orchestrator = AsyncAgentOrchestrator(timeout_seconds=1)
+    orchestrator = AsyncAgentOrchestrator(timeout_seconds=1, enable_cache=False)
 
     # Mock slow API call
     async def slow_response(*args, **kwargs):
@@ -158,12 +158,13 @@ async def test_timeout_protection():
 
     with mock.patch.object(orchestrator.async_client.messages, 'create', side_effect=slow_response):
         with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent definition"):
-            result = await orchestrator.execute_agent("python-expert", "task")
+            result = await orchestrator.execute_agent("python-expert", "unique-timeout-test-task")
 
             # Should fail due to timeout
             assert result.success is False
             assert result.errors is not None
-            assert any("timeout" in str(e).lower() for e in result.errors)
+            # Check for timeout in error message (could be "timeout" or "timed out")
+            assert any("time" in str(e).lower() and "out" in str(e).lower() for e in result.errors)
 
 
 @pytest.mark.asyncio
@@ -235,8 +236,8 @@ async def test_semaphore_initialization():
     # Semaphore should be lazy-loaded
     assert orchestrator._semaphore is None
 
-    # Access should create it
-    semaphore = orchestrator.semaphore
+    # Access should create it (using async method now)
+    semaphore = await orchestrator._get_semaphore()
     assert semaphore is not None
     assert semaphore._value == 5
 
@@ -278,7 +279,7 @@ async def test_retry_on_transient_failure():
 @pytest.mark.asyncio
 async def test_retry_exhaustion():
     """Test that retry logic gives up after max attempts."""
-    orchestrator = AsyncAgentOrchestrator(max_retries=2)
+    orchestrator = AsyncAgentOrchestrator(max_retries=2, enable_cache=False)
 
     # Mock API that always fails
     async def always_fail(*args, **kwargs):
@@ -286,7 +287,7 @@ async def test_retry_exhaustion():
 
     with mock.patch.object(orchestrator.async_client.messages, 'create', side_effect=always_fail):
         with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent definition"):
-            result = await orchestrator.execute_agent("python-expert", "task")
+            result = await orchestrator.execute_agent("python-expert", "unique-retry-exhaustion-task")
 
     assert result.success is False
     assert result.errors is not None
@@ -311,7 +312,7 @@ async def test_agent_not_found():
 @pytest.mark.asyncio
 async def test_api_error_handling():
     """Test handling of API errors."""
-    orchestrator = AsyncAgentOrchestrator()
+    orchestrator = AsyncAgentOrchestrator(enable_cache=False)
 
     # Mock API error
     async def api_error(*args, **kwargs):
@@ -319,7 +320,7 @@ async def test_api_error_handling():
 
     with mock.patch.object(orchestrator, '_call_api_with_retry', side_effect=api_error):
         with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent definition"):
-            result = await orchestrator.execute_agent("python-expert", "task")
+            result = await orchestrator.execute_agent("python-expert", "unique-api-error-task")
 
     assert result.success is False
     assert result.errors is not None
@@ -329,7 +330,7 @@ async def test_api_error_handling():
 @pytest.mark.asyncio
 async def test_performance_tracking():
     """Test that performance is tracked."""
-    orchestrator = AsyncAgentOrchestrator(enable_tracking=True)
+    orchestrator = AsyncAgentOrchestrator(enable_tracking=True, enable_cache=False)
 
     # Mock the API call
     mock_response = mock.Mock()
@@ -341,7 +342,7 @@ async def test_performance_tracking():
         with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent definition"):
             # Mock the performance tracking
             with mock.patch.object(orchestrator, '_track_performance_async') as mock_track:
-                result = await orchestrator.execute_agent("python-expert", "task")
+                result = await orchestrator.execute_agent("python-expert", "unique-tracking-task")
 
                 # Should have called tracking
                 assert mock_track.called

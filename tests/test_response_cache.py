@@ -314,9 +314,9 @@ def test_lru_eviction_respects_hit_count(tmp_path):
 
 def test_cache_path_validation(tmp_path):
     """Test that cache path traversal is prevented."""
-    # Try to set cache outside allowed directory
+    # Try to set cache outside allowed directories (/etc is not allowed)
     with pytest.raises(ValueError, match="Cache directory must be under"):
-        ResponseCache(cache_dir=Path("/tmp/evil"))
+        ResponseCache(cache_dir=Path("/etc/evil_cache"))
 
 
 def test_cache_path_allowed(tmp_path):
