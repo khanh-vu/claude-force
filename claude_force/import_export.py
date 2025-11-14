@@ -13,6 +13,8 @@ import json
 import yaml
 import logging
 
+from .path_validator import validate_path, validate_agent_file_path, PathValidationError
+
 logger = logging.getLogger(__name__)
 
 
@@ -82,9 +84,23 @@ class AgentPortingTool:
 
         Returns:
             Dict with agent info and paths
+
+        Raises:
+            PathValidationError: If agent_file path is invalid or unsafe
+            FileNotFoundError: If agent_file doesn't exist
         """
-        if not agent_file.exists():
-            raise FileNotFoundError(f"Agent file not found: {agent_file}")
+        # Validate input path to prevent path traversal attacks
+        try:
+            validated_path = validate_path(
+                agent_file,
+                must_exist=True,
+                allow_symlinks=False
+            )
+        except PathValidationError as e:
+            logger.error(f"Path validation failed for {agent_file}: {e}")
+            raise
+
+        agent_file = validated_path
 
         # Parse wshobson format
         metadata = self._parse_wshobson_format(agent_file)
@@ -93,11 +109,18 @@ class AgentPortingTool:
         if target_name:
             metadata.name = target_name
 
-        # Create agent directory
-        agent_dir = self.agents_dir / metadata.name
+        # Validate and create agent directory (prevent path traversal)
+        try:
+            agent_dir = validate_agent_file_path(
+                self.agents_dir / metadata.name / "AGENT.md"
+            ).parent
+        except PathValidationError as e:
+            logger.error(f"Invalid agent directory for '{metadata.name}': {e}")
+            raise ValueError(f"Invalid agent name '{metadata.name}': creates unsafe path")
+
         agent_dir.mkdir(parents=True, exist_ok=True)
 
-        # Write AGENT.md
+        # Write AGENT.md (path already validated)
         agent_md = agent_dir / "AGENT.md"
         agent_md.write_text(metadata.content)
 
