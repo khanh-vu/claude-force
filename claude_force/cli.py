@@ -744,6 +744,137 @@ def cmd_marketplace_info(args):
         sys.exit(1)
 
 
+def cmd_import_agent(args):
+    """Import agent from external source"""
+    try:
+        from .import_export import get_porting_tool
+        from pathlib import Path
+
+        tool = get_porting_tool()
+
+        agent_file = Path(args.file)
+
+        if not agent_file.exists():
+            print(f"❌ Agent file not found: {agent_file}", file=sys.stderr)
+            sys.exit(1)
+
+        print(f"📥 Importing agent from {agent_file}...")
+
+        result = tool.import_from_wshobson(
+            agent_file=agent_file,
+            generate_contract=not args.no_contract,
+            target_name=args.name
+        )
+
+        print(f"\n✅ Successfully imported '{result['name']}'")
+        print(f"\n📁 Created files:")
+        print(f"   Agent: {result['agent_path']}")
+
+        if result['contract_path']:
+            print(f"   Contract: {result['contract_path']}")
+
+        if not args.no_contract:
+            print(f"\n💡 Tip: Review and customize the generated contract")
+
+        print(f"\n🚀 Try: claude-force run agent {result['name']} --task 'Your task'")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_export_agent(args):
+    """Export agent to external format"""
+    try:
+        from .import_export import get_porting_tool
+        from pathlib import Path
+
+        tool = get_porting_tool()
+
+        output_dir = Path(args.output_dir)
+
+        print(f"📤 Exporting agent '{args.agent_name}' to {args.format} format...")
+
+        if args.format == "wshobson":
+            output_file = tool.export_to_wshobson(
+                agent_name=args.agent_name,
+                output_dir=output_dir,
+                include_metadata=not args.no_metadata
+            )
+
+            print(f"\n✅ Successfully exported to {output_file}")
+            print(f"\n📝 Format: wshobson/agents compatible")
+
+            if not args.no_metadata:
+                print(f"   Includes metadata header")
+
+            print(f"\n💡 You can now use this agent in wshobson/agents or similar systems")
+
+        else:
+            print(f"❌ Unsupported format: {args.format}", file=sys.stderr)
+            print(f"   Supported formats: wshobson", file=sys.stderr)
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_import_bulk(args):
+    """Bulk import agents from directory"""
+    try:
+        from .import_export import get_porting_tool
+        from pathlib import Path
+
+        tool = get_porting_tool()
+
+        source_dir = Path(args.directory)
+
+        if not source_dir.exists():
+            print(f"❌ Source directory not found: {source_dir}", file=sys.stderr)
+            sys.exit(1)
+
+        print(f"📥 Bulk importing agents from {source_dir}...")
+        print(f"   Pattern: {args.pattern}")
+
+        results = tool.bulk_import(
+            source_dir=source_dir,
+            pattern=args.pattern,
+            generate_contracts=not args.no_contracts
+        )
+
+        print(f"\n📊 Import Results:")
+        print(f"   Total files: {results['total']}")
+        print(f"   ✅ Imported: {len(results['imported'])}")
+        print(f"   ❌ Failed: {len(results['failed'])}")
+
+        if results['imported']:
+            print(f"\n✅ Successfully imported agents:")
+            for result in results['imported']:
+                print(f"   • {result['name']}")
+
+        if results['failed']:
+            print(f"\n❌ Failed imports:")
+            for failure in results['failed']:
+                print(f"   • {failure['file']}: {failure['error']}")
+
+        if results['imported']:
+            print(f"\n💡 Try: claude-force list agents")
+
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -912,6 +1043,29 @@ For more information: https://github.com/YOUR_USERNAME/claude-force
     info_parser_mp = marketplace_subparsers.add_parser("info", help="Show plugin information")
     info_parser_mp.add_argument("plugin_id", help="Plugin ID")
     info_parser_mp.set_defaults(func=cmd_marketplace_info)
+
+    # Import/Export commands
+    import_parser = subparsers.add_parser("import", help="Import agent from external source")
+    import_parser.add_argument("file", help="Path to agent markdown file")
+    import_parser.add_argument("--name", help="Override agent name")
+    import_parser.add_argument("--no-contract", action="store_true", help="Skip contract generation")
+    import_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    import_parser.set_defaults(func=cmd_import_agent)
+
+    export_parser = subparsers.add_parser("export", help="Export agent to external format")
+    export_parser.add_argument("agent_name", help="Name of agent to export")
+    export_parser.add_argument("--format", default="wshobson", help="Export format (default: wshobson)")
+    export_parser.add_argument("--output-dir", "-o", default="./exported", help="Output directory (default: ./exported)")
+    export_parser.add_argument("--no-metadata", action="store_true", help="Skip metadata header")
+    export_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    export_parser.set_defaults(func=cmd_export_agent)
+
+    import_bulk_parser = subparsers.add_parser("import-bulk", help="Bulk import agents from directory")
+    import_bulk_parser.add_argument("directory", help="Source directory containing agent files")
+    import_bulk_parser.add_argument("--pattern", default="*.md", help="File pattern (default: *.md)")
+    import_bulk_parser.add_argument("--no-contracts", action="store_true", help="Skip contract generation")
+    import_bulk_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    import_bulk_parser.set_defaults(func=cmd_import_bulk)
 
     # Parse arguments
     args = parser.parse_args()
