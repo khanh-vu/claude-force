@@ -19,7 +19,7 @@
 
 | Workflow | Total Runs | Success | Failure | Success Rate | Avg Duration |
 |----------|------------|---------|---------|--------------|--------------|
-| **Production Release** | 2 | 0 | $((2 - 0)) | 0.0% | 1.26 min |
+| **Production Release** | 2 | 0 | $((2 - 0)) | 0.0% | 18.48 min |
 | **Release Candidate** | 1 | 0 | $((1 - 0)) | 0.0% | 12.48 min |
 | **RC Promotion** | 0 | 0 | $((0 - 0)) | 0% | 0 min |
 
@@ -38,8 +38,8 @@
 
 ### Performance Analysis
 
-- **Production Release**: Average 1.26 minutes
-  - ✅ Excellent performance (< 10 min target)
+- **Production Release**: Average 18.48 minutes
+  - ❌ Above target - Consider optimization
 - **Release Candidate**: Average 12.48 minutes
 
 ### Release Velocity
