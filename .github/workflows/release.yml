@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write  # For post-release announcement
 
 jobs:
   # Step 1: Pre-release validation with quality gates
