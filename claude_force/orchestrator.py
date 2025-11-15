@@ -116,7 +116,7 @@ class AgentOrchestrator:
 
                 self._tracker = PerformanceTracker()
             except Exception as e:
-                print(f"Warning: Performance tracking disabled: {e}")
+                logger.warning(f"Performance tracking disabled: {e}")
         return self._tracker
 
     @property
@@ -129,7 +129,7 @@ class AgentOrchestrator:
                 memory_path = self.config_path.parent / "sessions.db"
                 self._memory = AgentMemory(db_path=str(memory_path))
             except Exception as e:
-                print(f"Warning: Agent memory disabled: {e}")
+                logger.warning(f"Agent memory disabled: {e}")
         return self._memory
 
     def _load_config(self) -> Dict:
