@@ -17,12 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Install git-cliff directly instead of using outdated action (eb7fd26)
 - Remove commit.link from changelog template to fix rendering error (ade66c3)
 - Resolve API key and timing issues in async orchestrator tests (4adbce3)
+- Add issues:write permission for post-release announcements (dee01e9)
 
 ### Documentation
 
 - Update CHANGELOG with PyYAML dependency fix (be512c5)
 - Add expert review of release workflow (1704a33)
 - Add comprehensive PR documentation (c79bc04)
+- Update changelog for v1.0.0 (25bce96)
 
 ### Miscellaneous Tasks
 
@@ -35,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update release metrics report (6aaaf28)
 - Update release metrics report (111abe1)
 - Update release metrics report (2fe082c)
+- Update release metrics report (bc26f4d)
+- Update release metrics report (9a403cc)
+- Update release metrics report (951d7a4)
 
 ### Testing
 
