@@ -26,10 +26,67 @@ TODO (ARCH-01): Split into separate modules for better maintainability:
 import sys
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
 from .orchestrator import AgentOrchestrator
+
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+# SEC-02: Input size limits to prevent DoS attacks
+
+# Maximum task input size (10MB)
+MAX_TASK_SIZE_MB = 10
+MAX_TASK_SIZE_BYTES = MAX_TASK_SIZE_MB * 1024 * 1024
+
+
+def validate_task_input(task: Optional[str] = None, task_file: Optional[str] = None) -> str:
+    """
+    Validate and load task input with size limits.
+
+    Args:
+        task: Direct task string (optional)
+        task_file: Path to task file (optional)
+
+    Returns:
+        Validated task string
+
+    Raises:
+        ValueError: If task or file exceeds size limits
+        FileNotFoundError: If task_file doesn't exist
+    """
+    if task_file:
+        # Check file exists
+        if not os.path.exists(task_file):
+            raise FileNotFoundError(f"Task file not found: {task_file}")
+
+        # Check file size before reading
+        file_size = os.path.getsize(task_file)
+        if file_size > MAX_TASK_SIZE_BYTES:
+            raise ValueError(
+                f"Task file too large: {file_size:,} bytes "
+                f"(maximum: {MAX_TASK_SIZE_BYTES:,} bytes / {MAX_TASK_SIZE_MB}MB). "
+                f"This limit prevents denial-of-service attacks."
+            )
+
+        # Read file content
+        with open(task_file, "r", encoding="utf-8") as f:
+            task = f.read()
+
+    # Validate task string size (even if read from stdin or provided directly)
+    if task:
+        task_size = len(task.encode("utf-8"))
+        if task_size > MAX_TASK_SIZE_BYTES:
+            raise ValueError(
+                f"Task input too large: {task_size:,} bytes "
+                f"(maximum: {MAX_TASK_SIZE_BYTES:,} bytes / {MAX_TASK_SIZE_MB}MB). "
+                f"This limit prevents denial-of-service attacks."
+            )
+
+    return task
 
 
 # =============================================================================
@@ -174,13 +231,19 @@ def cmd_agent_info(args):
 def cmd_run_agent(args):
     """Run a single agent with optional hybrid model orchestration"""
     try:
-        # Read task from file or stdin if not provided
+        # SEC-02: Read and validate task input with size limits
         task = args.task
+
+        # Read from file with validation
         if args.task_file:
-            with open(args.task_file, "r") as f:
-                task = f.read()
+            task = validate_task_input(task_file=args.task_file)
+        # Read from stdin with validation
         elif not task and not sys.stdin.isatty():
-            task = sys.stdin.read()
+            stdin_content = sys.stdin.read()
+            task = validate_task_input(task=stdin_content)
+        # Validate direct task input
+        elif task:
+            task = validate_task_input(task=task)
 
         if not task:
             print(
@@ -282,11 +345,15 @@ def cmd_run_agent(args):
 def cmd_run_workflow(args):
     """Run a multi-agent workflow"""
     try:
-        # Read task
+        # SEC-02: Read and validate task input with size limits
         task = args.task
+
+        # Read from file with validation
         if args.task_file:
-            with open(args.task_file, "r") as f:
-                task = f.read()
+            task = validate_task_input(task_file=args.task_file)
+        # Validate direct task input
+        elif task:
+            task = validate_task_input(task=task)
 
         if not task:
             print("❌ Error: No task provided. Use --task or --task-file", file=sys.stderr)
@@ -1342,13 +1409,19 @@ def cmd_recommend(args):
     try:
         from .agent_router import get_agent_router
 
-        # Read task from --task, --task-file, or stdin
+        # SEC-02: Read and validate task input with size limits
         task = args.task
+
+        # Read from file with validation
         if args.task_file:
-            with open(args.task_file, "r") as f:
-                task = f.read()
+            task = validate_task_input(task_file=args.task_file)
+        # Read from stdin with validation
         elif not task and not sys.stdin.isatty():
-            task = sys.stdin.read()
+            stdin_content = sys.stdin.read()
+            task = validate_task_input(task=stdin_content)
+        # Validate direct task input
+        elif task:
+            task = validate_task_input(task=task)
 
         if not task:
             print("❌ Error: Task description required", file=sys.stderr)

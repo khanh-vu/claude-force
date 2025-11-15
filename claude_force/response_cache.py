@@ -124,8 +124,18 @@ class ResponseCache:
             "CLAUDE_CACHE_SECRET", "default_secret_change_in_production"
         )
 
-        # ✅ FIXED: Security warning for default secret
-        if self.cache_secret == "default_secret_change_in_production":
+        # ✅ SEC-01: Enforce secure secret in production
+        is_production = os.getenv("CLAUDE_ENV") == "production"
+        using_default_secret = self.cache_secret == "default_secret_change_in_production"
+
+        if is_production and using_default_secret:
+            raise ValueError(
+                "SECURITY ERROR: Cannot use default HMAC secret in production. "
+                "Cache integrity would NOT be protected, allowing attackers to forge cache entries. "
+                "Set CLAUDE_CACHE_SECRET environment variable to a secure random value. "
+                "Generate one with: python -c 'import secrets; print(secrets.token_hex(32))'"
+            )
+        elif using_default_secret:
             logger.warning(
                 "⚠️  SECURITY WARNING: Using default HMAC secret! "
                 "Cache integrity is NOT protected. "
