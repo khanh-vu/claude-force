@@ -1,0 +1,983 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Optimization Quick Start Guide &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Performance Optimization Quick Start Guide</a><ul>
+<li><a class="reference internal" href="#quick-wins-start-here">🚀 Quick Wins (Start Here!)</a><ul>
+<li><a class="reference internal" href="#priority-1-enable-async-execution-2-3-hours">Priority 1: Enable Async Execution (2-3 hours)</a><ul>
+<li><a class="reference internal" href="#step-1-install-dependencies">Step 1: Install Dependencies</a></li>
+<li><a class="reference internal" href="#step-2-create-minimal-async-wrapper">Step 2: Create Minimal Async Wrapper</a></li>
+<li><a class="reference internal" href="#step-3-test-it">Step 3: Test It!</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#priority-2-basic-response-caching-1-2-hours">Priority 2: Basic Response Caching (1-2 hours)</a><ul>
+<li><a class="reference internal" href="#step-1-create-simple-cache">Step 1: Create Simple Cache</a></li>
+<li><a class="reference internal" href="#step-2-test-it">Step 2: Test It!</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#priority-3-parallel-workflow-pattern-30-minutes">Priority 3: Parallel Workflow Pattern (30 minutes)</a><ul>
+<li><a class="reference internal" href="#simple-pattern">Simple Pattern</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-checklist">🎯 Implementation Checklist</a><ul>
+<li><a class="reference internal" href="#phase-1-foundation-week-1-4">Phase 1: Foundation (Week 1-4)</a><ul>
+<li><a class="reference internal" href="#week-1-2-async-implementation">Week 1-2: Async Implementation</a></li>
+<li><a class="reference internal" href="#week-3-4-response-caching">Week 3-4: Response Caching</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#phase-2-advanced-week-5-8">Phase 2: Advanced (Week 5-8)</a><ul>
+<li><a class="reference internal" href="#week-5-6-parallel-workflows">Week 5-6: Parallel Workflows</a></li>
+<li><a class="reference internal" href="#week-7-metrics-caching">Week 7: Metrics &amp; Caching</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#development-setup">🔧 Development Setup</a><ul>
+<li><a class="reference internal" href="#create-feature-branch">1. Create Feature Branch</a></li>
+<li><a class="reference internal" href="#set-up-development-environment">2. Set Up Development Environment</a></li>
+<li><a class="reference internal" href="#run-baseline-benchmarks">3. Run Baseline Benchmarks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#testing-strategy">🧪 Testing Strategy</a><ul>
+<li><a class="reference internal" href="#unit-tests">Unit Tests</a></li>
+<li><a class="reference internal" href="#integration-tests">Integration Tests</a></li>
+<li><a class="reference internal" href="#performance-tests">Performance Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-validation">📊 Performance Validation</a><ul>
+<li><a class="reference internal" href="#before-starting">Before Starting</a></li>
+<li><a class="reference internal" href="#after-async-implementation">After Async Implementation</a></li>
+<li><a class="reference internal" href="#after-caching-implementation">After Caching Implementation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-issues-solutions">🐛 Common Issues &amp; Solutions</a><ul>
+<li><a class="reference internal" href="#issue-1-runtimeerror-this-event-loop-is-already-running">Issue 1: “RuntimeError: This event loop is already running”</a></li>
+<li><a class="reference internal" href="#issue-2-cache-returning-stale-data">Issue 2: Cache returning stale data</a></li>
+<li><a class="reference internal" href="#issue-3-too-many-open-files">Issue 3: “Too many open files”</a></li>
+<li><a class="reference internal" href="#issue-4-tests-hanging">Issue 4: Tests hanging</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#code-examples">📚 Code Examples</a><ul>
+<li><a class="reference internal" href="#example-1-basic-async-usage">Example 1: Basic Async Usage</a></li>
+<li><a class="reference internal" href="#example-2-cache-aware-execution">Example 2: Cache-Aware Execution</a></li>
+<li><a class="reference internal" href="#example-3-parallel-workflow">Example 3: Parallel Workflow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#best-practices">🎓 Best Practices</a><ul>
+<li><a class="reference internal" href="#async-operations">1. Async Operations</a></li>
+<li><a class="reference internal" href="#caching">2. Caching</a></li>
+<li><a class="reference internal" href="#parallel-workflows">3. Parallel Workflows</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#measuring-success">📈 Measuring Success</a><ul>
+<li><a class="reference internal" href="#key-metrics-to-track">Key Metrics to Track</a></li>
+<li><a class="reference internal" href="#performance-dashboard">Performance Dashboard</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quick-start-checklist">🚀 Quick Start Checklist</a></li>
+<li><a class="reference internal" href="#success-criteria">🎯 Success Criteria</a></li>
+<li><a class="reference internal" href="#need-help">📞 Need Help?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Performance Optimization Quick Start Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/performance-optimization-quickstart.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="performance-optimization-quick-start-guide">
+<h1>Performance Optimization Quick Start Guide<a class="headerlink" href="#performance-optimization-quick-start-guide" title="Link to this heading"></a></h1>
+<p><strong>Get started with Claude Force performance optimizations in minutes!</strong></p>
+<p>This guide provides step-by-step instructions to implement the high-impact optimizations identified in the <a class="reference internal" href="performance-analysis.html"><span class="std std-doc">Performance Analysis</span></a> and <a class="reference internal" href="performance-optimization-plan.html"><span class="std std-doc">Optimization Plan</span></a>.</p>
+<hr class="docutils" />
+<section id="quick-wins-start-here">
+<h2>🚀 Quick Wins (Start Here!)<a class="headerlink" href="#quick-wins-start-here" title="Link to this heading"></a></h2>
+<section id="priority-1-enable-async-execution-2-3-hours">
+<h3>Priority 1: Enable Async Execution (2-3 hours)<a class="headerlink" href="#priority-1-enable-async-execution-2-3-hours" title="Link to this heading"></a></h3>
+<p><strong>Impact:</strong> 50-80% faster workflows
+<strong>Difficulty:</strong> Medium
+<strong>Time:</strong> 2-3 hours</p>
+<section id="step-1-install-dependencies">
+<h4>Step 1: Install Dependencies<a class="headerlink" href="#step-1-install-dependencies" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Already have anthropic&gt;=0.40.0, add async file I/O</span>
+pip<span class="w"> </span>install<span class="w"> </span>aiofiles&gt;<span class="o">=</span><span class="m">23</span>.0.0
+</pre></div>
+</div>
+</section>
+<section id="step-2-create-minimal-async-wrapper">
+<h4>Step 2: Create Minimal Async Wrapper<a class="headerlink" href="#step-2-create-minimal-async-wrapper" title="Link to this heading"></a></h4>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/simple_async.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple async wrapper for quick wins.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">anthropic</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAnthropic</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SimpleAsyncOrchestrator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal async wrapper for parallel execution.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">AsyncAnthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ANTHROPIC_API_KEY&quot;</span><span class="p">))</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a single task.&quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_parallel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute multiple prompts in parallel.&quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_task</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">prompts</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+<span class="c1"># Usage example</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">SimpleAsyncOrchestrator</span><span class="p">()</span>
+
+    <span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;Explain Python lists&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Explain Python dicts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Explain Python sets&quot;</span>
+    <span class="p">]</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_parallel</span><span class="p">(</span><span class="n">prompts</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> tasks in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Throughput: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> tasks/second&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-test-it">
+<h4>Step 3: Test It!<a class="headerlink" href="#step-3-test-it" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the async example</span>
+python<span class="w"> </span>claude_force/simple_async.py
+</pre></div>
+</div>
+<p><strong>Expected Output:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Completed</span> <span class="mi">3</span> <span class="n">tasks</span> <span class="ow">in</span> <span class="mf">3.5</span><span class="n">s</span>
+<span class="n">Throughput</span><span class="p">:</span> <span class="mf">0.86</span> <span class="n">tasks</span><span class="o">/</span><span class="n">second</span>
+</pre></div>
+</div>
+<p>Compare to sequential (9-12s for 3 tasks) → <strong>2-3x faster!</strong> ✅</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="priority-2-basic-response-caching-1-2-hours">
+<h3>Priority 2: Basic Response Caching (1-2 hours)<a class="headerlink" href="#priority-2-basic-response-caching-1-2-hours" title="Link to this heading"></a></h3>
+<p><strong>Impact:</strong> 30-50% cost reduction
+<strong>Difficulty:</strong> Easy
+<strong>Time:</strong> 1-2 hours</p>
+<section id="step-1-create-simple-cache">
+<h4>Step 1: Create Simple Cache<a class="headerlink" href="#step-1-create-simple-cache" title="Link to this heading"></a></h4>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/simple_cache.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple file-based response cache.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SimpleCache</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic TTL-based cache.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.cache&quot;</span><span class="p">,</span> <span class="n">ttl_hours</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span> <span class="o">=</span> <span class="n">ttl_hours</span> <span class="o">*</span> <span class="mi">3600</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate cache key.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">prompt</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cached response.&quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Check TTL</span>
+        <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+        <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span><span class="p">:</span>
+            <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Load from cache</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache response.&quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span>
+                <span class="s1">&#39;prompt&#39;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
+                <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
+                <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="p">},</span> <span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># Usage example</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">anthropic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Anthropic</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Anthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ANTHROPIC_API_KEY&quot;</span><span class="p">))</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">SimpleCache</span><span class="p">()</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;What are Python decorators?&quot;</span>
+
+    <span class="c1"># Try cache first</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cached</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Cache hit!&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">cached</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Cache miss - call API</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;❌ Cache miss - calling API...&quot;</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">,</span>
+        <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+        <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="c1"># Cache the response</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Response cached&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-test-it">
+<h4>Step 2: Test It!<a class="headerlink" href="#step-2-test-it" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># First run - cache miss</span>
+python<span class="w"> </span>claude_force/simple_cache.py
+
+<span class="c1"># Second run - cache hit (should be instant!)</span>
+python<span class="w"> </span>claude_force/simple_cache.py
+</pre></div>
+</div>
+<p><strong>Expected:</strong></p>
+<ul class="simple">
+<li><p>First run: 2-4 seconds (API call)</p></li>
+<li><p>Second run: &lt;100ms (cache hit) → <strong>~40x faster!</strong> ✅</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="priority-3-parallel-workflow-pattern-30-minutes">
+<h3>Priority 3: Parallel Workflow Pattern (30 minutes)<a class="headerlink" href="#priority-3-parallel-workflow-pattern-30-minutes" title="Link to this heading"></a></h3>
+<p><strong>Impact:</strong> 2-3x throughput for workflows
+<strong>Difficulty:</strong> Easy
+<strong>Time:</strong> 30 minutes</p>
+<section id="simple-pattern">
+<h4>Simple Pattern<a class="headerlink" href="#simple-pattern" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple parallel workflow pattern.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">anthropic</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAnthropic</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">parallel_workflow_example</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute workflow steps in parallel where possible.&quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">AsyncAnthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ANTHROPIC_API_KEY&quot;</span><span class="p">))</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_api</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">,</span>
+            <span class="n">max_tokens</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="c1"># Step 1: Run independent checks in parallel</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running parallel checks...&quot;</span><span class="p">)</span>
+    <span class="n">linter</span><span class="p">,</span> <span class="n">type_check</span><span class="p">,</span> <span class="n">security</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">call_api</span><span class="p">(</span><span class="s2">&quot;Check Python code style&quot;</span><span class="p">),</span>
+        <span class="n">call_api</span><span class="p">(</span><span class="s2">&quot;Check Python type hints&quot;</span><span class="p">),</span>
+        <span class="n">call_api</span><span class="p">(</span><span class="s2">&quot;Check for security issues&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Parallel checks completed in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Step 2: Run final review with results</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running final review...&quot;</span><span class="p">)</span>
+    <span class="n">review_prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Based on these findings:</span>
+<span class="s2">    - Linter: </span><span class="si">{</span><span class="n">linter</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span><span class="si">}</span><span class="s2">...</span>
+<span class="s2">    - Type Check: </span><span class="si">{</span><span class="n">type_check</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span><span class="si">}</span><span class="s2">...</span>
+<span class="s2">    - Security: </span><span class="si">{</span><span class="n">security</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span><span class="si">}</span><span class="s2">...</span>
+
+<span class="s2">    Provide final code review.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="n">final_review</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_api</span><span class="p">(</span><span class="n">review_prompt</span><span class="p">)</span>
+
+    <span class="n">total_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ Workflow completed in </span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   (Sequential would take ~</span><span class="si">{</span><span class="n">total_time</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1.5</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s)&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">parallel_workflow_example</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>Test:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>parallel_workflow_example.py
+</pre></div>
+</div>
+<p><strong>Expected:</strong> 3 independent steps complete in ~4s (vs ~12s sequential) → <strong>3x faster!</strong> ✅</p>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="implementation-checklist">
+<h2>🎯 Implementation Checklist<a class="headerlink" href="#implementation-checklist" title="Link to this heading"></a></h2>
+<section id="phase-1-foundation-week-1-4">
+<h3>Phase 1: Foundation (Week 1-4)<a class="headerlink" href="#phase-1-foundation-week-1-4" title="Link to this heading"></a></h3>
+<section id="week-1-2-async-implementation">
+<h4>Week 1-2: Async Implementation<a class="headerlink" href="#week-1-2-async-implementation" title="Link to this heading"></a></h4>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Install <code class="docutils literal notranslate"><span class="pre">aiofiles&gt;=23.0.0</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create <code class="docutils literal notranslate"><span class="pre">claude_force/async_orchestrator.py</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add async methods to existing <code class="docutils literal notranslate"><span class="pre">AgentOrchestrator</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Write unit tests for async operations</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Update CLI with <code class="docutils literal notranslate"><span class="pre">--async</span></code> flag</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test backward compatibility</p></li>
+</ul>
+<p><strong>Validation:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test async execution</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/test_async_orchestrator.py<span class="w"> </span>-v
+
+<span class="c1"># Benchmark speedup</span>
+python<span class="w"> </span>benchmarks/benchmark_async_vs_sync.py
+</pre></div>
+</div>
+</section>
+<section id="week-3-4-response-caching">
+<h4>Week 3-4: Response Caching<a class="headerlink" href="#week-3-4-response-caching" title="Link to this heading"></a></h4>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create <code class="docutils literal notranslate"><span class="pre">claude_force/response_cache.py</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Implement TTL-based expiration</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add LRU eviction logic</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Integrate with orchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add cache CLI commands</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test cache correctness</p></li>
+</ul>
+<p><strong>Validation:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test cache functionality</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/test_response_cache.py<span class="w"> </span>-v
+
+<span class="c1"># Check cache stats</span>
+claude-force<span class="w"> </span>cache<span class="w"> </span>stats
+</pre></div>
+</div>
+</section>
+</section>
+<section id="phase-2-advanced-week-5-8">
+<h3>Phase 2: Advanced (Week 5-8)<a class="headerlink" href="#phase-2-advanced-week-5-8" title="Link to this heading"></a></h3>
+<section id="week-5-6-parallel-workflows">
+<h4>Week 5-6: Parallel Workflows<a class="headerlink" href="#week-5-6-parallel-workflows" title="Link to this heading"></a></h4>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create <code class="docutils literal notranslate"><span class="pre">claude_force/workflow_dag.py</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Update workflow schema with dependencies</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Implement DAG executor</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add cycle detection</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test parallel execution</p></li>
+</ul>
+<p><strong>Validation:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test DAG execution</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/test_workflow_dag.py<span class="w"> </span>-v
+
+<span class="c1"># Benchmark workflow speedup</span>
+python<span class="w"> </span>benchmarks/benchmark_parallel_workflow.py
+</pre></div>
+</div>
+</section>
+<section id="week-7-metrics-caching">
+<h4>Week 7: Metrics &amp; Caching<a class="headerlink" href="#week-7-metrics-caching" title="Link to this heading"></a></h4>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Implement metrics aggregation</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add query result caching (LRU)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Optimize analytics queries</p></li>
+</ul>
+<p><strong>Validation:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test aggregation</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/test_metrics_aggregation.py<span class="w"> </span>-v
+
+<span class="c1"># Verify query performance</span>
+python<span class="w"> </span>benchmarks/benchmark_query_cache.py
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="development-setup">
+<h2>🔧 Development Setup<a class="headerlink" href="#development-setup" title="Link to this heading"></a></h2>
+<section id="create-feature-branch">
+<h3>1. Create Feature Branch<a class="headerlink" href="#create-feature-branch" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/home/user/claude-force
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/performance-optimization-v2.3
+</pre></div>
+</div>
+</section>
+<section id="set-up-development-environment">
+<h3>2. Set Up Development Environment<a class="headerlink" href="#set-up-development-environment" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install development dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>aiofiles&gt;<span class="o">=</span><span class="m">23</span>.0.0
+
+<span class="c1"># Install testing tools</span>
+pip<span class="w"> </span>install<span class="w"> </span>pytest<span class="w"> </span>pytest-asyncio<span class="w"> </span>pytest-cov<span class="w"> </span>pytest-benchmark
+
+<span class="c1"># Install profiling tools</span>
+pip<span class="w"> </span>install<span class="w"> </span>py-spy<span class="w"> </span>memory_profiler<span class="w"> </span>line_profiler
+</pre></div>
+</div>
+</section>
+<section id="run-baseline-benchmarks">
+<h3>3. Run Baseline Benchmarks<a class="headerlink" href="#run-baseline-benchmarks" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create baseline for comparison</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--output<span class="w"> </span>baseline_v2.2.0.json
+
+<span class="c1"># Save baseline</span>
+cp<span class="w"> </span>baseline_v2.2.0.json<span class="w"> </span>benchmarks/results/
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="testing-strategy">
+<h2>🧪 Testing Strategy<a class="headerlink" href="#testing-strategy" title="Link to this heading"></a></h2>
+<section id="unit-tests">
+<h3>Unit Tests<a class="headerlink" href="#unit-tests" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test async operations</span>
+pytest<span class="w"> </span>tests/test_async_orchestrator.py<span class="w"> </span>-v
+
+<span class="c1"># Test caching</span>
+pytest<span class="w"> </span>tests/test_response_cache.py<span class="w"> </span>-v
+
+<span class="c1"># Test DAG execution</span>
+pytest<span class="w"> </span>tests/test_workflow_dag.py<span class="w"> </span>-v
+
+<span class="c1"># Run all tests with coverage</span>
+pytest<span class="w"> </span>--cov<span class="o">=</span>claude_force<span class="w"> </span>--cov-report<span class="o">=</span>html
+</pre></div>
+</div>
+</section>
+<section id="integration-tests">
+<h3>Integration Tests<a class="headerlink" href="#integration-tests" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test full async workflow</span>
+pytest<span class="w"> </span>tests/integration/test_async_workflows.py<span class="w"> </span>-v
+
+<span class="c1"># Test cache integration</span>
+pytest<span class="w"> </span>tests/integration/test_cache_integration.py<span class="w"> </span>-v
+
+<span class="c1"># Test parallel execution</span>
+pytest<span class="w"> </span>tests/integration/test_parallel_execution.py<span class="w"> </span>-v
+</pre></div>
+</div>
+</section>
+<section id="performance-tests">
+<h3>Performance Tests<a class="headerlink" href="#performance-tests" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Benchmark async vs sync</span>
+python<span class="w"> </span>benchmarks/benchmark_async_vs_sync.py
+
+<span class="c1"># Benchmark cache effectiveness</span>
+python<span class="w"> </span>benchmarks/benchmark_cache.py
+
+<span class="c1"># Benchmark parallel workflows</span>
+python<span class="w"> </span>benchmarks/benchmark_parallel_workflow.py
+
+<span class="c1"># Full benchmark suite</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--report
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-validation">
+<h2>📊 Performance Validation<a class="headerlink" href="#performance-validation" title="Link to this heading"></a></h2>
+<section id="before-starting">
+<h3>Before Starting<a class="headerlink" href="#before-starting" title="Link to this heading"></a></h3>
+<p>Run baseline benchmarks:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sequential execution (3 agents)</span>
+<span class="nb">time</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+<span class="s2">from claude_force.orchestrator import AgentOrchestrator</span>
+<span class="s2">orch = AgentOrchestrator()</span>
+<span class="s2">for i in range(3):</span>
+<span class="s2">    orch.execute_agent(&#39;python-expert&#39;, f&#39;Task {i}&#39;)</span>
+<span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p><strong>Expected:</strong> 9-15 seconds</p>
+</section>
+<section id="after-async-implementation">
+<h3>After Async Implementation<a class="headerlink" href="#after-async-implementation" title="Link to this heading"></a></h3>
+<p>Run async benchmarks:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parallel execution (3 agents)</span>
+<span class="nb">time</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+<span class="s2">import asyncio</span>
+<span class="s2">from claude_force.async_orchestrator import AsyncAgentOrchestrator</span>
+
+<span class="s2">async def test():</span>
+<span class="s2">    orch = AsyncAgentOrchestrator()</span>
+<span class="s2">    await orch.execute_multiple([</span>
+<span class="s2">        (&#39;python-expert&#39;, &#39;Task 0&#39;),</span>
+<span class="s2">        (&#39;python-expert&#39;, &#39;Task 1&#39;),</span>
+<span class="s2">        (&#39;python-expert&#39;, &#39;Task 2&#39;)</span>
+<span class="s2">    ])</span>
+
+<span class="s2">asyncio.run(test())</span>
+<span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p><strong>Expected:</strong> 3-5 seconds → <strong>2-3x faster!</strong> ✅</p>
+</section>
+<section id="after-caching-implementation">
+<h3>After Caching Implementation<a class="headerlink" href="#after-caching-implementation" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># First run (cache miss)</span>
+<span class="nb">time</span><span class="w"> </span>claude-force<span class="w"> </span>execute<span class="w"> </span>python-expert<span class="w"> </span><span class="s2">&quot;Explain decorators&quot;</span>
+
+<span class="c1"># Second run (cache hit)</span>
+<span class="nb">time</span><span class="w"> </span>claude-force<span class="w"> </span>execute<span class="w"> </span>python-expert<span class="w"> </span><span class="s2">&quot;Explain decorators&quot;</span>
+</pre></div>
+</div>
+<p><strong>Expected:</strong></p>
+<ul class="simple">
+<li><p>First run: 2-4 seconds</p></li>
+<li><p>Second run: &lt;100ms → <strong>~40x faster!</strong> ✅</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="common-issues-solutions">
+<h2>🐛 Common Issues &amp; Solutions<a class="headerlink" href="#common-issues-solutions" title="Link to this heading"></a></h2>
+<section id="issue-1-runtimeerror-this-event-loop-is-already-running">
+<h3>Issue 1: “RuntimeError: This event loop is already running”<a class="headerlink" href="#issue-1-runtimeerror-this-event-loop-is-already-running" title="Link to this heading"></a></h3>
+<p><strong>Cause:</strong> Trying to call <code class="docutils literal notranslate"><span class="pre">asyncio.run()</span></code> inside an existing event loop</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instead of:</span>
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">my_async_function</span><span class="p">())</span>
+
+<span class="c1"># Use:</span>
+<span class="k">await</span> <span class="n">my_async_function</span><span class="p">()</span>  <span class="c1"># If already in async context</span>
+
+<span class="c1"># Or:</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">my_async_function</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="issue-2-cache-returning-stale-data">
+<h3>Issue 2: Cache returning stale data<a class="headerlink" href="#issue-2-cache-returning-stale-data" title="Link to this heading"></a></h3>
+<p><strong>Cause:</strong> TTL too long or cache not invalidating</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reduce TTL</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">(</span><span class="n">ttl_hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Instead of 24</span>
+
+<span class="c1"># Or clear cache</span>
+<span class="n">claude</span><span class="o">-</span><span class="n">force</span> <span class="n">cache</span> <span class="n">clear</span>
+
+<span class="c1"># Or exclude specific agents</span>
+<span class="n">config</span><span class="p">[</span><span class="s1">&#39;cache&#39;</span><span class="p">][</span><span class="s1">&#39;exclude_agents&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;creative-writer&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="issue-3-too-many-open-files">
+<h3>Issue 3: “Too many open files”<a class="headerlink" href="#issue-3-too-many-open-files" title="Link to this heading"></a></h3>
+<p><strong>Cause:</strong> Running many concurrent async operations</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Limit concurrency with semaphore</span>
+<span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># Max 10 concurrent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_with_limit</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">execute_task</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="issue-4-tests-hanging">
+<h3>Issue 4: Tests hanging<a class="headerlink" href="#issue-4-tests-hanging" title="Link to this heading"></a></h3>
+<p><strong>Cause:</strong> Async operations not completing</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add timeout to tests</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_async_operation</span><span class="p">():</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent_async</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span>
+
+<span class="c1"># Or use asyncio timeout</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">long_operation</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="code-examples">
+<h2>📚 Code Examples<a class="headerlink" href="#code-examples" title="Link to this heading"></a></h2>
+<section id="example-1-basic-async-usage">
+<h3>Example 1: Basic Async Usage<a class="headerlink" href="#example-1-basic-async-usage" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">orch</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+
+    <span class="c1"># Single async execution</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orch</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain async/await&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="c1"># Multiple async executions</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orch</span><span class="o">.</span><span class="n">execute_multiple</span><span class="p">([</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain lists&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain dicts&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span> <span class="s2">&quot;Review my code&quot;</span><span class="p">)</span>
+    <span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="example-2-cache-aware-execution">
+<h3>Example 2: Cache-Aware Execution<a class="headerlink" href="#example-2-cache-aware-execution" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="c1"># Enable caching in config</span>
+<span class="n">orch</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+<span class="c1"># First call - cache miss</span>
+<span class="n">result1</span> <span class="o">=</span> <span class="n">orch</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain decorators&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First call:&quot;</span><span class="p">,</span> <span class="n">result1</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
+
+<span class="c1"># Second call - cache hit (same prompt)</span>
+<span class="n">result2</span> <span class="o">=</span> <span class="n">orch</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain decorators&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Second call (cached):&quot;</span><span class="p">,</span> <span class="n">result2</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
+
+<span class="c1"># Check cache stats</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">orch</span><span class="o">.</span><span class="n">response_cache</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache hit rate: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hit_rate&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-3-parallel-workflow">
+<h3>Example 3: Parallel Workflow<a class="headerlink" href="#example-3-parallel-workflow" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.workflow_dag</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkflowDAG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_workflow</span><span class="p">():</span>
+    <span class="n">orch</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+    <span class="n">dag</span> <span class="o">=</span> <span class="n">WorkflowDAG</span><span class="p">(</span><span class="n">orch</span><span class="p">)</span>
+
+    <span class="n">workflow</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Code Quality Check&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;steps&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;linter&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;linter&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Check code style&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;type-check&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;type-checker&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Check types&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;review&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;code-reviewer&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Final review&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;linter&#39;</span><span class="p">,</span> <span class="s1">&#39;type-check&#39;</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dag</span><span class="o">.</span><span class="n">execute_workflow</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed in </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;total_time_seconds&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Execution order: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;execution_order&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">run_workflow</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="best-practices">
+<h2>🎓 Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<section id="async-operations">
+<h3>1. Async Operations<a class="headerlink" href="#async-operations" title="Link to this heading"></a></h3>
+<p><strong>DO:</strong></p>
+<ul class="simple">
+<li><p>✅ Use <code class="docutils literal notranslate"><span class="pre">async/await</span></code> for I/O-bound operations</p></li>
+<li><p>✅ Limit concurrency with semaphores</p></li>
+<li><p>✅ Add timeouts to prevent hanging</p></li>
+<li><p>✅ Handle exceptions in async code</p></li>
+</ul>
+<p><strong>DON’T:</strong></p>
+<ul class="simple">
+<li><p>❌ Mix sync and async without proper handling</p></li>
+<li><p>❌ Run CPU-intensive tasks in async (use threading/multiprocessing)</p></li>
+<li><p>❌ Forget to await async functions</p></li>
+<li><p>❌ Create unbounded concurrent operations</p></li>
+</ul>
+</section>
+<section id="caching">
+<h3>2. Caching<a class="headerlink" href="#caching" title="Link to this heading"></a></h3>
+<p><strong>DO:</strong></p>
+<ul class="simple">
+<li><p>✅ Use conservative TTL values (24 hours)</p></li>
+<li><p>✅ Exclude non-deterministic agents</p></li>
+<li><p>✅ Monitor cache hit rates</p></li>
+<li><p>✅ Implement cache size limits</p></li>
+</ul>
+<p><strong>DON’T:</strong></p>
+<ul class="simple">
+<li><p>❌ Cache forever (use TTL)</p></li>
+<li><p>❌ Cache sensitive data without encryption</p></li>
+<li><p>❌ Ignore cache invalidation</p></li>
+<li><p>❌ Let cache grow unbounded</p></li>
+</ul>
+</section>
+<section id="parallel-workflows">
+<h3>3. Parallel Workflows<a class="headerlink" href="#parallel-workflows" title="Link to this heading"></a></h3>
+<p><strong>DO:</strong></p>
+<ul class="simple">
+<li><p>✅ Identify truly independent steps</p></li>
+<li><p>✅ Use dependency tracking</p></li>
+<li><p>✅ Test for race conditions</p></li>
+<li><p>✅ Monitor for deadlocks</p></li>
+</ul>
+<p><strong>DON’T:</strong></p>
+<ul class="simple">
+<li><p>❌ Assume all steps can run in parallel</p></li>
+<li><p>❌ Forget dependency order</p></li>
+<li><p>❌ Ignore shared state</p></li>
+<li><p>❌ Skip error handling</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="measuring-success">
+<h2>📈 Measuring Success<a class="headerlink" href="#measuring-success" title="Link to this heading"></a></h2>
+<section id="key-metrics-to-track">
+<h3>Key Metrics to Track<a class="headerlink" href="#key-metrics-to-track" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Track before and after</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;workflow_time_before&#39;</span><span class="p">:</span> <span class="mf">15.3</span><span class="p">,</span>  <span class="c1"># seconds</span>
+    <span class="s1">&#39;workflow_time_after&#39;</span><span class="p">:</span> <span class="mf">5.2</span><span class="p">,</span>    <span class="c1"># seconds</span>
+    <span class="s1">&#39;speedup&#39;</span><span class="p">:</span> <span class="mf">2.94</span><span class="p">,</span>               <span class="c1"># 2.94x faster</span>
+
+    <span class="s1">&#39;cost_before&#39;</span><span class="p">:</span> <span class="mf">0.002</span><span class="p">,</span>          <span class="c1"># USD per execution</span>
+    <span class="s1">&#39;cost_after&#39;</span><span class="p">:</span> <span class="mf">0.0008</span><span class="p">,</span>          <span class="c1"># USD per execution</span>
+    <span class="s1">&#39;cost_savings&#39;</span><span class="p">:</span> <span class="mf">0.60</span><span class="p">,</span>          <span class="c1"># 60% savings</span>
+
+    <span class="s1">&#39;cache_hit_rate&#39;</span><span class="p">:</span> <span class="mf">0.45</span><span class="p">,</span>        <span class="c1"># 45% cache hits</span>
+    <span class="s1">&#39;throughput_before&#39;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>       <span class="c1"># tasks/hour</span>
+    <span class="s1">&#39;throughput_after&#39;</span><span class="p">:</span> <span class="mi">180</span>        <span class="c1"># tasks/hour (3x)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-dashboard">
+<h3>Performance Dashboard<a class="headerlink" href="#performance-dashboard" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View performance summary</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--days<span class="w"> </span><span class="m">7</span>
+
+<span class="c1"># Compare before/after</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>compare<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--baseline<span class="w"> </span>baseline_v2.2.0.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--current<span class="w"> </span>current_v2.3.0.json
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="quick-start-checklist">
+<h2>🚀 Quick Start Checklist<a class="headerlink" href="#quick-start-checklist" title="Link to this heading"></a></h2>
+<p><strong>Hour 1: Async Basics</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Install <code class="docutils literal notranslate"><span class="pre">aiofiles</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create <code class="docutils literal notranslate"><span class="pre">simple_async.py</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test parallel execution</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Measure speedup</p></li>
+</ul>
+<p><strong>Hour 2-3: Basic Caching</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create <code class="docutils literal notranslate"><span class="pre">simple_cache.py</span></code></p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test cache hit/miss</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Measure latency improvement</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Measure cost savings</p></li>
+</ul>
+<p><strong>Hour 4-6: Integration</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Integrate async into orchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Integrate cache into orchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Write tests</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Update documentation</p></li>
+</ul>
+<p><strong>Week 2+: Advanced Features</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Implement parallel workflows</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add metrics aggregation</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Enhance monitoring</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Production deployment</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="success-criteria">
+<h2>🎯 Success Criteria<a class="headerlink" href="#success-criteria" title="Link to this heading"></a></h2>
+<p>After implementing these quick wins, you should see:</p>
+<ul class="simple">
+<li><p>✅ <strong>2-3x faster</strong> execution for concurrent tasks</p></li>
+<li><p>✅ <strong>&lt;100ms</strong> response time for cached queries</p></li>
+<li><p>✅ <strong>30-50%</strong> cost reduction (with caching)</p></li>
+<li><p>✅ <strong>2-5x</strong> throughput improvement</p></li>
+<li><p>✅ <strong>All tests passing</strong> (backward compatibility)</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="need-help">
+<h2>📞 Need Help?<a class="headerlink" href="#need-help" title="Link to this heading"></a></h2>
+<p><strong>Resources:</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="performance-optimization-plan.html"><span class="std std-doc">Full Implementation Plan</span></a></p></li>
+<li><p><a class="reference internal" href="performance-analysis.html"><span class="std std-doc">Performance Analysis</span></a></p></li>
+<li><p><a class="reference internal" href="performance-optimization-roadmap.html"><span class="std std-doc">Roadmap</span></a></p></li>
+</ul>
+<p><strong>Common Questions:</strong></p>
+<ul class="simple">
+<li><p>Q: “My async code is hanging” → Check for timeouts and proper await usage</p></li>
+<li><p>Q: “Cache not working” → Verify TTL and check cache stats</p></li>
+<li><p>Q: “No speedup observed” → Ensure tasks are actually running in parallel</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Ready to optimize? Start with Priority 1 and work your way down!</strong> 🚀</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1379 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Monitoring Implementation Guide &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Performance Monitoring Implementation Guide</a><ul>
+<li><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#built-in-monitoring">Built-in Monitoring</a><ul>
+<li><a class="reference internal" href="#automatic-metrics-collection">Automatic Metrics Collection</a></li>
+<li><a class="reference internal" href="#viewing-metrics">Viewing Metrics</a><ul>
+<li><a class="reference internal" href="#summary-statistics">Summary Statistics</a></li>
+<li><a class="reference internal" href="#per-agent-analytics">Per-Agent Analytics</a></li>
+<li><a class="reference internal" href="#cost-analysis">Cost Analysis</a></li>
+<li><a class="reference internal" href="#performance-trends">Performance Trends</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#metrics-collection">Metrics Collection</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#exporting-metrics">Exporting Metrics</a><ul>
+<li><a class="reference internal" href="#export-to-csv">Export to CSV</a></li>
+<li><a class="reference internal" href="#export-to-json">Export to JSON</a></li>
+<li><a class="reference internal" href="#programmatic-access">Programmatic Access</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-analytics">Performance Analytics</a><ul>
+<li><a class="reference internal" href="#key-performance-indicators-kpis">Key Performance Indicators (KPIs)</a><ul>
+<li><a class="reference internal" href="#success-rate">1. Success Rate</a></li>
+<li><a class="reference internal" href="#average-execution-time">2. Average Execution Time</a></li>
+<li><a class="reference internal" href="#cost-per-execution">3. Cost Per Execution</a></li>
+<li><a class="reference internal" href="#token-usage">4. Token Usage</a></li>
+<li><a class="reference internal" href="#model-distribution">5. Model Distribution</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-baselines">Performance Baselines</a></li>
+<li><a class="reference internal" href="#regression-detection">Regression Detection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-monitoring-setup">Custom Monitoring Setup</a><ul>
+<li><a class="reference internal" href="#integration-with-external-tools">Integration with External Tools</a><ul>
+<li><a class="reference internal" href="#prometheus-grafana">1. Prometheus + Grafana</a></li>
+<li><a class="reference internal" href="#datadog-integration">2. DataDog Integration</a></li>
+<li><a class="reference internal" href="#elk-stack-elasticsearch-logstash-kibana">3. ELK Stack (Elasticsearch, Logstash, Kibana)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#alerting-notifications">Alerting &amp; Notifications</a><ul>
+<li><a class="reference internal" href="#email-alerts">Email Alerts</a></li>
+<li><a class="reference internal" href="#slack-alerts">Slack Alerts</a></li>
+<li><a class="reference internal" href="#pagerduty-integration">PagerDuty Integration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dashboard-examples">Dashboard Examples</a><ul>
+<li><a class="reference internal" href="#terminal-dashboard-simple">Terminal Dashboard (Simple)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#common-issues">Common Issues</a><ul>
+<li><a class="reference internal" href="#missing-metrics-file">1. Missing Metrics File</a></li>
+<li><a class="reference internal" href="#slow-analytics-queries">2. Slow Analytics Queries</a></li>
+<li><a class="reference internal" href="#inaccurate-cost-estimates">3. Inaccurate Cost Estimates</a></li>
+<li><a class="reference internal" href="#export-failures">4. Export Failures</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Performance Monitoring Implementation Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/performance-monitoring-guide.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="performance-monitoring-implementation-guide">
+<h1>Performance Monitoring Implementation Guide<a class="headerlink" href="#performance-monitoring-implementation-guide" title="Link to this heading"></a></h1>
+<p><strong>For:</strong> Claude Force v2.2.0+
+<strong>Last Updated:</strong> 2025-11-14</p>
+<hr class="docutils" />
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<p>Get performance insights in 3 commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View current performance summary</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary
+
+<span class="c1"># Check last 7 days</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--days<span class="w"> </span><span class="m">7</span>
+
+<span class="c1"># Export to CSV for analysis</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>csv<span class="w"> </span>--output<span class="w"> </span>metrics.csv
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#built-in-monitoring"><span class="xref myst">Built-in Monitoring</span></a></p></li>
+<li><p><a class="reference internal" href="#metrics-collection"><span class="xref myst">Metrics Collection</span></a></p></li>
+<li><p><a class="reference internal" href="#performance-analytics"><span class="xref myst">Performance Analytics</span></a></p></li>
+<li><p><a class="reference internal" href="#custom-monitoring-setup"><span class="xref myst">Custom Monitoring Setup</span></a></p></li>
+<li><p><a class="reference internal" href="#alerting--notifications"><span class="xref myst">Alerting &amp; Notifications</span></a></p></li>
+<li><p><a class="reference internal" href="#dashboard-examples"><span class="xref myst">Dashboard Examples</span></a></p></li>
+<li><p><a class="reference internal" href="#troubleshooting"><span class="xref myst">Troubleshooting</span></a></p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="built-in-monitoring">
+<h2>Built-in Monitoring<a class="headerlink" href="#built-in-monitoring" title="Link to this heading"></a></h2>
+<section id="automatic-metrics-collection">
+<h3>Automatic Metrics Collection<a class="headerlink" href="#automatic-metrics-collection" title="Link to this heading"></a></h3>
+<p>Claude Force automatically tracks performance metrics for every execution. No configuration required!</p>
+<p><strong>What’s tracked:</strong></p>
+<ul class="simple">
+<li><p>✅ Execution time (milliseconds)</p></li>
+<li><p>✅ Token usage (input/output)</p></li>
+<li><p>✅ Cost estimation (USD)</p></li>
+<li><p>✅ Success/failure status</p></li>
+<li><p>✅ Model used (Haiku/Sonnet/Opus)</p></li>
+<li><p>✅ Agent name</p></li>
+<li><p>✅ Task hash (for deduplication)</p></li>
+<li><p>✅ Timestamp (ISO 8601)</p></li>
+</ul>
+<p><strong>Storage location:</strong> <code class="docutils literal notranslate"><span class="pre">.claude/metrics/executions.jsonl</span></code></p>
+<p><strong>Example metric entry:</strong></p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-11-14T10:30:45.123456&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;agent_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;task_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a3b4c5d6&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;success&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;execution_time_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3456</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;input_tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1234</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;output_tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">567</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1801</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;estimated_cost&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.000234</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="viewing-metrics">
+<h3>Viewing Metrics<a class="headerlink" href="#viewing-metrics" title="Link to this heading"></a></h3>
+<section id="summary-statistics">
+<h4>Summary Statistics<a class="headerlink" href="#summary-statistics" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># All-time summary</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary
+
+<span class="c1"># Last 7 days</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--days<span class="w"> </span><span class="m">7</span>
+
+<span class="c1"># Last 30 days</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--days<span class="w"> </span><span class="m">30</span>
+
+<span class="c1"># Specific date range</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--start<span class="w"> </span><span class="m">2025</span>-11-01<span class="w"> </span>--end<span class="w"> </span><span class="m">2025</span>-11-14
+</pre></div>
+</div>
+<p><strong>Example output:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Performance Summary (Last 7 days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Executions: 1,247
+Success Rate: 94.3% (1,176 / 1,247)
+Average Execution Time: 4,123 ms
+Total Cost: $2.34 USD
+
+Token Usage:
+  Total Tokens: 3,456,789
+  Average Input: 1,234 tokens
+  Average Output: 567 tokens
+
+Top Agents by Usage:
+  1. python-expert (342 executions, 3.2s avg, $0.45)
+  2. code-reviewer (234 executions, 5.1s avg, $0.67)
+  3. api-designer (189 executions, 4.5s avg, $0.34)
+
+Model Distribution:
+  claude-3-5-haiku-20241022: 67% ($0.45)
+  claude-3-5-sonnet-20241022: 31% ($1.67)
+  claude-3-opus-20240229: 2% ($0.22)
+
+Cost Savings (vs Sonnet-only): 78% ($8.12 saved)
+</pre></div>
+</div>
+</section>
+<section id="per-agent-analytics">
+<h4>Per-Agent Analytics<a class="headerlink" href="#per-agent-analytics" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View per-agent breakdown</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>by-agent
+
+<span class="c1"># Filter by specific agent</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>by-agent<span class="w"> </span>--agent<span class="w"> </span>python-expert
+
+<span class="c1"># Sort by execution time</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>by-agent<span class="w"> </span>--sort-by<span class="w"> </span><span class="nb">time</span>
+
+<span class="c1"># Sort by cost</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>by-agent<span class="w"> </span>--sort-by<span class="w"> </span>cost
+</pre></div>
+</div>
+<p><strong>Example output:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent Performance Breakdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Agent: python-expert
+  Executions: 342
+  Success Rate: 96.2%
+  Avg Execution Time: 3,245 ms
+  Total Cost: $0.45
+  Token Usage: 1,234 avg input, 567 avg output
+
+Agent: code-reviewer
+  Executions: 234
+  Success Rate: 93.1%
+  Avg Execution Time: 5,123 ms
+  Total Cost: $0.67
+  Token Usage: 2,345 avg input, 890 avg output
+</pre></div>
+</div>
+</section>
+<section id="cost-analysis">
+<h4>Cost Analysis<a class="headerlink" href="#cost-analysis" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View cost breakdown</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>costs
+
+<span class="c1"># Cost by agent</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>costs<span class="w"> </span>--by-agent
+
+<span class="c1"># Cost by model</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>costs<span class="w"> </span>--by-model
+
+<span class="c1"># Cost trends over time</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>costs<span class="w"> </span>--trends<span class="w"> </span>--interval<span class="w"> </span>daily
+</pre></div>
+</div>
+</section>
+<section id="performance-trends">
+<h4>Performance Trends<a class="headerlink" href="#performance-trends" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View trends (hourly intervals)</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>trends<span class="w"> </span>--interval<span class="w"> </span>hourly
+
+<span class="c1"># Daily trends</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>trends<span class="w"> </span>--interval<span class="w"> </span>daily
+
+<span class="c1"># Weekly trends</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>trends<span class="w"> </span>--interval<span class="w"> </span>weekly
+</pre></div>
+</div>
+<p><strong>Example output:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Performance Trends (Daily)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Date         Executions  Avg Time  Success Rate  Cost
+──────────────────────────────────────────────────────
+2025-11-08   145         4.2s      95.2%         $0.34
+2025-11-09   167         4.1s      94.6%         $0.38
+2025-11-10   189         3.9s      96.3%         $0.41
+2025-11-11   201         4.3s      93.5%         $0.45
+2025-11-12   178         4.0s      95.1%         $0.39
+2025-11-13   198         4.2s      94.9%         $0.42
+2025-11-14   169         4.1s      95.6%         $0.37
+
+Trend: ↗ +16% executions, → stable avg time
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="metrics-collection">
+<h2>Metrics Collection<a class="headerlink" href="#metrics-collection" title="Link to this heading"></a></h2>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<p>Metrics collection is enabled by default. To configure:</p>
+<p><strong><code class="docutils literal notranslate"><span class="pre">.claude/claude.json</span></code>:</strong></p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;performance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;tracking_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;metrics_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;.claude/metrics/executions.jsonl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cost_tracking&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;detailed_logging&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="exporting-metrics">
+<h3>Exporting Metrics<a class="headerlink" href="#exporting-metrics" title="Link to this heading"></a></h3>
+<section id="export-to-csv">
+<h4>Export to CSV<a class="headerlink" href="#export-to-csv" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Export all metrics</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>csv<span class="w"> </span>--output<span class="w"> </span>metrics.csv
+
+<span class="c1"># Export with date filter</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>csv<span class="w"> </span>--days<span class="w"> </span><span class="m">30</span><span class="w"> </span>--output<span class="w"> </span>last-30-days.csv
+
+<span class="c1"># Export specific agents</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>csv<span class="w"> </span>--agent<span class="w"> </span>python-expert<span class="w"> </span>--output<span class="w"> </span>python-expert.csv
+</pre></div>
+</div>
+<p><strong>CSV columns:</strong></p>
+<div class="highlight-csv notranslate"><div class="highlight"><pre><span></span>timestamp,agent_name,task_hash,success,execution_time_ms,model,input_tokens,output_tokens,total_tokens,estimated_cost,workflow_id,error_type
+2025-11-14T10:30:45.123456,python-expert,a3b4c5d6,true,3456,claude-3-5-haiku-20241022,1234,567,1801,0.000234,,
+</pre></div>
+</div>
+</section>
+<section id="export-to-json">
+<h4>Export to JSON<a class="headerlink" href="#export-to-json" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Export as JSON</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>json<span class="w"> </span>--output<span class="w"> </span>metrics.json
+
+<span class="c1"># Pretty-printed JSON</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>json<span class="w"> </span>--pretty<span class="w"> </span>--output<span class="w"> </span>metrics-pretty.json
+</pre></div>
+</div>
+</section>
+<section id="programmatic-access">
+<h4>Programmatic Access<a class="headerlink" href="#programmatic-access" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># Initialize tracker</span>
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get all metrics</span>
+<span class="n">all_metrics</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_all_metrics</span><span class="p">()</span>
+
+<span class="c1"># Get metrics for specific timeframe</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="n">start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">recent_metrics</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+
+<span class="c1"># Get metrics by agent</span>
+<span class="n">python_expert_metrics</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_by_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate custom statistics</span>
+<span class="n">avg_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">execution_time_ms</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">all_metrics</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_metrics</span><span class="p">)</span>
+<span class="n">total_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">all_metrics</span><span class="p">)</span>
+<span class="n">success_rate</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">all_metrics</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_metrics</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average execution time: </span><span class="si">{</span><span class="n">avg_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total cost: $</span><span class="si">{</span><span class="n">total_cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success rate: </span><span class="si">{</span><span class="n">success_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-analytics">
+<h2>Performance Analytics<a class="headerlink" href="#performance-analytics" title="Link to this heading"></a></h2>
+<section id="key-performance-indicators-kpis">
+<h3>Key Performance Indicators (KPIs)<a class="headerlink" href="#key-performance-indicators-kpis" title="Link to this heading"></a></h3>
+<section id="success-rate">
+<h4>1. Success Rate<a class="headerlink" href="#success-rate" title="Link to this heading"></a></h4>
+<p><strong>Target:</strong> &gt;95%</p>
+<p><strong>Calculation:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">success_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">successful_executions</span> <span class="o">/</span> <span class="n">total_executions</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p><strong>Monitoring:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check current success rate</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;Success Rate&quot;</span>
+</pre></div>
+</div>
+<p><strong>Alert if:</strong> Success rate drops below 95% for &gt;1 hour</p>
+</section>
+<section id="average-execution-time">
+<h4>2. Average Execution Time<a class="headerlink" href="#average-execution-time" title="Link to this heading"></a></h4>
+<p><strong>Target:</strong> &lt;5s for simple tasks, &lt;15s for complex tasks</p>
+<p><strong>Calculation:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">avg_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Monitoring:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check current average</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;Average Execution Time&quot;</span>
+</pre></div>
+</div>
+<p><strong>Alert if:</strong> P95 latency exceeds 10s for simple tasks</p>
+</section>
+<section id="cost-per-execution">
+<h4>3. Cost Per Execution<a class="headerlink" href="#cost-per-execution" title="Link to this heading"></a></h4>
+<p><strong>Target:</strong> Varies by use case</p>
+<p><strong>Calculation:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cost_per_execution</span> <span class="o">=</span> <span class="n">total_cost</span> <span class="o">/</span> <span class="n">total_executions</span>
+</pre></div>
+</div>
+<p><strong>Monitoring:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View cost breakdown</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>costs
+</pre></div>
+</div>
+<p><strong>Alert if:</strong> Cost per execution exceeds expected baseline by 50%</p>
+</section>
+<section id="token-usage">
+<h4>4. Token Usage<a class="headerlink" href="#token-usage" title="Link to this heading"></a></h4>
+<p><strong>Target:</strong> Optimized via ProgressiveSkillsManager (40-60% reduction)</p>
+<p><strong>Monitoring:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View token usage</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="s2">&quot;Token Usage&quot;</span>
+</pre></div>
+</div>
+<p><strong>Alert if:</strong> Average token usage increases by &gt;30% week-over-week</p>
+</section>
+<section id="model-distribution">
+<h4>5. Model Distribution<a class="headerlink" href="#model-distribution" title="Link to this heading"></a></h4>
+<p><strong>Target:</strong> 60-80% Haiku usage for cost optimization</p>
+<p><strong>Monitoring:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View model distribution</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="s2">&quot;Model Distribution&quot;</span>
+</pre></div>
+</div>
+<p><strong>Alert if:</strong> Haiku usage drops below 50%</p>
+</section>
+</section>
+<section id="performance-baselines">
+<h3>Performance Baselines<a class="headerlink" href="#performance-baselines" title="Link to this heading"></a></h3>
+<p>Establish baselines for comparison:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create baseline from last 30 days</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--days<span class="w"> </span><span class="m">30</span><span class="w"> </span>--output<span class="w"> </span>baseline.json
+</pre></div>
+</div>
+<p><strong>Example baseline:</strong></p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;period&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;30 days&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_executions&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5234</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;success_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">95.3</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;avg_execution_time_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4123</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;p50_latency_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3245</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;p95_latency_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7890</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;p99_latency_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_cost&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12.34</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;avg_cost_per_execution&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.00236</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;avg_input_tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1234</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;avg_output_tokens&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">567</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model_distribution&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;haiku&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">67.3</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;sonnet&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">30.2</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;opus&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.5</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="regression-detection">
+<h3>Regression Detection<a class="headerlink" href="#regression-detection" title="Link to this heading"></a></h3>
+<p>Compare current metrics against baseline:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Detect performance regressions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_regressions</span><span class="p">(</span><span class="n">baseline_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.15</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check for performance regressions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        baseline_file: Path to baseline metrics JSON</span>
+<span class="sd">        threshold: Allowed degradation (1.15 = 15% slower)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Load baseline</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">baseline_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">baseline</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="c1"># Get current metrics (last 24 hours)</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_summary</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">regressions</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Check latency</span>
+    <span class="k">if</span> <span class="n">current</span><span class="p">[</span><span class="s2">&quot;avg_execution_time_ms&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">baseline</span><span class="p">[</span><span class="s2">&quot;avg_execution_time_ms&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="n">regressions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="s2">&quot;Average Execution Time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;baseline&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;avg_execution_time_ms&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;current&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;avg_execution_time_ms&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;degradation&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">((</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;avg_execution_time_ms&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;avg_execution_time_ms&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span>
+        <span class="p">})</span>
+
+    <span class="c1"># Check success rate</span>
+    <span class="k">if</span> <span class="n">current</span><span class="p">[</span><span class="s2">&quot;success_rate&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">baseline</span><span class="p">[</span><span class="s2">&quot;success_rate&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.95</span><span class="p">:</span>  <span class="c1"># 5% drop</span>
+        <span class="n">regressions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="s2">&quot;Success Rate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;baseline&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;current&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;degradation&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">pp&quot;</span>
+        <span class="p">})</span>
+
+    <span class="c1"># Check cost</span>
+    <span class="k">if</span> <span class="n">current</span><span class="p">[</span><span class="s2">&quot;avg_cost_per_execution&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">baseline</span><span class="p">[</span><span class="s2">&quot;avg_cost_per_execution&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">:</span>
+        <span class="n">regressions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="s2">&quot;Cost Per Execution&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;baseline&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;avg_cost_per_execution&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;current&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;avg_cost_per_execution&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;degradation&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">((</span><span class="n">current</span><span class="p">[</span><span class="s1">&#39;avg_cost_per_execution&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;avg_cost_per_execution&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span>
+        <span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">regressions</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚠️  Performance Regressions Detected:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regressions</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Baseline: </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;baseline&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Current: </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;current&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Degradation: </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;degradation&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ No performance regressions detected&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="n">check_regressions</span><span class="p">(</span><span class="s2">&quot;baseline.json&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">success</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Usage in CI/CD:</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># .github/workflows/performance-check.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Performance Check</span>
+
+<span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">push</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pull_request</span><span class="p p-Indicator">]</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">performance</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v3</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Set up Python</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v4</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.11&#39;</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">pip install -e .</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check for regressions</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">python scripts/check_regressions.py</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="custom-monitoring-setup">
+<h2>Custom Monitoring Setup<a class="headerlink" href="#custom-monitoring-setup" title="Link to this heading"></a></h2>
+<section id="integration-with-external-tools">
+<h3>Integration with External Tools<a class="headerlink" href="#integration-with-external-tools" title="Link to this heading"></a></h3>
+<section id="prometheus-grafana">
+<h4>1. Prometheus + Grafana<a class="headerlink" href="#prometheus-grafana" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Export metrics to Prometheus format</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">scripts/export_prometheus.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Export metrics to Prometheus format.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prometheus_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">CollectorRegistry</span><span class="p">,</span> <span class="n">Gauge</span><span class="p">,</span> <span class="n">push_to_gateway</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">export_to_prometheus</span><span class="p">():</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+
+    <span class="c1"># Get metrics from last hour</span>
+    <span class="n">recent</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Create registry</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="n">CollectorRegistry</span><span class="p">()</span>
+
+    <span class="c1"># Define metrics</span>
+    <span class="n">execution_time</span> <span class="o">=</span> <span class="n">Gauge</span><span class="p">(</span>
+        <span class="s1">&#39;claude_force_execution_time_ms&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Agent execution time in milliseconds&#39;</span><span class="p">,</span>
+        <span class="p">[</span><span class="s1">&#39;agent_name&#39;</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">],</span>
+        <span class="n">registry</span><span class="o">=</span><span class="n">registry</span>
+    <span class="p">)</span>
+
+    <span class="n">success_rate</span> <span class="o">=</span> <span class="n">Gauge</span><span class="p">(</span>
+        <span class="s1">&#39;claude_force_success_rate&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Success rate by agent&#39;</span><span class="p">,</span>
+        <span class="p">[</span><span class="s1">&#39;agent_name&#39;</span><span class="p">],</span>
+        <span class="n">registry</span><span class="o">=</span><span class="n">registry</span>
+    <span class="p">)</span>
+
+    <span class="n">cost</span> <span class="o">=</span> <span class="n">Gauge</span><span class="p">(</span>
+        <span class="s1">&#39;claude_force_cost_usd&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Execution cost in USD&#39;</span><span class="p">,</span>
+        <span class="p">[</span><span class="s1">&#39;agent_name&#39;</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">],</span>
+        <span class="n">registry</span><span class="o">=</span><span class="n">registry</span>
+    <span class="p">)</span>
+
+    <span class="n">token_usage</span> <span class="o">=</span> <span class="n">Gauge</span><span class="p">(</span>
+        <span class="s1">&#39;claude_force_token_usage&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;Token usage&#39;</span><span class="p">,</span>
+        <span class="p">[</span><span class="s1">&#39;agent_name&#39;</span><span class="p">,</span> <span class="s1">&#39;token_type&#39;</span><span class="p">],</span>
+        <span class="n">registry</span><span class="o">=</span><span class="n">registry</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Populate metrics</span>
+    <span class="n">agent_stats</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">recent</span><span class="p">:</span>
+        <span class="n">agent</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span>
+        <span class="k">if</span> <span class="n">agent</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">agent_stats</span><span class="p">:</span>
+            <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;times&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s1">&#39;successes&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s1">&#39;costs&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="p">}</span>
+
+        <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;times&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="o">.</span><span class="n">execution_time_ms</span><span class="p">)</span>
+        <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;successes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">metric</span><span class="o">.</span><span class="n">success</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;costs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">)</span>
+        <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">)</span>
+        <span class="n">agent_stats</span><span class="p">[</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;output_tokens&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">)</span>
+
+    <span class="c1"># Set gauges</span>
+    <span class="k">for</span> <span class="n">agent</span><span class="p">,</span> <span class="n">stats</span> <span class="ow">in</span> <span class="n">agent_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">avg_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;times&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;times&#39;</span><span class="p">])</span>
+        <span class="n">execution_time</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">agent_name</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">avg_time</span><span class="p">)</span>
+
+        <span class="n">success_pct</span> <span class="o">=</span> <span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;successes&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">success_rate</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">agent_name</span><span class="o">=</span><span class="n">agent</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">success_pct</span><span class="p">)</span>
+
+        <span class="n">total_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;costs&#39;</span><span class="p">])</span>
+        <span class="n">cost</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">agent_name</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">total_cost</span><span class="p">)</span>
+
+        <span class="n">avg_input</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">])</span>
+        <span class="n">avg_output</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;output_tokens&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;output_tokens&#39;</span><span class="p">])</span>
+        <span class="n">token_usage</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">agent_name</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">token_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">avg_input</span><span class="p">)</span>
+        <span class="n">token_usage</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">agent_name</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">token_type</span><span class="o">=</span><span class="s1">&#39;output&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">avg_output</span><span class="p">)</span>
+
+    <span class="c1"># Push to Prometheus pushgateway</span>
+    <span class="n">push_to_gateway</span><span class="p">(</span><span class="s1">&#39;localhost:9091&#39;</span><span class="p">,</span> <span class="n">job</span><span class="o">=</span><span class="s1">&#39;claude_force&#39;</span><span class="p">,</span> <span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Metrics exported to Prometheus&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">export_to_prometheus</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Schedule periodic export</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add to crontab (every 5 minutes)</span>
+*/5<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/home/user/claude-force<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>scripts/export_prometheus.py
+</pre></div>
+</div>
+<p><strong>Step 3: Configure Grafana dashboard</strong></p>
+<p>Import dashboard JSON (see <code class="docutils literal notranslate"><span class="pre">docs/grafana-dashboard.json</span></code>)</p>
+</section>
+<section id="datadog-integration">
+<h4>2. DataDog Integration<a class="headerlink" href="#datadog-integration" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Install DataDog agent</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DD_AGENT_MAJOR_VERSION</span><span class="o">=</span><span class="m">7</span><span class="w"> </span><span class="nv">DD_API_KEY</span><span class="o">=</span>&lt;your_api_key&gt;<span class="w"> </span><span class="nv">DD_SITE</span><span class="o">=</span><span class="s2">&quot;datadoghq.com&quot;</span><span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-L<span class="w"> </span>https://s3.amazonaws.com/dd-agent/scripts/install_script.sh<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Add custom metrics</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">scripts/export_datadog.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Export metrics to DataDog.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datadog</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize</span><span class="p">,</span> <span class="n">statsd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="c1"># Initialize DataDog</span>
+<span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;api_key&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;your_api_key&gt;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;app_key&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;your_app_key&gt;&#39;</span>
+<span class="p">}</span>
+<span class="n">initialize</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">export_to_datadog</span><span class="p">():</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+    <span class="n">recent</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">recent</span><span class="p">:</span>
+        <span class="c1"># Send execution time</span>
+        <span class="n">statsd</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="s1">&#39;claude_force.execution_time&#39;</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">execution_time_ms</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span>
+                <span class="sa">f</span><span class="s1">&#39;agent:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;model:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;success:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Send cost</span>
+        <span class="n">statsd</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="s1">&#39;claude_force.cost&#39;</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span>
+                <span class="sa">f</span><span class="s1">&#39;agent:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;model:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Send token usage</span>
+        <span class="n">statsd</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="s1">&#39;claude_force.tokens.input&#39;</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;agent:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">statsd</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="s1">&#39;claude_force.tokens.output&#39;</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;agent:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Send success/failure event</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metric</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">statsd</span><span class="o">.</span><span class="n">event</span><span class="p">(</span>
+                <span class="s1">&#39;Agent Execution Failed&#39;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;Agent </span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s1"> failed&#39;</span><span class="p">,</span>
+                <span class="n">alert_type</span><span class="o">=</span><span class="s1">&#39;error&#39;</span><span class="p">,</span>
+                <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;agent:</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Exported </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span><span class="si">}</span><span class="s2"> metrics to DataDog&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">export_to_datadog</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="elk-stack-elasticsearch-logstash-kibana">
+<h4>3. ELK Stack (Elasticsearch, Logstash, Kibana)<a class="headerlink" href="#elk-stack-elasticsearch-logstash-kibana" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Convert JSONL to Elasticsearch format</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Import metrics to Elasticsearch.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">elasticsearch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Elasticsearch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">import_to_elasticsearch</span><span class="p">():</span>
+    <span class="c1"># Connect to Elasticsearch</span>
+    <span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">([</span><span class="s1">&#39;http://localhost:9200&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Create index if not exists</span>
+    <span class="n">index_name</span> <span class="o">=</span> <span class="s1">&#39;claude-force-metrics&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index_name</span><span class="p">):</span>
+        <span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index_name</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;mappings&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;date&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;agent_name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;keyword&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;task_hash&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;keyword&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;execution_time_ms&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;keyword&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;total_tokens&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">},</span>
+                    <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;float&#39;</span><span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+
+    <span class="c1"># Load and index metrics</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_all_metrics</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
+            <span class="s1">&#39;agent_name&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">agent_name</span><span class="p">,</span>
+            <span class="s1">&#39;task_hash&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">task_hash</span><span class="p">,</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">success</span><span class="p">,</span>
+            <span class="s1">&#39;execution_time_ms&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">execution_time_ms</span><span class="p">,</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+            <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+            <span class="s1">&#39;total_tokens&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">total_tokens</span><span class="p">,</span>
+            <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="n">metric</span><span class="o">.</span><span class="n">estimated_cost</span>
+        <span class="p">}</span>
+
+        <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index_name</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">doc</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Imported </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span><span class="si">}</span><span class="s2"> metrics to Elasticsearch&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">import_to_elasticsearch</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Create Kibana dashboard</strong></p>
+<ol class="arabic simple">
+<li><p>Open Kibana (http://localhost:5601)</p></li>
+<li><p>Go to “Management” &gt; “Index Patterns”</p></li>
+<li><p>Create pattern: <code class="docutils literal notranslate"><span class="pre">claude-force-metrics-*</span></code></p></li>
+<li><p>Create visualizations:</p>
+<ul class="simple">
+<li><p>Line chart: Execution time over time</p></li>
+<li><p>Pie chart: Model distribution</p></li>
+<li><p>Bar chart: Top agents by usage</p></li>
+<li><p>Metric: Total cost</p></li>
+</ul>
+</li>
+</ol>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="alerting-notifications">
+<h2>Alerting &amp; Notifications<a class="headerlink" href="#alerting-notifications" title="Link to this heading"></a></h2>
+<section id="email-alerts">
+<h3>Email Alerts<a class="headerlink" href="#email-alerts" title="Link to this heading"></a></h3>
+<p>Create <code class="docutils literal notranslate"><span class="pre">scripts/alert_email.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Send email alerts for performance issues.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">smtplib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.mime.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">MIMEText</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.mime.multipart</span><span class="w"> </span><span class="kn">import</span> <span class="n">MIMEMultipart</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_and_alert</span><span class="p">():</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+    <span class="n">recent</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">alerts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Check success rate</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span>
+    <span class="n">successes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+    <span class="n">success_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">successes</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">100</span>
+
+    <span class="k">if</span> <span class="n">success_rate</span> <span class="o">&lt;</span> <span class="mi">95</span><span class="p">:</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Success rate dropped to </span><span class="si">{</span><span class="n">success_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% (last hour)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check average latency</span>
+    <span class="n">avg_latency</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">execution_time_ms</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span> <span class="k">if</span> <span class="n">recent</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">avg_latency</span> <span class="o">&gt;</span> <span class="mi">10000</span><span class="p">:</span>  <span class="c1"># 10 seconds</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Average latency increased to </span><span class="si">{</span><span class="n">avg_latency</span><span class="o">/</span><span class="mi">1000</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s (last hour)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check cost spike</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">total_cost</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># $1 per hour threshold</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚠️ Cost spike detected: $</span><span class="si">{</span><span class="n">total_cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> in last hour&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Send email if alerts exist</span>
+    <span class="k">if</span> <span class="n">alerts</span><span class="p">:</span>
+        <span class="n">send_alert_email</span><span class="p">(</span><span class="n">alerts</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">send_alert_email</span><span class="p">(</span><span class="n">alerts</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="n">sender</span> <span class="o">=</span> <span class="s2">&quot;alerts@yourcompany.com&quot;</span>
+    <span class="n">recipient</span> <span class="o">=</span> <span class="s2">&quot;ops-team@yourcompany.com&quot;</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Claude Force Performance Alert - </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">body</span> <span class="o">=</span> <span class="s2">&quot;Performance issues detected:</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+    <span class="n">body</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">alerts</span><span class="p">)</span>
+    <span class="n">body</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Check the dashboard for more details.&quot;</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;From&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sender</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;To&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">recipient</span>
+    <span class="n">msg</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">MIMEText</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="s1">&#39;plain&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Send via SMTP</span>
+    <span class="k">with</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="s1">&#39;smtp.gmail.com&#39;</span><span class="p">,</span> <span class="mi">587</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">starttls</span><span class="p">()</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="s1">&#39;your_password&#39;</span><span class="p">)</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Alert email sent: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">alerts</span><span class="p">)</span><span class="si">}</span><span class="s2"> issues&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">check_and_alert</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Schedule hourly checks:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add to crontab</span>
+<span class="m">0</span><span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/home/user/claude-force<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>scripts/alert_email.py
+</pre></div>
+</div>
+</section>
+<section id="slack-alerts">
+<h3>Slack Alerts<a class="headerlink" href="#slack-alerts" title="Link to this heading"></a></h3>
+<p>Create <code class="docutils literal notranslate"><span class="pre">scripts/alert_slack.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Send Slack alerts for performance issues.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="n">SLACK_WEBHOOK_URL</span> <span class="o">=</span> <span class="s2">&quot;https://hooks.slack.com/services/YOUR/WEBHOOK/URL&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_and_alert_slack</span><span class="p">():</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+    <span class="n">recent</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">recent</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Calculate metrics</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span>
+    <span class="n">successes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+    <span class="n">success_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">successes</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">avg_latency</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">execution_time_ms</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span><span class="p">)</span>
+
+    <span class="c1"># Check thresholds</span>
+    <span class="n">alerts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">success_rate</span> <span class="o">&lt;</span> <span class="mi">95</span><span class="p">:</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;danger&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Low Success Rate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Success rate dropped to </span><span class="si">{</span><span class="n">success_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;footer&quot;</span><span class="p">:</span> <span class="s2">&quot;Last 1 hour&quot;</span>
+        <span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">avg_latency</span> <span class="o">&gt;</span> <span class="mi">10000</span><span class="p">:</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;High Latency&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Average latency: </span><span class="si">{</span><span class="n">avg_latency</span><span class="o">/</span><span class="mi">1000</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;footer&quot;</span><span class="p">:</span> <span class="s2">&quot;Last 1 hour&quot;</span>
+        <span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">total_cost</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">alerts</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Cost Spike&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Cost: $</span><span class="si">{</span><span class="n">total_cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;footer&quot;</span><span class="p">:</span> <span class="s2">&quot;Last 1 hour&quot;</span>
+        <span class="p">})</span>
+
+    <span class="c1"># Send to Slack</span>
+    <span class="k">if</span> <span class="n">alerts</span><span class="p">:</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;🚨 Claude Force Performance Alert&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="n">alerts</span>
+        <span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="n">SLACK_WEBHOOK_URL</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">),</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Slack alert sent: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">alerts</span><span class="p">)</span><span class="si">}</span><span class="s2"> issues&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Failed to send Slack alert: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">check_and_alert_slack</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="pagerduty-integration">
+<h3>PagerDuty Integration<a class="headerlink" href="#pagerduty-integration" title="Link to this heading"></a></h3>
+<p>For critical production environments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Create PagerDuty incidents for critical issues.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="n">PAGERDUTY_API_KEY</span> <span class="o">=</span> <span class="s2">&quot;your_api_key&quot;</span>
+<span class="n">PAGERDUTY_SERVICE_ID</span> <span class="o">=</span> <span class="s2">&quot;your_service_id&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">trigger_incident</span><span class="p">(</span><span class="n">summary</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">severity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">details</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger a PagerDuty incident.&quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.pagerduty.com/incidents&quot;</span>
+
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Token token=</span><span class="si">{</span><span class="n">PAGERDUTY_API_KEY</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/vnd.pagerduty+json;version=2&quot;</span>
+    <span class="p">}</span>
+
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;incident&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;incident&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">summary</span><span class="p">,</span>
+            <span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">PAGERDUTY_SERVICE_ID</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;service_reference&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;urgency&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span> <span class="k">if</span> <span class="n">severity</span> <span class="o">==</span> <span class="s2">&quot;critical&quot;</span> <span class="k">else</span> <span class="s2">&quot;low&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;incident_body&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">details</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ PagerDuty incident created: </span><span class="si">{</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Failed to create incident: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_critical_issues</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check for critical performance issues.&quot;&quot;&quot;</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+    <span class="n">recent</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">recent</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Calculate metrics</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">recent</span><span class="p">)</span>
+    <span class="n">successes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">recent</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+    <span class="n">success_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">successes</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+
+    <span class="c1"># Critical: Success rate below 90% for 15 minutes</span>
+    <span class="k">if</span> <span class="n">success_rate</span> <span class="o">&lt;</span> <span class="mi">90</span><span class="p">:</span>
+        <span class="n">trigger_incident</span><span class="p">(</span>
+            <span class="n">summary</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Claude Force: Critical success rate drop (</span><span class="si">{</span><span class="n">success_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">,</span>
+            <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;critical&quot;</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;success_rate&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">success_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;total_executions&quot;</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
+                <span class="s2">&quot;failed_executions&quot;</span><span class="p">:</span> <span class="n">total</span> <span class="o">-</span> <span class="n">successes</span><span class="p">,</span>
+                <span class="s2">&quot;time_window&quot;</span><span class="p">:</span> <span class="s2">&quot;15 minutes&quot;</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">check_critical_issues</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="dashboard-examples">
+<h2>Dashboard Examples<a class="headerlink" href="#dashboard-examples" title="Link to this heading"></a></h2>
+<section id="terminal-dashboard-simple">
+<h3>Terminal Dashboard (Simple)<a class="headerlink" href="#terminal-dashboard-simple" title="Link to this heading"></a></h3>
+<p>Create <code class="docutils literal notranslate"><span class="pre">scripts/dashboard.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple terminal dashboard for Claude Force performance.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">clear_screen</span><span class="p">():</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;clear&#39;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;nt&#39;</span> <span class="k">else</span> <span class="s1">&#39;cls&#39;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">print_dashboard</span><span class="p">():</span>
+    <span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+
+    <span class="c1"># Get metrics for different time windows</span>
+    <span class="n">last_hour</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">last_24h</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">last_7d</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_metrics_since</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">))</span>
+
+    <span class="n">clear_screen</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; Claude Force Performance Dashboard&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="mi">70</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Last Hour Stats</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;📊 LAST HOUR&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">last_hour</span><span class="p">:</span>
+        <span class="n">hour_success</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_hour</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="n">hour_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_hour</span><span class="p">)</span>
+        <span class="n">hour_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">hour_success</span> <span class="o">/</span> <span class="n">hour_total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">hour_avg_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">execution_time_ms</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_hour</span><span class="p">)</span> <span class="o">/</span> <span class="n">hour_total</span>
+        <span class="n">hour_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_hour</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Executions: </span><span class="si">{</span><span class="n">hour_total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Success Rate: </span><span class="si">{</span><span class="n">hour_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Avg Time: </span><span class="si">{</span><span class="n">hour_avg_time</span><span class="o">/</span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total Cost: $</span><span class="si">{</span><span class="n">hour_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No executions in last hour&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Last 24 Hours Stats</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;📊 LAST 24 HOURS&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">last_24h</span><span class="p">:</span>
+        <span class="n">day_success</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_24h</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="n">day_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_24h</span><span class="p">)</span>
+        <span class="n">day_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">day_success</span> <span class="o">/</span> <span class="n">day_total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">day_avg_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">execution_time_ms</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_24h</span><span class="p">)</span> <span class="o">/</span> <span class="n">day_total</span>
+        <span class="n">day_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_24h</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Executions: </span><span class="si">{</span><span class="n">day_total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Success Rate: </span><span class="si">{</span><span class="n">day_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Avg Time: </span><span class="si">{</span><span class="n">day_avg_time</span><span class="o">/</span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total Cost: $</span><span class="si">{</span><span class="n">day_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Model distribution</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_24h</span><span class="p">:</span>
+            <span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Model Distribution:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">pct</span> <span class="o">=</span> <span class="p">(</span><span class="n">count</span> <span class="o">/</span> <span class="n">day_total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="n">model_short</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">model</span>
+            <span class="n">bar</span> <span class="o">=</span> <span class="s2">&quot;█&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">pct</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">model_short</span><span class="si">:</span><span class="s2">10s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">bar</span><span class="si">:</span><span class="s2">30s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pct</span><span class="si">:</span><span class="s2">5.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No executions in last 24 hours&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Last 7 Days Stats</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;📊 LAST 7 DAYS&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">last_7d</span><span class="p">:</span>
+        <span class="n">week_success</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_7d</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">success</span><span class="p">)</span>
+        <span class="n">week_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_7d</span><span class="p">)</span>
+        <span class="n">week_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">week_success</span> <span class="o">/</span> <span class="n">week_total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">week_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_7d</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total Executions: </span><span class="si">{</span><span class="n">week_total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Success Rate: </span><span class="si">{</span><span class="n">week_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total Cost: $</span><span class="si">{</span><span class="n">week_cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Top agents</span>
+        <span class="n">agents</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">last_7d</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">agent_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">agents</span><span class="p">:</span>
+                <span class="n">agents</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">agent_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;cost&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+            <span class="n">agents</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">agents</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;cost&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">.</span><span class="n">estimated_cost</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Top Agents:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">agent</span><span class="p">,</span> <span class="n">stats</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">agents</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;count&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]:</span>
+            <span class="n">pct</span> <span class="o">=</span> <span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">week_total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">agent</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">5,</span><span class="si">}</span><span class="s2"> executions (</span><span class="si">{</span><span class="n">pct</span><span class="si">:</span><span class="s2">4.1f</span><span class="si">}</span><span class="s2">%)  $</span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No executions in last 7 days&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; Last updated: </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Run continuously (update every 30 seconds)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">print_dashboard</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Dashboard stopped.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Run the dashboard:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>scripts/dashboard.py
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="common-issues">
+<h3>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading"></a></h3>
+<section id="missing-metrics-file">
+<h4>1. Missing Metrics File<a class="headerlink" href="#missing-metrics-file" title="Link to this heading"></a></h4>
+<p><strong>Symptom:</strong> <code class="docutils literal notranslate"><span class="pre">FileNotFoundError:</span> <span class="pre">.claude/metrics/executions.jsonl</span></code></p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create metrics directory</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>~/.claude/metrics
+
+<span class="c1"># Verify performance tracking is enabled</span>
+claude-force<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span>performance.tracking_enabled
+</pre></div>
+</div>
+</section>
+<section id="slow-analytics-queries">
+<h4>2. Slow Analytics Queries<a class="headerlink" href="#slow-analytics-queries" title="Link to this heading"></a></h4>
+<p><strong>Symptom:</strong> <code class="docutils literal notranslate"><span class="pre">claude-force</span> <span class="pre">analytics</span> <span class="pre">summary</span></code> takes &gt;5 seconds</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check metrics file size</span>
+ls<span class="w"> </span>-lh<span class="w"> </span>~/.claude/metrics/executions.jsonl
+
+<span class="c1"># If &gt;100MB, consider archiving old metrics</span>
+python<span class="w"> </span>scripts/archive_old_metrics.py
+
+<span class="c1"># Or use date filters</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary<span class="w"> </span>--days<span class="w"> </span><span class="m">30</span>
+</pre></div>
+</div>
+</section>
+<section id="inaccurate-cost-estimates">
+<h4>3. Inaccurate Cost Estimates<a class="headerlink" href="#inaccurate-cost-estimates" title="Link to this heading"></a></h4>
+<p><strong>Symptom:</strong> Cost estimates don’t match actual bills</p>
+<p><strong>Cause:</strong> Pricing may have changed, or caching causing stale data</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Update pricing in performance_tracker.py</span>
+<span class="n">PRICING</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="mf">0.00025</span><span class="p">,</span>  <span class="c1"># Update these values</span>
+        <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="mf">0.00125</span>
+    <span class="p">},</span>
+    <span class="c1"># ... other models</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="export-failures">
+<h4>4. Export Failures<a class="headerlink" href="#export-failures" title="Link to this heading"></a></h4>
+<p><strong>Symptom:</strong> <code class="docutils literal notranslate"><span class="pre">claude-force</span> <span class="pre">analytics</span> <span class="pre">export</span></code> fails</p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check file permissions</span>
+ls<span class="w"> </span>-la<span class="w"> </span>~/.claude/metrics/
+
+<span class="c1"># Verify output directory exists</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>exports/
+
+<span class="c1"># Try with explicit path</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>csv<span class="w"> </span>--output<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/exports/metrics.csv
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<p><strong>Quick Reference:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># View current performance</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span>summary
+
+<span class="c1"># Export metrics</span>
+claude-force<span class="w"> </span>analytics<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--format<span class="w"> </span>csv<span class="w"> </span>--output<span class="w"> </span>metrics.csv
+
+<span class="c1"># Run custom dashboard</span>
+python<span class="w"> </span>scripts/dashboard.py
+
+<span class="c1"># Check for regressions</span>
+python<span class="w"> </span>scripts/check_regressions.py
+</pre></div>
+</div>
+<p><strong>Key Metrics to Monitor:</strong></p>
+<ul class="simple">
+<li><p>✅ Success Rate (target: &gt;95%)</p></li>
+<li><p>✅ Avg Execution Time (target: &lt;5s simple, &lt;15s complex)</p></li>
+<li><p>✅ Cost Per Execution</p></li>
+<li><p>✅ Model Distribution (target: 60-80% Haiku)</p></li>
+<li><p>✅ Token Usage</p></li>
+</ul>
+<p><strong>Integration Options:</strong></p>
+<ul class="simple">
+<li><p>Prometheus + Grafana (time-series monitoring)</p></li>
+<li><p>DataDog (APM + metrics)</p></li>
+<li><p>ELK Stack (log analysis)</p></li>
+<li><p>Slack/Email (alerting)</p></li>
+<li><p>PagerDuty (incident management)</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Next Steps:</strong></p>
+<ol class="arabic simple">
+<li><p>Review current performance: <code class="docutils literal notranslate"><span class="pre">claude-force</span> <span class="pre">analytics</span> <span class="pre">summary</span></code></p></li>
+<li><p>Establish baselines for your workload</p></li>
+<li><p>Set up alerting for critical metrics</p></li>
+<li><p>Create custom dashboards as needed</p></li>
+</ol>
+<p>For more details, see the <a class="reference internal" href="performance-analysis.html"><span class="std std-doc">Performance Analysis Report</span></a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

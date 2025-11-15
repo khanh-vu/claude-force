@@ -1,0 +1,1231 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Force Performance Optimization Implementation Plan v1.1 &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Claude Force Performance Optimization Implementation Plan v1.1</a><ul>
+<li><a class="reference internal" href="#updates-in-v1-1">Updates in v1.1</a><ul>
+<li><a class="reference internal" href="#critical-fixes-applied">✅ Critical Fixes Applied</a></li>
+<li><a class="reference internal" href="#high-priority-improvements-applied">✅ High-Priority Improvements Applied</a></li>
+<li><a class="reference internal" href="#additional-improvements">📝 Additional Improvements</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#executive-summary">Executive Summary</a><ul>
+<li><a class="reference internal" href="#primary-goals">Primary Goals</a></li>
+<li><a class="reference internal" href="#implementation-phases">Implementation Phases</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#phase-1-foundation-optimizations-updated">Phase 1: Foundation Optimizations (Updated)</a><ul>
+<li><a class="reference internal" href="#async-api-client-implementation-updated">1.1 Async API Client Implementation (UPDATED)</a><ul>
+<li><a class="reference internal" href="#implementation-steps">Implementation Steps</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#response-caching-system-updated">1.2 Response Caching System (UPDATED)</a><ul>
+<li><a class="reference internal" href="#id1">Implementation Steps</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-documentation">1.3 Configuration &amp; Documentation</a><ul>
+<li><a class="reference internal" href="#update-configuration-schema">Update Configuration Schema</a></li>
+<li><a class="reference internal" href="#update-requirements">Update Requirements</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#testing-strategy-enhanced">Testing Strategy (Enhanced)</a><ul>
+<li><a class="reference internal" href="#unit-tests-updated">Unit Tests (Updated)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#summary-of-changes-in-v1-1">Summary of Changes in v1.1</a><ul>
+<li><a class="reference internal" href="#critical-fixes">Critical Fixes</a></li>
+<li><a class="reference internal" href="#high-priority-improvements">High-Priority Improvements</a></li>
+<li><a class="reference internal" href="#additional-enhancements">Additional Enhancements</a></li>
+<li><a class="reference internal" href="#new-dependencies">New Dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Claude Force Performance Optimization Implementation Plan v1.1</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/performance-optimization-plan-v1.1.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="claude-force-performance-optimization-implementation-plan-v1-1">
+<h1>Claude Force Performance Optimization Implementation Plan v1.1<a class="headerlink" href="#claude-force-performance-optimization-implementation-plan-v1-1" title="Link to this heading"></a></h1>
+<p><strong>Version:</strong> 1.1 (Updated after expert review)
+<strong>Date:</strong> 2025-11-14
+<strong>Status:</strong> Ready for Implementation
+<strong>Target Release:</strong> v2.3.0</p>
+<hr class="docutils" />
+<section id="updates-in-v1-1">
+<h2>Updates in v1.1<a class="headerlink" href="#updates-in-v1-1" title="Link to this heading"></a></h2>
+<p>This version incorporates all critical and high-priority fixes identified in the expert review:</p>
+<section id="critical-fixes-applied">
+<h3>✅ Critical Fixes Applied<a class="headerlink" href="#critical-fixes-applied" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>✅ Added missing imports (os, json) in AsyncAgentOrchestrator</p></li>
+<li><p>✅ Fixed Python 3.8 compatibility (List[] vs list[])</p></li>
+<li><p>✅ Added timeouts to all async operations</p></li>
+<li><p>✅ Added input validation for agent_name</p></li>
+</ol>
+</section>
+<section id="high-priority-improvements-applied">
+<h3>✅ High-Priority Improvements Applied<a class="headerlink" href="#high-priority-improvements-applied" title="Link to this heading"></a></h3>
+<ol class="arabic simple" start="5">
+<li><p>✅ Increased cache key length to 32 chars</p></li>
+<li><p>✅ Added semaphore for concurrency control</p></li>
+<li><p>✅ Implemented retry logic with tenacity</p></li>
+<li><p>✅ Made performance tracking async</p></li>
+</ol>
+</section>
+<section id="additional-improvements">
+<h3>📝 Additional Improvements<a class="headerlink" href="#additional-improvements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ Added structured logging</p></li>
+<li><p>✅ Improved error handling</p></li>
+<li><p>✅ Added HMAC cache integrity checks</p></li>
+<li><p>✅ Optimized LRU eviction with heapq</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="executive-summary">
+<h2>Executive Summary<a class="headerlink" href="#executive-summary" title="Link to this heading"></a></h2>
+<p>This document outlines a comprehensive plan to optimize Claude Force performance based on the findings in the <a class="reference internal" href="performance-analysis.html"><span class="std std-doc">Performance Analysis Report</span></a> and incorporating feedback from the <a class="reference internal" href="performance-optimization-reviews.html"><span class="std std-doc">Expert Review</span></a>.</p>
+<section id="primary-goals">
+<h3>Primary Goals<a class="headerlink" href="#primary-goals" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Current</p></th>
+<th class="head"><p>Target</p></th>
+<th class="head"><p>Improvement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Workflow Execution Time</p></td>
+<td><p>12-30s (3 agents)</p></td>
+<td><p>4-10s</p></td>
+<td><p><strong>50-80% faster</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cost Per Execution</p></td>
+<td><p>Baseline</p></td>
+<td><p>30-50% less</p></td>
+<td><p><strong>Cost reduction</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Throughput</p></td>
+<td><p>1 task/time</p></td>
+<td><p>2-5 tasks/time</p></td>
+<td><p><strong>2-5x increase</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cache Hit Rate</p></td>
+<td><p>0%</p></td>
+<td><p>20-70%</p></td>
+<td><p><strong>New capability</strong></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="implementation-phases">
+<h3>Implementation Phases<a class="headerlink" href="#implementation-phases" title="Link to this heading"></a></h3>
+<p><strong>Phase 1 (Month 1): Foundation</strong> ✅ High Impact</p>
+<ul class="simple">
+<li><p>Async API client implementation (with fixes)</p></li>
+<li><p>Response caching system (with security improvements)</p></li>
+<li><p>Backward compatibility layer</p></li>
+</ul>
+<p><strong>Phase 2 (Month 2): Advanced Optimization</strong> ⭐ Medium Impact</p>
+<ul class="simple">
+<li><p>Parallel workflow execution (DAG-based)</p></li>
+<li><p>Metrics aggregation</p></li>
+<li><p>Query result caching</p></li>
+</ul>
+<p><strong>Phase 3 (Month 3): Polish &amp; Enhancement</strong> 📊 Low Impact</p>
+<ul class="simple">
+<li><p>Performance monitoring enhancements</p></li>
+<li><p>Circuit breakers</p></li>
+<li><p>Advanced caching strategies</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-1-foundation-optimizations-updated">
+<h2>Phase 1: Foundation Optimizations (Updated)<a class="headerlink" href="#phase-1-foundation-optimizations-updated" title="Link to this heading"></a></h2>
+<p><strong>Duration:</strong> 3-4 weeks
+<strong>Priority:</strong> 🔴 CRITICAL
+<strong>Expected Impact:</strong> 50-80% performance improvement</p>
+<section id="async-api-client-implementation-updated">
+<h3>1.1 Async API Client Implementation (UPDATED)<a class="headerlink" href="#async-api-client-implementation-updated" title="Link to this heading"></a></h3>
+<section id="implementation-steps">
+<h4>Implementation Steps<a class="headerlink" href="#implementation-steps" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Install async dependencies</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Update requirements.txt</span>
+anthropic&gt;<span class="o">=</span><span class="m">0</span>.40.0<span class="w">  </span><span class="c1"># Already supports async</span>
+aiofiles&gt;<span class="o">=</span><span class="m">23</span>.0.0<span class="w">   </span><span class="c1"># Async file I/O</span>
+tenacity&gt;<span class="o">=</span><span class="m">8</span>.0.0<span class="w">    </span><span class="c1"># Retry logic (NEW)</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Create async orchestrator module</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/async_orchestrator.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Async version of AgentOrchestrator for non-blocking operations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>  <span class="c1"># ✅ FIXED: Added missing import</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>  <span class="c1"># ✅ FIXED: Added missing import</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>  <span class="c1"># ✅ NEW: For input validation</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>  <span class="c1"># ✅ FIXED: Python 3.8 compat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">anthropic</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAnthropic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tenacity</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry</span><span class="p">,</span> <span class="n">stop_after_attempt</span><span class="p">,</span> <span class="n">wait_exponential</span>  <span class="c1"># ✅ NEW: Retry logic</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.agent_memory</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentMemory</span>
+
+<span class="c1"># ✅ NEW: Structured logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AsyncAgentOrchestrator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async orchestrator for non-blocking agent execution.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_concurrent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># ✅ NEW: Concurrency control</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">config_path</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span> <span class="o">/</span> <span class="s2">&quot;claude.json&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ANTHROPIC_API_KEY&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Lazy initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncAnthropic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PerformanceTracker</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agent_memory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AgentMemory</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># ✅ NEW: Semaphore for concurrency control</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">max_concurrent</span><span class="p">)</span>
+
+        <span class="c1"># ✅ NEW: Configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout_seconds</span> <span class="o">=</span> <span class="mi">30</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">async_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncAnthropic</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazy-load async client.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span> <span class="o">=</span> <span class="n">AsyncAnthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration asynchronously.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">aiofiles</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_agent_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load agent definition asynchronously.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_config</span><span class="p">()</span>
+        <span class="n">agent_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;agents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">agent_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">agent_config</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agent &#39;</span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+
+        <span class="n">agent_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">agent_config</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">aiofiles</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">agent_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="c1"># ✅ NEW: Retry decorator</span>
+    <span class="nd">@retry</span><span class="p">(</span>
+        <span class="n">stop</span><span class="o">=</span><span class="n">stop_after_attempt</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+        <span class="n">wait</span><span class="o">=</span><span class="n">wait_exponential</span><span class="p">(</span><span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+        <span class="n">reraise</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_call_api_with_retry</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call API with retry logic.&quot;&quot;&quot;</span>
+        <span class="c1"># ✅ NEW: Timeout protection</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout_seconds</span><span class="p">):</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">,</span>
+                    <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+                    <span class="n">messages</span><span class="o">=</span><span class="n">messages</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">response</span>
+        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API call timed out after </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout_seconds</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API call timed out after </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout_seconds</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute agent asynchronously.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+        <span class="c1"># ✅ NEW: Input validation</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[a-zA-Z0-9_-]+$&#39;</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid agent name: </span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100_000</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task too large: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">task</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars (max 100,000)&quot;</span><span class="p">)</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="c1"># ✅ NEW: Structured logging</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Executing agent&quot;</span><span class="p">,</span>
+            <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;agent_name&quot;</span><span class="p">:</span> <span class="n">agent_name</span><span class="p">,</span>
+                <span class="s2">&quot;task_length&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">task</span><span class="p">),</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span> <span class="ow">or</span> <span class="s2">&quot;default&quot;</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Load agent definition</span>
+            <span class="n">agent_definition</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_agent_definition</span><span class="p">(</span><span class="n">agent_name</span><span class="p">)</span>
+
+            <span class="c1"># Build prompt</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">agent_definition</span><span class="si">}</span><span class="se">\n\n</span><span class="s2"># Task</span><span class="se">\n</span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Call API with retry and timeout</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_api_with_retry</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span> <span class="ow">or</span> <span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">,</span>
+                <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+                <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Extract result</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+            <span class="c1"># ✅ FIXED: Async performance tracking</span>
+            <span class="n">execution_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_performance_async</span><span class="p">(</span>
+                <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">execution_time_ms</span><span class="o">=</span><span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">input_tokens</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                <span class="n">output_tokens</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span>
+            <span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Agent execution completed&quot;</span><span class="p">,</span>
+                <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;agent_name&quot;</span><span class="p">:</span> <span class="n">agent_name</span><span class="p">,</span>
+                    <span class="s2">&quot;execution_time_ms&quot;</span><span class="p">:</span> <span class="n">execution_time</span><span class="p">,</span>
+                    <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">execution_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;Agent execution failed&quot;</span><span class="p">,</span>
+                <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;agent_name&quot;</span><span class="p">:</span> <span class="n">agent_name</span><span class="p">,</span>
+                    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                    <span class="s2">&quot;error_type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="s2">&quot;execution_time_ms&quot;</span><span class="p">:</span> <span class="n">execution_time</span>
+                <span class="p">},</span>
+                <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_performance_async</span><span class="p">(</span>
+                <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">execution_time_ms</span><span class="o">=</span><span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">error_type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_with_semaphore</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute agent with semaphore for concurrency control.&quot;&quot;&quot;</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">semaphore</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_multiple</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>  <span class="c1"># ✅ FIXED: Python 3.8 compatible</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>  <span class="c1"># ✅ FIXED: Python 3.8 compatible</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute multiple agents concurrently with rate limiting.&quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_with_semaphore</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># ✅ FIXED: Async performance tracking</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_track_performance_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Track performance metrics asynchronously.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+
+        <span class="c1"># Run in executor to avoid blocking event loop</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span><span class="o">.</span><span class="n">track_execution</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 3: Add backward compatibility wrapper</strong></p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">claude_force/orchestrator.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>  <span class="c1"># ✅ FIXED: Python 3.8 compatible</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AgentOrchestrator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Synchronous orchestrator with async support.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="c1"># Existing sync initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Synchronous execution (backward compatible).&quot;&quot;&quot;</span>
+        <span class="c1"># Existing synchronous implementation</span>
+        <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronous execution (new feature).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+            <span class="c1"># ✅ NEW: Read concurrency limit from config</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+            <span class="n">max_concurrent</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;performance&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_concurrent_agents&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">(</span>
+                <span class="n">config_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+                <span class="n">max_concurrent</span><span class="o">=</span><span class="n">max_concurrent</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_multiple_async</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>  <span class="c1"># ✅ FIXED: Python 3.8 compatible</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>  <span class="c1"># ✅ FIXED: Python 3.8 compatible</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute multiple agents concurrently.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+            <span class="n">max_concurrent</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;performance&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_concurrent_agents&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">(</span>
+                <span class="n">config_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+                <span class="n">max_concurrent</span><span class="o">=</span><span class="n">max_concurrent</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span><span class="o">.</span><span class="n">execute_multiple</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 4: Update CLI for async support</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="c1"># ✅ NEW: Configure logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+<span class="p">)</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;agent_name&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;task&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--async&#39;</span><span class="p">,</span> <span class="s1">&#39;use_async&#39;</span><span class="p">,</span> <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Use async execution&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--timeout&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Timeout in seconds&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">use_async</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute an agent with a task.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">use_async</span><span class="p">:</span>
+        <span class="c1"># Run async version</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+            <span class="n">orchestrator</span><span class="o">.</span><span class="n">_async_orchestrator</span><span class="o">.</span><span class="n">timeout_seconds</span> <span class="o">=</span> <span class="n">timeout</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent_async</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Run sync version (backward compatible)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="response-caching-system-updated">
+<h3>1.2 Response Caching System (UPDATED)<a class="headerlink" href="#response-caching-system-updated" title="Link to this heading"></a></h3>
+<section id="id1">
+<h4>Implementation Steps<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Create cache module</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/response_cache.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Response caching system for Claude API calls.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hmac</span>  <span class="c1"># ✅ NEW: For cache integrity</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">heapq</span>  <span class="c1"># ✅ NEW: Optimized LRU eviction</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CacheEntry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cached response entry.&quot;&quot;&quot;</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">response</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">output_tokens</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">estimated_cost</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">hit_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># ✅ NEW: HMAC signature</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResponseCache</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Intelligent response cache for Claude API calls.</span>
+
+<span class="sd">    Features:</span>
+<span class="sd">    - TTL-based expiration</span>
+<span class="sd">    - LRU eviction (optimized with heapq)</span>
+<span class="sd">    - Size limits</span>
+<span class="sd">    - Cache statistics</span>
+<span class="sd">    - Exclusion lists (non-deterministic agents)</span>
+<span class="sd">    - HMAC integrity verification</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ttl_hours</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span>
+        <span class="n">max_size_mb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cache_secret</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># ✅ NEW: For HMAC</span>
+    <span class="p">):</span>
+        <span class="c1"># ✅ FIXED: Validate cache directory</span>
+        <span class="k">if</span> <span class="n">cache_dir</span><span class="p">:</span>
+            <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">base</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache directory must be under </span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span> <span class="o">=</span> <span class="n">ttl_hours</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_size_bytes</span> <span class="o">=</span> <span class="n">max_size_mb</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+
+        <span class="c1"># ✅ NEW: HMAC secret for integrity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_secret</span> <span class="o">=</span> <span class="n">cache_secret</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;CLAUDE_CACHE_SECRET&quot;</span><span class="p">,</span> <span class="s2">&quot;default_secret&quot;</span><span class="p">)</span>
+
+        <span class="c1"># In-memory cache for fast access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CacheEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_cache_index</span><span class="p">()</span>
+
+        <span class="c1"># Statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;misses&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;evictions&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;size_bytes&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;integrity_failures&#39;</span><span class="p">:</span> <span class="mi">0</span>  <span class="c1"># ✅ NEW</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate cache key.&quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="c1"># ✅ FIXED: Use 32 chars instead of 16 (reduced collision risk)</span>
+        <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">32</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute HMAC signature for cache entry.&quot;&quot;&quot;</span>
+        <span class="c1"># Remove signature field if present</span>
+        <span class="n">entry_copy</span> <span class="o">=</span> <span class="n">entry_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">entry_copy</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;signature&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Create canonical JSON representation</span>
+        <span class="n">canonical</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">entry_copy</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Compute HMAC</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+            <span class="n">msg</span><span class="o">=</span><span class="n">canonical</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+            <span class="n">digestmod</span><span class="o">=</span><span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">signature</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_verify_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">CacheEntry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify HMAC signature of cache entry.&quot;&quot;&quot;</span>
+        <span class="n">expected_sig</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">signature</span>
+        <span class="n">entry_dict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="n">actual_sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_signature</span><span class="p">(</span><span class="n">entry_dict</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">expected_sig</span> <span class="o">!=</span> <span class="n">actual_sig</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Cache integrity check failed&quot;</span><span class="p">,</span>
+                <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">key</span><span class="p">}</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;integrity_failures&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve cached response.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_key</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+        <span class="c1"># Check memory cache</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+            <span class="c1"># ✅ NEW: Verify integrity</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verify_signature</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_evict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># Check TTL</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span>
+            <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span><span class="p">:</span>
+                <span class="c1"># Expired</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_evict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># Cache hit</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">hit_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Cache hit&quot;</span><span class="p">,</span>
+                <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">[:</span><span class="mi">8</span><span class="p">],</span>
+                    <span class="s2">&quot;agent&quot;</span><span class="p">:</span> <span class="n">agent_name</span><span class="p">,</span>
+                    <span class="s2">&quot;age_seconds&quot;</span><span class="p">:</span> <span class="n">age</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">response</span><span class="p">,</span>
+                <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+                <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">,</span>
+                <span class="s1">&#39;cached&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;cache_age_seconds&#39;</span><span class="p">:</span> <span class="n">age</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Check disk cache</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Check TTL</span>
+                <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+                <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span><span class="p">:</span>
+                    <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+
+                <span class="c1"># Load from disk</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">entry_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="n">CacheEntry</span><span class="p">(</span><span class="o">**</span><span class="n">entry_dict</span><span class="p">)</span>
+
+                <span class="c1"># ✅ NEW: Verify integrity</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verify_signature</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_evict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+
+                <span class="n">entry</span><span class="o">.</span><span class="n">hit_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">response</span><span class="p">,</span>
+                    <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                    <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+                    <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">,</span>
+                    <span class="s1">&#39;cached&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s1">&#39;cache_age_seconds&#39;</span><span class="p">:</span> <span class="n">age</span>
+                <span class="p">}</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load cache file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Clean up corrupt file</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+        <span class="c1"># Cache miss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">output_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">estimated_cost</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache a response.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_key</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">CacheEntry</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+            <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+            <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+            <span class="n">input_tokens</span><span class="o">=</span><span class="n">input_tokens</span><span class="p">,</span>
+            <span class="n">output_tokens</span><span class="o">=</span><span class="n">output_tokens</span><span class="p">,</span>
+            <span class="n">estimated_cost</span><span class="o">=</span><span class="n">estimated_cost</span><span class="p">,</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># ✅ NEW: Compute signature</span>
+        <span class="n">entry_dict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_signature</span><span class="p">(</span><span class="n">entry_dict</span><span class="p">)</span>
+
+        <span class="c1"># Store in memory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+
+        <span class="c1"># Store on disk</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+
+        <span class="c1"># ✅ FIXED: Proper error handling for file write</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">entry</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+
+            <span class="c1"># Update size only if write succeeded</span>
+            <span class="n">actual_size</span> <span class="o">=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">actual_size</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Cache entry stored&quot;</span><span class="p">,</span>
+                <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">[:</span><span class="mi">8</span><span class="p">],</span> <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="n">actual_size</span><span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to write cache file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># Don&#39;t update size if write failed</span>
+            <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># Check size limit and evict if needed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size_bytes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_evict_lru</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_evict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evict specific cache entry.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">size</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;evictions&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to evict cache file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_evict_lru</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evict least recently used entries (optimized with heapq).&quot;&quot;&quot;</span>
+        <span class="c1"># ✅ FIXED: Use heapq for O(k log n) instead of O(n log n)</span>
+        <span class="n">num_to_evict</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Evicting LRU entries&quot;</span><span class="p">,</span>
+            <span class="n">extra</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;num_to_evict&quot;</span><span class="p">:</span> <span class="n">num_to_evict</span><span class="p">,</span>
+                <span class="s2">&quot;total_entries&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Find k smallest by (hit_count, timestamp)</span>
+        <span class="n">to_evict</span> <span class="o">=</span> <span class="n">heapq</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span>
+            <span class="n">num_to_evict</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hit_count</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">to_evict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_evict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear entire cache.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cache_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.json&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to clear cache file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cache cleared&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cache statistics.&quot;&quot;&quot;</span>
+        <span class="n">total_requests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span>
+        <span class="n">hit_rate</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">total_requests</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">if</span> <span class="n">total_requests</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span><span class="p">,</span>
+            <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;misses&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;hit_rate&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hit_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;evictions&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;evictions&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;integrity_failures&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;integrity_failures&#39;</span><span class="p">],</span>  <span class="c1"># ✅ NEW</span>
+            <span class="s1">&#39;size_mb&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span>
+            <span class="s1">&#39;entries&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_cache_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load cache index from disk.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cache_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.json&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">entry_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="n">CacheEntry</span><span class="p">(</span><span class="o">**</span><span class="n">entry_dict</span><span class="p">)</span>
+
+                    <span class="c1"># ✅ NEW: Verify integrity on load</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verify_signature</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removing corrupt cache file: </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                        <span class="k">continue</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load cache file </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Remove corrupt cache file</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="configuration-documentation">
+<h3>1.3 Configuration &amp; Documentation<a class="headerlink" href="#configuration-documentation" title="Link to this heading"></a></h3>
+<section id="update-configuration-schema">
+<h4>Update Configuration Schema<a class="headerlink" href="#update-configuration-schema" title="Link to this heading"></a></h4>
+<p>Add to <code class="docutils literal notranslate"><span class="pre">.claude/claude.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;performance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;async_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_concurrent_agents&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;timeout_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_retries&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;cache&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ttl_hours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_size_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;exclude_agents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;use_integrity_check&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="update-requirements">
+<h4>Update Requirements<a class="headerlink" href="#update-requirements" title="Link to this heading"></a></h4>
+<p>Update <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">anthropic</span><span class="o">&gt;=</span><span class="mf">0.40.0</span>
+<span class="n">aiofiles</span><span class="o">&gt;=</span><span class="mf">23.0.0</span>
+<span class="n">tenacity</span><span class="o">&gt;=</span><span class="mf">8.0.0</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="testing-strategy-enhanced">
+<h2>Testing Strategy (Enhanced)<a class="headerlink" href="#testing-strategy-enhanced" title="Link to this heading"></a></h2>
+<section id="unit-tests-updated">
+<h3>Unit Tests (Updated)<a class="headerlink" href="#unit-tests-updated" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/test_async_orchestrator.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unittest</span><span class="w"> </span><span class="kn">import</span> <span class="n">mock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>  <span class="c1"># ✅ FIXED: Python 3.8 compatible</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_async_execute_agent</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test async agent execution.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;What are decorators?&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_concurrent_execution</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test concurrent agent execution.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+
+    <span class="n">tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>  <span class="c1"># ✅ FIXED: Python 3.8 type hint</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain lists&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain dicts&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain sets&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_multiple</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Concurrent execution: </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># ✅ NEW: Input validation tests</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_invalid_agent_name</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that invalid agent names are rejected.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">&quot;Invalid agent name&quot;</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;../../etc/passwd&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_task_too_large</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that oversized tasks are rejected.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+
+    <span class="n">large_task</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">200_000</span>  <span class="c1"># &gt; 100k chars</span>
+
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">&quot;Task too large&quot;</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="n">large_task</span><span class="p">)</span>
+
+
+<span class="c1"># ✅ NEW: Timeout test</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_timeout</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that operations timeout correctly.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+    <span class="n">orchestrator</span><span class="o">.</span><span class="n">timeout_seconds</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Very short timeout</span>
+
+    <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="s1">&#39;create&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_create</span><span class="p">:</span>
+        <span class="c1"># Simulate slow response</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">slow_response</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">mock</span><span class="o">.</span><span class="n">Mock</span><span class="p">()</span>
+
+        <span class="n">mock_create</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">slow_response</span>
+
+        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">TimeoutError</span><span class="p">):</span>
+            <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># ✅ NEW: Concurrency limit test</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_concurrency_limit</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that semaphore limits concurrency.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">(</span><span class="n">max_concurrent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Track concurrent executions</span>
+    <span class="n">concurrent_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">max_concurrent</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">tracked_execute</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">concurrent_count</span><span class="p">,</span> <span class="n">max_concurrent</span>
+        <span class="n">concurrent_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">max_concurrent</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_concurrent</span><span class="p">,</span> <span class="n">concurrent_count</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># Simulate work</span>
+
+        <span class="n">concurrent_count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="s2">&quot;result&quot;</span>
+
+    <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">orchestrator</span><span class="p">,</span> <span class="s1">&#39;execute_agent&#39;</span><span class="p">,</span> <span class="n">tracked_execute</span><span class="p">):</span>
+        <span class="n">tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;task</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+        <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_multiple</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">max_concurrent</span> <span class="o">&lt;=</span> <span class="mi">2</span>
+
+
+<span class="c1"># ✅ NEW: Cache tests</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_integrity</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test cache integrity verification.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.response_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseCache</span>
+
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">(</span><span class="n">cache_secret</span><span class="o">=</span><span class="s2">&quot;test_secret&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Store entry</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="c1"># Should retrieve successfully</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;response&quot;</span>
+
+    <span class="c1"># Tamper with cache file</span>
+    <span class="n">cache_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cache</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.json&quot;</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">cache_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tampered&quot;</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="c1"># Should detect tampering</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">cache</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;integrity_failures&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_key_length</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that cache keys are 32 chars.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.response_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseCache</span>
+
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">()</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">_cache_key</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="mi">32</span>
+
+
+<span class="c1"># ✅ NEW: LRU eviction test</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_lru_eviction</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test LRU eviction with heapq.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.response_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResponseCache</span>
+
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">(</span><span class="n">max_size_mb</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Fill cache</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="n">large_response</span> <span class="o">=</span> <span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">50_000</span>  <span class="c1"># 50KB each</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;agent</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;task</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">large_response</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="c1"># Should have triggered eviction</span>
+    <span class="k">assert</span> <span class="n">cache</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;evictions&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">cache</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">cache</span><span class="o">.</span><span class="n">max_size_bytes</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="summary-of-changes-in-v1-1">
+<h2>Summary of Changes in v1.1<a class="headerlink" href="#summary-of-changes-in-v1-1" title="Link to this heading"></a></h2>
+<section id="critical-fixes">
+<h3>Critical Fixes<a class="headerlink" href="#critical-fixes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ Added missing <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">os</span></code> and <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">json</span></code></p></li>
+<li><p>✅ Fixed Python 3.8 compatibility (all <code class="docutils literal notranslate"><span class="pre">list[...]</span></code> → <code class="docutils literal notranslate"><span class="pre">List[...]</span></code>)</p></li>
+<li><p>✅ Added <code class="docutils literal notranslate"><span class="pre">asyncio.timeout()</span></code> to all async API calls</p></li>
+<li><p>✅ Added input validation with regex for <code class="docutils literal notranslate"><span class="pre">agent_name</span></code></p></li>
+</ul>
+</section>
+<section id="high-priority-improvements">
+<h3>High-Priority Improvements<a class="headerlink" href="#high-priority-improvements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ Increased cache key from 16 to 32 characters</p></li>
+<li><p>✅ Added <code class="docutils literal notranslate"><span class="pre">asyncio.Semaphore</span></code> for concurrency control</p></li>
+<li><p>✅ Implemented retry logic with <code class="docutils literal notranslate"><span class="pre">tenacity</span></code></p></li>
+<li><p>✅ Made <code class="docutils literal notranslate"><span class="pre">_track_performance()</span></code> async with <code class="docutils literal notranslate"><span class="pre">asyncio.to_thread()</span></code></p></li>
+</ul>
+</section>
+<section id="additional-enhancements">
+<h3>Additional Enhancements<a class="headerlink" href="#additional-enhancements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ Added structured logging throughout</p></li>
+<li><p>✅ Added HMAC signatures for cache integrity</p></li>
+<li><p>✅ Optimized LRU eviction with <code class="docutils literal notranslate"><span class="pre">heapq.nsmallest()</span></code></p></li>
+<li><p>✅ Improved error handling and logging</p></li>
+<li><p>✅ Added comprehensive validation tests</p></li>
+<li><p>✅ Added security tests for cache tampering</p></li>
+</ul>
+</section>
+<section id="new-dependencies">
+<h3>New Dependencies<a class="headerlink" href="#new-dependencies" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tenacity&gt;=8.0.0</span></code> - For retry logic</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>✅ Review this updated plan</p></li>
+<li><p>Begin implementation of Phase 1 with all fixes applied</p></li>
+<li><p>Run comprehensive test suite</p></li>
+<li><p>Performance benchmarking</p></li>
+<li><p>Proceed to Phase 2</p></li>
+</ol>
+<p><strong>This plan is now ready for implementation with all expert review feedback incorporated.</strong></p>
+<hr class="docutils" />
+<p><strong>Document Version:</strong> 1.1
+<strong>Last Updated:</strong> 2025-11-14
+<strong>Status:</strong> Ready for Implementation
+<strong>Owner:</strong> Performance Engineering Team</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

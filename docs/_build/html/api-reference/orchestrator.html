@@ -1,0 +1,575 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentOrchestrator &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">AgentOrchestrator</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#class-reference">Class Reference</a><ul>
+<li><a class="reference internal" href="#constructor">Constructor</a></li>
+<li><a class="reference internal" href="#run-agent">run_agent()</a></li>
+<li><a class="reference internal" href="#run-workflow">run_workflow()</a></li>
+<li><a class="reference internal" href="#list-agents">list_agents()</a></li>
+<li><a class="reference internal" href="#get-agent-info">get_agent_info()</a></li>
+<li><a class="reference internal" href="#list-workflows">list_workflows()</a></li>
+<li><a class="reference internal" href="#get-workflow-info">get_workflow_info()</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-classes">Data Classes</a><ul>
+<li><a class="reference internal" href="#agentresult">AgentResult</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-tracking">Performance Tracking</a></li>
+<li><a class="reference internal" href="#error-handling">Error Handling</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#advanced-usage">Advanced Usage</a><ul>
+<li><a class="reference internal" href="#custom-workflow-context">Custom Workflow Context</a></li>
+<li><a class="reference internal" href="#model-selection-strategy">Model Selection Strategy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#related">Related</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">AgentOrchestrator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/orchestrator.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="agentorchestrator">
+<h1>AgentOrchestrator<a class="headerlink" href="#agentorchestrator" title="Link to this heading"></a></h1>
+<p>Core orchestration engine for running Claude agents and workflows.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">AgentOrchestrator</span></code> is the main class for executing agents and multi-agent workflows. It handles:</p>
+<ul class="simple">
+<li><p>Loading agent definitions and contracts</p></li>
+<li><p>Calling the Claude API</p></li>
+<li><p>Managing performance tracking</p></li>
+<li><p>Executing multi-agent workflows</p></li>
+<li><p>Error handling and result formatting</p></li>
+</ul>
+</section>
+<section id="class-reference">
+<h2>Class Reference<a class="headerlink" href="#class-reference" title="Link to this heading"></a></h2>
+<section id="constructor">
+<h3>Constructor<a class="headerlink" href="#constructor" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AgentOrchestrator</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">,</span>
+    <span class="n">anthropic_api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">enable_tracking</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">config_path</span></code> (str): Path to claude.json configuration file. Defaults to <code class="docutils literal notranslate"><span class="pre">.claude/claude.json</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">anthropic_api_key</span></code> (str, optional): Anthropic API key. If not provided, reads from <code class="docutils literal notranslate"><span class="pre">ANTHROPIC_API_KEY</span></code> environment variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enable_tracking</span></code> (bool): Enable performance tracking. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ValueError</span></code>: If API key is not provided or found in environment</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code>: If config file doesn’t exist</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ImportError</span></code>: If <code class="docutils literal notranslate"><span class="pre">anthropic</span></code> package is not installed</p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="c1"># Using environment variable for API key</span>
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+
+<span class="c1"># Providing API key explicitly</span>
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">,</span>
+    <span class="n">anthropic_api_key</span><span class="o">=</span><span class="s2">&quot;your-api-key-here&quot;</span><span class="p">,</span>
+    <span class="n">enable_tracking</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="run-agent">
+<h3>run_agent()<a class="headerlink" href="#run-agent" title="Link to this heading"></a></h3>
+<p>Run a single agent on a task.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-3-5-sonnet-20241022&quot;</span><span class="p">,</span>
+    <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">workflow_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">workflow_position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">agent_name</span></code> (str): Name of agent to run (must exist in config)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">task</span></code> (str): Task description or content to process</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> (str): Claude model to use. Options:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">claude-3-haiku-20240307</span></code> (cheapest, fastest)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">claude-3-5-sonnet-20241022</span></code> (balanced, recommended)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">claude-3-opus-20240229</span></code> (most capable)</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_tokens</span></code> (int): Maximum tokens in response (default: 4096)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code> (float): Temperature for generation 0.0-1.0 (default: 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow_name</span></code> (str, optional): Internal use for workflow tracking</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow_position</span></code> (int, optional): Internal use for workflow tracking</p></li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">AgentResult</span></code> object with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">agent_name</span></code> (str): Name of agent that ran</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> (bool): Whether execution succeeded</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output</span></code> (str): Agent’s response</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (dict): Execution metadata (model, tokens, duration, cost)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">errors</span></code> (List[str]): Error messages if any</p></li>
+</ul>
+<p><strong>Raises</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ValueError</span></code>: If agent_name not found in configuration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code>: If agent definition file not found</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">APIError</span></code>: If Claude API call fails</p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+<span class="c1"># Simple execution</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Review this code for security issues:</span><span class="se">\n\n</span><span class="s2">def login(user, password):</span><span class="se">\n</span><span class="s2">    return user.password == password&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output:</span><span class="se">\n</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokens used: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;total_tokens&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cost: $</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;estimated_cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Custom model selection</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;backend-architect&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Design a scalable microservices architecture&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-opus-20240229&quot;</span><span class="p">,</span>  <span class="c1"># Use most capable model</span>
+    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">8192</span><span class="p">,</span>  <span class="c1"># Longer response</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span>   <span class="c1"># More focused</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="run-workflow">
+<h3>run_workflow()<a class="headerlink" href="#run-workflow" title="Link to this heading"></a></h3>
+<p>Run a multi-agent workflow.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">run_workflow</span><span class="p">(</span>
+    <span class="n">workflow_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-3-5-sonnet-20241022&quot;</span><span class="p">,</span>
+    <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">stop_on_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AgentResult</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow_name</span></code> (str): Name of workflow defined in config</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">task</span></code> (str): Task description for the workflow</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> (str): Claude model to use for all agents</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_tokens</span></code> (int): Maximum tokens per agent</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code> (float): Temperature for generation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop_on_error</span></code> (bool): Stop workflow if any agent fails (default: False)</p></li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>List of <code class="docutils literal notranslate"><span class="pre">AgentResult</span></code> objects, one per agent in workflow</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+<span class="c1"># Run predefined workflow</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_workflow</span><span class="p">(</span>
+    <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;full-stack-feature&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Implement user authentication with JWT&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Check results</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Success: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Output: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Errors: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Stop on first failure</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_workflow</span><span class="p">(</span>
+    <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;code-review-fix-test&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Fix authentication bug&quot;</span><span class="p">,</span>
+    <span class="n">stop_on_error</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Stops if any agent fails</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="list-agents">
+<h3>list_agents()<a class="headerlink" href="#list-agents" title="Link to this heading"></a></h3>
+<p>Get list of available agents.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">list_agents</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Returns</strong>:</p>
+<p>List of agent names defined in configuration</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+<span class="n">agents</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">list_agents</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Available agents: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">agents</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Output: Available agents: code-reviewer, backend-developer, security-specialist, ...</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="get-agent-info">
+<h3>get_agent_info()<a class="headerlink" href="#get-agent-info" title="Link to this heading"></a></h3>
+<p>Get detailed information about an agent.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">get_agent_info</span><span class="p">(</span><span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">agent_name</span></code> (str): Name of agent</p></li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>Dictionary with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (str): Agent name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file</span></code> (str): Path to agent definition</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">contract</span></code> (str): Path to agent contract</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">domains</span></code> (List[str]): Agent expertise domains</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">priority</span></code> (int): Agent priority level</p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">info</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">get_agent_info</span><span class="p">(</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Domains: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;domains&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Priority: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Output:</span>
+<span class="c1"># Domains: [&#39;code-quality&#39;, &#39;security&#39;, &#39;performance&#39;]</span>
+<span class="c1"># Priority: 1</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="list-workflows">
+<h3>list_workflows()<a class="headerlink" href="#list-workflows" title="Link to this heading"></a></h3>
+<p>Get list of available workflows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">list_workflows</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Returns</strong>:</p>
+<p>List of workflow names defined in configuration</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">workflows</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">list_workflows</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">workflow</span> <span class="ow">in</span> <span class="n">workflows</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">workflow</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Output:</span>
+<span class="c1"># - full-stack-feature</span>
+<span class="c1"># - bug-fix</span>
+<span class="c1"># - code-review-test</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="get-workflow-info">
+<h3>get_workflow_info()<a class="headerlink" href="#get-workflow-info" title="Link to this heading"></a></h3>
+<p>Get detailed information about a workflow.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">get_workflow_info</span><span class="p">(</span><span class="n">workflow_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow_name</span></code> (str): Name of workflow</p></li>
+</ul>
+<p><strong>Returns</strong>:</p>
+<p>Dictionary with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (str): Workflow name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">agents</span></code> (List[str]): List of agent names in workflow</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">steps</span></code> (int): Number of steps</p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">info</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">get_workflow_info</span><span class="p">(</span><span class="s2">&quot;full-stack-feature&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agents in workflow: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;agents&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total steps: </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Output:</span>
+<span class="c1"># Agents in workflow: [&#39;backend-architect&#39;, &#39;backend-developer&#39;, &#39;code-reviewer&#39;]</span>
+<span class="c1"># Total steps: 3</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="data-classes">
+<h2>Data Classes<a class="headerlink" href="#data-classes" title="Link to this heading"></a></h2>
+<section id="agentresult">
+<h3>AgentResult<a class="headerlink" href="#agentresult" title="Link to this heading"></a></h3>
+<p>Result object returned by <code class="docutils literal notranslate"><span class="pre">run_agent()</span></code> and <code class="docutils literal notranslate"><span class="pre">run_workflow()</span></code>.</p>
+<p><strong>Attributes</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">agent_name</span></code> (str): Name of agent that executed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> (bool): Whether execution succeeded</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output</span></code> (str): Agent’s response text</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Dict[str, Any]): Execution metadata</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">model</span></code> (str): Claude model used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">input_tokens</span></code> (int): Input tokens consumed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_tokens</span></code> (int): Output tokens generated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_tokens</span></code> (int): Total tokens used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">execution_time_ms</span></code> (float): Execution time in milliseconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">estimated_cost</span></code> (float): Estimated cost in USD</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">errors</span></code> (List[str], optional): Error messages if execution failed</p></li>
+</ul>
+<p><strong>Methods</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">to_dict()</span></code>: Convert result to dictionary</p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span> <span class="s2">&quot;Review code&quot;</span><span class="p">)</span>
+
+<span class="c1"># Access attributes</span>
+<span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Took </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;execution_time_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cost: $</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;estimated_cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Errors: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Convert to dict for JSON export</span>
+<span class="n">result_dict</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-tracking">
+<h2>Performance Tracking<a class="headerlink" href="#performance-tracking" title="Link to this heading"></a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">enable_tracking=True</span></code>, the orchestrator automatically records execution metrics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span><span class="n">enable_tracking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Metrics are automatically recorded</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span> <span class="s2">&quot;Review code&quot;</span><span class="p">)</span>
+
+<span class="c1"># Access tracker</span>
+<span class="k">if</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">tracker</span><span class="p">:</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_summary</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total executions: </span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;total_executions&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total cost: $</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;total_cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Metrics are stored in <code class="docutils literal notranslate"><span class="pre">.claude/metrics/executions.jsonl</span></code> and can be analyzed using the <code class="docutils literal notranslate"><span class="pre">PerformanceTracker</span></code> API or <code class="docutils literal notranslate"><span class="pre">claude-force</span> <span class="pre">analyze</span></code> CLI command.</p>
+</section>
+<hr class="docutils" />
+<section id="error-handling">
+<h2>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading"></a></h2>
+<p>The orchestrator provides detailed error handling:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span> <span class="s2">&quot;Review this code&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agent execution failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Config file not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Install anthropic package: pip install anthropic&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<p>The orchestrator requires a <code class="docutils literal notranslate"><span class="pre">claude.json</span></code> configuration file:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;agents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code-reviewer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;agents/code-reviewer.md&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;contract&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;contracts/code-reviewer.contract&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;domains&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;code-quality&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;security&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;workflows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;review-fix-test&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;backend-developer&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;qa-engineer&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h2>
+<section id="custom-workflow-context">
+<h3>Custom Workflow Context<a class="headerlink" href="#custom-workflow-context" title="Link to this heading"></a></h3>
+<p>Pass context between agents in a workflow:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># First agent generates code</span>
+<span class="n">result1</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;backend-developer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Implement login endpoint&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Second agent reviews the generated code</span>
+<span class="n">result2</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s2">&quot;Review this code:</span><span class="se">\n\n</span><span class="si">{</span><span class="n">result1</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Third agent writes tests based on code</span>
+<span class="n">result3</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;qa-engineer&quot;</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s2">&quot;Write tests for:</span><span class="se">\n\n</span><span class="si">{</span><span class="n">result1</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="model-selection-strategy">
+<h3>Model Selection Strategy<a class="headerlink" href="#model-selection-strategy" title="Link to this heading"></a></h3>
+<p>Choose models based on task complexity:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Simple tasks: use Haiku (cheapest)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fix typo in README&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-haiku-20240307&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Moderate tasks: use Sonnet (balanced)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;backend-developer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Implement REST endpoint&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-5-sonnet-20241022&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Complex tasks: use Opus (most capable)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;backend-architect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Design complete microservices architecture&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-opus-20240229&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="related">
+<h2>Related<a class="headerlink" href="#related" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#hybrid-orchestrator.md"><span class="xref myst">HybridOrchestrator</span></a> - Automatic model selection</p></li>
+<li><p><a class="reference internal" href="#semantic-selector.md"><span class="xref myst">SemanticAgentSelector</span></a> - AI-powered agent recommendation</p></li>
+<li><p><a class="reference internal" href="#performance-tracker.md"><span class="xref myst">PerformanceTracker</span></a> - Metrics and analytics</p></li>
+<li><p><a class="reference internal" href="#cli.md"><span class="xref myst">CLI Reference</span></a> - Command-line usage</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>See Also</strong>: <a class="reference internal" href="#../quickstart.md"><span class="xref myst">Quick Start Guide</span></a>, <a class="reference internal" href="#../guides/workflows.md"><span class="xref myst">Workflow Guide</span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
