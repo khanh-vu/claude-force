@@ -1098,6 +1098,34 @@ file_read("/mnt/skills/public/docx/SKILL.md")
 - **Project Templates**: 9 production-ready templates
 - **Marketplace Integration**: Full wshobson/agents compatibility
 
+## 📚 Documentation
+
+Complete documentation is organized for easy navigation:
+
+### Quick Links
+- **[QUICK_START.md](QUICK_START.md)** - 5-minute getting started guide
+- **[INSTALLATION.md](INSTALLATION.md)** - Installation and setup
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture
+- **[FAQ.md](FAQ.md)** - Frequently asked questions
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
+### Comprehensive Documentation
+- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)** - 📍 **Complete documentation map**
+- **[Performance Optimization](docs/guides/PERFORMANCE_OPTIMIZATION_INDEX.md)** - Performance guides
+- **[API Reference](docs/api-reference/)** - API documentation
+- **[Examples](examples/)** - Code examples and templates
+- **[Guides](docs/guides/)** - Feature guides and how-tos
+- **[Architecture Details](docs/architecture/)** - Technical architecture
+- **[Reviews](docs/reviews/)** - Code reviews and quality reports
+
+### Examples & Templates
+- **[Python Examples](examples/python/)** - Python API usage examples
+- **[API Server](examples/api-server/)** - REST API server example
+- **[GitHub Actions](examples/github-actions/)** - CI/CD integration examples
+- **[Crypto Trading Bot](examples/templates/crypto-trading-bot/)** - Advanced template
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please:
@@ -1107,6 +1135,8 @@ Contributions are welcome! Please:
 3. Add tests for new features
 4. Ensure all tests pass
 5. Submit a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
 
 ## 📄 License
 
