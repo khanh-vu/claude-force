@@ -19,7 +19,7 @@ Exit codes:
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 
 # Color codes for terminal output
@@ -64,25 +64,37 @@ CHECKS = [
 ]
 
 
-def print_header(text: str):
-    """Print a formatted header."""
+def print_header(text: str) -> None:
+    """
+    Print a formatted header.
+
+    Args:
+        text: Header text to print
+    """
     print(f"\n{BLUE}{'=' * 70}{RESET}")
     print(f"{BLUE}{text}{RESET}")
     print(f"{BLUE}{'=' * 70}{RESET}\n")
 
 
-def print_check_header(check_name: str, check_num: int, total: int):
-    """Print header for individual check."""
+def print_check_header(check_name: str, check_num: int, total: int) -> None:
+    """
+    Print header for individual check.
+
+    Args:
+        check_name: Name of the check
+        check_num: Current check number
+        total: Total number of checks
+    """
     print(f"\n{YELLOW}[{check_num}/{total}] Running: {check_name}{RESET}")
     print("-" * 70)
 
 
-def run_check(check: Dict, check_num: int, total: int) -> Tuple[bool, str]:
+def run_check(check: Dict[str, Any], check_num: int, total: int) -> Tuple[bool, str]:
     """
     Run a single check and return result.
 
     Args:
-        check: Check configuration dictionary
+        check: Check configuration dictionary with 'name', 'command', 'required'
         check_num: Current check number
         total: Total number of checks
 
@@ -125,8 +137,8 @@ def run_check(check: Dict, check_num: int, total: int) -> Tuple[bool, str]:
         return False, str(e)
 
 
-def cleanup():
-    """Clean up temporary files."""
+def cleanup() -> None:
+    """Clean up temporary files created during checks."""
     import shutil
 
     dist_test = Path("dist-test")
@@ -134,8 +146,13 @@ def cleanup():
         shutil.rmtree(dist_test)
 
 
-def main():
-    """Run all pre-release checks."""
+def main() -> int:
+    """
+    Run all pre-release checks.
+
+    Returns:
+        0 if all required checks passed, 1 otherwise
+    """
     print_header("🚀 Pre-release Checklist for claude-force")
 
     # Check if we're in the right directory

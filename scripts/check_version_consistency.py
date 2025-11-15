@@ -16,10 +16,39 @@ Exit codes:
 import sys
 import re
 from pathlib import Path
+from typing import Optional, Dict, List
 
 
-def get_version_from_pyproject():
-    """Extract version from pyproject.toml."""
+def validate_semantic_version(version: str) -> bool:
+    """
+    Validate that a version string follows semantic versioning.
+
+    Args:
+        version: Version string to validate
+
+    Returns:
+        True if version is valid semantic version, False otherwise
+
+    Examples:
+        >>> validate_semantic_version("1.2.3")
+        True
+        >>> validate_semantic_version("1.2.3-alpha.1")
+        True
+        >>> validate_semantic_version("invalid")
+        False
+    """
+    # Semantic versioning pattern: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+    pattern = r"^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.-]+))?(?:\+([a-zA-Z0-9.-]+))?$"
+    return bool(re.match(pattern, version))
+
+
+def get_version_from_pyproject() -> Optional[str]:
+    """
+    Extract version from pyproject.toml.
+
+    Returns:
+        Version string if found, None otherwise
+    """
     pyproject_path = Path("pyproject.toml")
     if not pyproject_path.exists():
         return None
@@ -29,8 +58,13 @@ def get_version_from_pyproject():
     return match.group(1) if match else None
 
 
-def get_version_from_setup():
-    """Extract version from setup.py."""
+def get_version_from_setup() -> Optional[str]:
+    """
+    Extract version from setup.py.
+
+    Returns:
+        Version string if found, None otherwise
+    """
     setup_path = Path("setup.py")
     if not setup_path.exists():
         return None
@@ -40,8 +74,13 @@ def get_version_from_setup():
     return match.group(1) if match else None
 
 
-def get_version_from_init():
-    """Extract version from claude_force/__init__.py."""
+def get_version_from_init() -> Optional[str]:
+    """
+    Extract version from claude_force/__init__.py.
+
+    Returns:
+        Version string if found, None otherwise
+    """
     init_path = Path("claude_force/__init__.py")
     if not init_path.exists():
         return None
@@ -51,8 +90,13 @@ def get_version_from_init():
     return match.group(1) if match else None
 
 
-def get_version_from_readme():
-    """Extract version from README.md."""
+def get_version_from_readme() -> Optional[str]:
+    """
+    Extract version from README.md.
+
+    Returns:
+        Version string if found, None otherwise
+    """
     readme_path = Path("README.md")
     if not readme_path.exists():
         return None
@@ -63,13 +107,18 @@ def get_version_from_readme():
     return match.group(1) if match else None
 
 
-def main():
-    """Check version consistency across all files."""
+def main() -> int:
+    """
+    Check version consistency across all files.
+
+    Returns:
+        0 if all versions are consistent, 1 otherwise
+    """
     print("=" * 70)
     print("Version Consistency Check")
     print("=" * 70)
 
-    versions = {
+    versions: Dict[str, Optional[str]] = {
         "pyproject.toml": get_version_from_pyproject(),
         "setup.py": get_version_from_setup(),
         "claude_force/__init__.py": get_version_from_init(),
@@ -84,13 +133,26 @@ def main():
             print(f"  ✗ {source:30s} → NOT FOUND")
 
     # Check for missing versions
-    missing = [source for source, version in versions.items() if version is None]
+    missing: List[str] = [source for source, version in versions.items() if version is None]
     if missing:
         print(f"\n❌ Missing version in: {', '.join(missing)}")
         return 1
 
+    # Validate semantic versioning format
+    invalid_versions: List[str] = []
+    for source, version in versions.items():
+        if version and not validate_semantic_version(version):
+            invalid_versions.append(f"{source} ({version})")
+
+    if invalid_versions:
+        print(f"\n⚠️  Invalid semantic version format in:")
+        for invalid in invalid_versions:
+            print(f"   • {invalid}")
+        print("   Expected format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]")
+        return 1
+
     # Check for consistency
-    unique_versions = set(versions.values())
+    unique_versions = set(v for v in versions.values() if v is not None)
     if len(unique_versions) != 1:
         print(f"\n❌ Version mismatch detected!")
         print(f"   Found {len(unique_versions)} different versions:")
