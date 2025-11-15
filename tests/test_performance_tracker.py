@@ -279,6 +279,54 @@ class TestPerformanceTrackerBounds(unittest.TestCase):
         # Should have no metrics
         self.assertEqual(len(tracker._cache), 0)
 
+    def test_clear_old_metrics_preserves_disk_data(self):
+        """clear_old_metrics reads from disk, not just ring buffer."""
+        tracker = PerformanceTracker(
+            metrics_dir=self.metrics_dir,
+            max_entries=5,  # Small ring buffer
+            enable_persistence=True
+        )
+
+        # Add 20 metrics (more than ring buffer capacity)
+        for i in range(20):
+            tracker.record_execution(
+                'agent',
+                f'Task {i}',
+                True,
+                100,
+                'claude-3-5-sonnet-20241022',
+                1000,
+                500
+            )
+
+        # Verify ring buffer only has 5 (most recent)
+        self.assertEqual(len(tracker._cache), 5)
+
+        # Verify disk file has all 20
+        with open(tracker.metrics_file, 'r') as f:
+            disk_lines = f.readlines()
+        self.assertEqual(len(disk_lines), 20)
+
+        # Clear old metrics (keep all since they're recent)
+        tracker.clear_old_metrics(days=1)
+
+        # Ring buffer should still have 5 (most recent)
+        self.assertEqual(len(tracker._cache), 5)
+
+        # Disk file should STILL have all 20 (no data loss)
+        with open(tracker.metrics_file, 'r') as f:
+            disk_lines = f.readlines()
+        self.assertEqual(len(disk_lines), 20, "Disk data should not be lost")
+
+        # Now clear very old metrics (older than 0 days = all)
+        tracker.clear_old_metrics(days=0)
+
+        # Both should be empty now
+        self.assertEqual(len(tracker._cache), 0)
+        with open(tracker.metrics_file, 'r') as f:
+            disk_lines = f.readlines()
+        self.assertEqual(len(disk_lines), 0)
+
     def test_configuration_options(self):
         """Configuration options work correctly."""
         # Test with different max_entries values

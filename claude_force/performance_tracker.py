@@ -427,19 +427,45 @@ class PerformanceTracker:
         """
         cutoff = datetime.now().timestamp() - (days * 86400)
 
-        # Filter cache
-        old_cache = self._cache
-        self._cache = deque(
-            (m for m in old_cache if datetime.fromisoformat(m.timestamp).timestamp() > cutoff),
-            maxlen=self.max_entries
-        )
-        self._cache_dirty = True
+        # If persistence is enabled, filter from disk (not just ring buffer)
+        if self.enable_persistence and self.metrics_file.exists():
+            # Read all metrics from disk
+            all_metrics = []
+            try:
+                with open(self.metrics_file, "r") as f:
+                    for line in f:
+                        if line.strip():
+                            data = json.loads(line)
+                            metric = ExecutionMetrics(**data)
+                            if datetime.fromisoformat(metric.timestamp).timestamp() > cutoff:
+                                all_metrics.append(metric)
+            except Exception as e:
+                print(f"Warning: Could not read metrics file: {e}")
+                # Fall back to filtering ring buffer only
+                all_metrics = [
+                    m for m in self._cache
+                    if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
+                ]
 
-        # Rewrite file if persistence is enabled
-        if self.enable_persistence:
+            # Rewrite file with filtered metrics
             with open(self.metrics_file, "w") as f:
-                for metrics in self._cache:
-                    f.write(json.dumps(asdict(metrics)) + "\n")
+                for metric in all_metrics:
+                    f.write(json.dumps(asdict(metric)) + "\n")
+
+            # Reload ring buffer with most recent max_entries
+            self._cache.clear()
+            # Take the most recent max_entries from filtered metrics
+            recent_metrics = all_metrics[-self.max_entries:] if len(all_metrics) > self.max_entries else all_metrics
+            self._cache.extend(recent_metrics)
+        else:
+            # No persistence, just filter in-memory cache
+            old_cache = self._cache
+            self._cache = deque(
+                (m for m in old_cache if datetime.fromisoformat(m.timestamp).timestamp() > cutoff),
+                maxlen=self.max_entries
+            )
+
+        self._cache_dirty = True
 
 
 def get_tracker(
