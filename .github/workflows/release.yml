@@ -120,8 +120,9 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_NON_INTERACTIVE: 1
         run: |
-          twine upload --skip-existing dist/*
+          python -m twine upload --non-interactive --skip-existing --verbose dist/*
 
   # Step 4: Generate and commit changelog
   changelog:
