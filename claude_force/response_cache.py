@@ -276,8 +276,12 @@ class ResponseCache:
                 # Check file age for TTL
                 age = time.time() - cache_file.stat().st_mtime
                 if age > self.ttl_seconds:
-                    cache_file.unlink()
+                    # ✅ P2 FIX: Use _evict() to properly update size accounting
+                    self._evict(key)
                     self.stats["misses"] += 1
+                    logger.debug(
+                        "Cache entry expired (disk)", extra={"key": key[:8], "age_seconds": age}
+                    )
                     return None
 
                 # Load from disk
@@ -427,42 +431,55 @@ class ResponseCache:
 
     def _evict_lru(self):
         """
-        Evict least recently used entries.
+        Evict least recently used entries until cache is under size limit.
 
         ✅ FIXED: Use heapq for O(k log n) instead of O(n log n)
+        ✅ P2 FIX: Loop until size is under limit (not just once)
         """
         if not self._memory_cache:
             return
 
-        # Evict 10% of entries
-        num_to_evict = max(1, len(self._memory_cache) // 10)
+        initial_size = self.stats["size_bytes"]
+        total_evicted = 0
 
-        logger.info(
-            "Evicting LRU entries",
-            extra={
-                "num_to_evict": num_to_evict,
-                "total_entries": len(self._memory_cache),
-                "current_size_mb": self.stats["size_bytes"] / (1024 * 1024),
-            },
-        )
+        # ✅ P2 FIX: Loop until cache size is under limit
+        # Single large response could push cache far over limit
+        while self.stats["size_bytes"] > self.max_size_bytes and self._memory_cache:
+            # Evict 10% of entries per iteration
+            num_to_evict = max(1, len(self._memory_cache) // 10)
 
-        # ✅ Use heapq.nsmallest for O(k log n) performance
-        # Find k smallest by (hit_count, timestamp) - least used, oldest first
-        to_evict = heapq.nsmallest(
-            num_to_evict, self._memory_cache.items(), key=lambda x: (x[1].hit_count, x[1].timestamp)
-        )
+            logger.debug(
+                "Evicting LRU entries",
+                extra={
+                    "num_to_evict": num_to_evict,
+                    "total_entries": len(self._memory_cache),
+                    "current_size_mb": self.stats["size_bytes"] / (1024 * 1024),
+                    "max_size_mb": self.max_size_bytes / (1024 * 1024),
+                },
+            )
 
-        for key, _ in to_evict:
-            self._evict(key)
+            # ✅ Use heapq.nsmallest for O(k log n) performance
+            # Find k smallest by (hit_count, timestamp) - least used, oldest first
+            to_evict = heapq.nsmallest(
+                num_to_evict,
+                self._memory_cache.items(),
+                key=lambda x: (x[1].hit_count, x[1].timestamp),
+            )
 
-        logger.info(
-            "LRU eviction completed",
-            extra={
-                "evicted": num_to_evict,
-                "remaining_entries": len(self._memory_cache),
-                "new_size_mb": self.stats["size_bytes"] / (1024 * 1024),
-            },
-        )
+            for key, _ in to_evict:
+                self._evict(key)
+                total_evicted += 1
+
+        if total_evicted > 0:
+            logger.info(
+                "LRU eviction completed",
+                extra={
+                    "evicted": total_evicted,
+                    "remaining_entries": len(self._memory_cache),
+                    "new_size_mb": self.stats["size_bytes"] / (1024 * 1024),
+                    "freed_mb": (initial_size - self.stats["size_bytes"]) / (1024 * 1024),
+                },
+            )
 
     def clear(self):
         """Clear entire cache."""
