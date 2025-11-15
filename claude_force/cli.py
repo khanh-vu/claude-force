@@ -1896,6 +1896,56 @@ def cmd_analyze_recommend(args):
         sys.exit(1)
 
 # =============================================================================
+# DIAGNOSTIC COMMANDS
+# =============================================================================
+# Functions: cmd_diagnose (UX-04)
+
+
+def cmd_diagnose(args):
+    """Run system diagnostics to troubleshoot issues (UX-04)."""
+    try:
+        from .diagnostics import run_diagnostics
+
+        # Run diagnostics
+        all_passed, report = run_diagnostics(verbose=args.verbose)
+
+        # Output JSON if requested
+        if args.json:
+            from .diagnostics import SystemDiagnostics
+
+            diagnostics = SystemDiagnostics()
+            diagnostics.run_all_checks()
+
+            result = {
+                "summary": diagnostics.get_summary(),
+                "checks": [
+                    {
+                        "name": check.name,
+                        "status": "passed" if check.status else "failed",
+                        "message": check.message,
+                        "details": check.details,
+                    }
+                    for check in diagnostics.checks
+                ],
+            }
+            print(json.dumps(result, indent=2))
+        else:
+            # Print report
+            print(report)
+
+        # Exit with appropriate code
+        sys.exit(0 if all_passed else 1)
+
+    except Exception as e:
+        print(f"❌ Error running diagnostics: {e}", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            import traceback
+
+            traceback.print_exc()
+        sys.exit(1)
+
+
+# =============================================================================
 # MAIN ENTRY POINT
 # =============================================================================
 # Functions: main()
@@ -2293,6 +2343,16 @@ For more information: https://github.com/khanh-vu/claude-force
     )
     prepare_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     prepare_parser.set_defaults(func=cmd_contribute_prepare)
+
+    # Diagnose command (UX-04: System diagnostics)
+    diagnose_parser = subparsers.add_parser(
+        "diagnose", help="Run system diagnostics to troubleshoot issues"
+    )
+    diagnose_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed diagnostic information"
+    )
+    diagnose_parser.add_argument("--json", action="store_true", help="Output diagnostics as JSON")
+    diagnose_parser.set_defaults(func=cmd_diagnose)
 
     # Workflow Composer commands
     compose_parser = subparsers.add_parser(
