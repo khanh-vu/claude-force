@@ -7,7 +7,7 @@ and plugin architecture for Claude Force.
 
 from abc import ABC, abstractmethod
 from typing import Protocol, Optional, List, Dict, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -25,8 +25,8 @@ class AgentResult:
 
     success: bool
     output: str
-    errors: List[str]
-    metadata: Dict[str, Any]
+    errors: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
     agent_name: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
@@ -53,8 +53,8 @@ class WorkflowResult:
     """
 
     success: bool
-    agent_results: List[AgentResult]
-    metadata: Dict[str, Any]
+    agent_results: List[AgentResult] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
     workflow_name: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
