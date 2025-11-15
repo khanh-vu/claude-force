@@ -153,38 +153,50 @@ class PerformanceTracker:
         agent_name: str,
         task: str,
         success: bool,
-        execution_time_ms: float,
-        model: str,
-        input_tokens: int,
-        output_tokens: int,
+        duration_ms: Optional[float] = None,
+        model: str = "",
+        input_tokens: int = 0,
+        output_tokens: int = 0,
         error_type: Optional[str] = None,
         workflow_name: Optional[str] = None,
         workflow_position: Optional[int] = None,
+        # Backward compatibility: accept old parameter name
+        execution_time_ms: Optional[float] = None,
     ) -> ExecutionMetrics:
         """
-        Record a single agent execution
+        Record a single agent execution.
+
+        Satisfies TrackerProtocol interface.
 
         Args:
             agent_name: Name of agent
             task: Task description
             success: Whether execution succeeded
-            execution_time_ms: Execution time in milliseconds
+            duration_ms: Execution time in milliseconds (preferred parameter name)
             model: Model ID used
             input_tokens: Input tokens used
             output_tokens: Output tokens used
             error_type: Type of error if failed
             workflow_name: Name of workflow (if part of workflow)
             workflow_position: Position in workflow (if part of workflow)
+            execution_time_ms: DEPRECATED - use duration_ms instead (for backward compatibility)
 
         Returns:
             ExecutionMetrics object
         """
+        # Handle backward compatibility: accept both parameter names
+        if duration_ms is None and execution_time_ms is None:
+            raise TypeError("Either duration_ms or execution_time_ms must be provided")
+
+        # Prefer new parameter name, fall back to old one
+        exec_time = duration_ms if duration_ms is not None else execution_time_ms
+
         metrics = ExecutionMetrics(
             timestamp=datetime.now().isoformat(),
             agent_name=agent_name,
             task_hash=self._task_hash(task),
             success=success,
-            execution_time_ms=execution_time_ms,
+            execution_time_ms=exec_time,
             model=model,
             input_tokens=input_tokens,
             output_tokens=output_tokens,

@@ -36,7 +36,7 @@ class TestPerformanceTrackerBounds(unittest.TestCase):
                 agent_name="test-agent",
                 task=f"Task {i}",
                 success=True,
-                execution_time_ms=100.0,
+                duration_ms=100.0,
                 model="claude-3-5-sonnet-20241022",
                 input_tokens=1000,
                 output_tokens=500,

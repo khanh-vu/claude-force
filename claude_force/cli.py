@@ -16,63 +16,78 @@ from .orchestrator import AgentOrchestrator
 def cmd_list_agents(args):
     """List all available agents"""
     try:
+        # Quiet mode and format handling
+        quiet = getattr(args, "quiet", False)
+        output_format = getattr(args, "format", "text")
+        # Backward compatibility: if --json is set, use json format
+        if getattr(args, "json", False):
+            output_format = "json"
+
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
 
             orchestrator = DemoOrchestrator(config_path=args.config)
-            if not getattr(args, "json", False):
+            if not quiet and output_format != "json":
                 print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
 
         agents = orchestrator.list_agents()
 
-        # JSON output
-        if getattr(args, "json", False):
-            import json
-
+        # Handle output based on format
+        if output_format == "json":
             print(json.dumps(agents, indent=2))
-            return
+        elif not quiet:
+            # Standard verbose output
+            print("\n📋 Available Agents\n")
+            print(f"{'Name':<30} {'Priority':<10} {'Domains'}")
+            print("-" * 80)
 
-        # Table output
-        print("\n📋 Available Agents\n")
-        print(f"{'Name':<30} {'Priority':<10} {'Domains'}")
-        print("-" * 80)
+            for agent in agents:
+                domains = ", ".join(agent["domains"][:3])
+                if len(agent["domains"]) > 3:
+                    domains += "..."
+                priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(
+                    agent["priority"], "Low"
+                )
+                print(f"{agent['name']:<30} {priority_label:<10} {domains}")
 
-        for agent in agents:
-            domains = ", ".join(agent["domains"][:3])
-            if len(agent["domains"]) > 3:
-                domains += "..."
-            priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(agent["priority"], "Low")
-            print(f"{agent['name']:<30} {priority_label:<10} {domains}")
-
-        print(f"\nTotal: {len(agents)} agents")
+            print(f"\nTotal: {len(agents)} agents")
 
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        if getattr(args, "format", "text") == "json":
+            error_data = {"success": False, "error": str(e)}
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
+        else:
+            print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 def cmd_list_workflows(args):
     """List all available workflows"""
     try:
+        # Quiet mode and format handling
+        quiet = getattr(args, "quiet", False)
+        output_format = getattr(args, "format", "text")
+        # Backward compatibility: if --json is set, use json format
+        if getattr(args, "json", False):
+            output_format = "json"
+
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
 
             orchestrator = DemoOrchestrator(config_path=args.config)
-            if not getattr(args, "json", False):
+            if not quiet and output_format != "json":
                 print("\n🎭 DEMO MODE - Simulated responses, no API calls\n")
         else:
             orchestrator = AgentOrchestrator(config_path=args.config)
 
         workflows = orchestrator.list_workflows()
 
-        # JSON output if requested
-        if getattr(args, "json", False):
-            import json
-
+        # Handle output based on format
+        if output_format == "json":
             workflows_data = [
                 {
                     "name": name,
@@ -83,21 +98,24 @@ def cmd_list_workflows(args):
                 for name, agents in workflows.items()
             ]
             print(json.dumps(workflows_data, indent=2))
-            return
+        elif not quiet:
+            # Standard verbose output
+            print("\n🔄 Available Workflows\n")
 
-        # Standard output
-        print("\n🔄 Available Workflows\n")
+            for name, agents in workflows.items():
+                print(f"  {name}:")
+                print(f"    Agents: {len(agents)}")
+                print(f"    Flow: {' → '.join(agents)}")
+                print()
 
-        for name, agents in workflows.items():
-            print(f"  {name}:")
-            print(f"    Agents: {len(agents)}")
-            print(f"    Flow: {' → '.join(agents)}")
-            print()
-
-        print(f"Total: {len(workflows)} workflows")
+            print(f"Total: {len(workflows)} workflows")
 
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        if getattr(args, "format", "text") == "json":
+            error_data = {"success": False, "error": str(e)}
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
+        else:
+            print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -157,13 +175,19 @@ def cmd_run_agent(args):
             )
             sys.exit(1)
 
-        print(f"🚀 Running agent: {args.agent}\n")
+        # Quiet mode: skip verbose output
+        quiet = getattr(args, "quiet", False)
+        output_format = getattr(args, "format", "text")
+
+        if not quiet:
+            print(f"🚀 Running agent: {args.agent}\n")
 
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
 
-            print("🎭 DEMO MODE - Simulated responses, no API calls\n")
+            if not quiet:
+                print("🎭 DEMO MODE - Simulated responses, no API calls\n")
             orchestrator = DemoOrchestrator(config_path=args.config)
             result = orchestrator.run_agent(
                 agent_name=args.agent,
@@ -188,14 +212,15 @@ def cmd_run_agent(args):
             if args.estimate_cost:
                 estimate = orchestrator.estimate_cost(task, args.agent, args.model)
 
-                print("📊 Cost Estimate:\n")
-                print(f"   Model: {estimate.model}")
-                print(
-                    f"   Estimated tokens: {estimate.estimated_input_tokens:,} input + {estimate.estimated_output_tokens:,} output"
-                )
-                print(f"   Estimated cost: ${estimate.estimated_cost:.6f}\n")
+                if not quiet:
+                    print("📊 Cost Estimate:\n")
+                    print(f"   Model: {estimate.model}")
+                    print(
+                        f"   Estimated tokens: {estimate.estimated_input_tokens:,} input + {estimate.estimated_output_tokens:,} output"
+                    )
+                    print(f"   Estimated cost: ${estimate.estimated_cost:.6f}\n")
 
-                if not args.yes:
+                if not args.yes and not quiet:
                     proceed = input("Proceed? [Y/n]: ").strip().lower()
                     if proceed and proceed != "y":
                         print("Cancelled")
@@ -224,26 +249,50 @@ def cmd_run_agent(args):
                 temperature=args.temperature,
             )
 
-        if result.success:
-            print("✅ Agent completed successfully\n")
-            print(result.output)
+        # Handle output based on format
+        if output_format == "json":
+            # JSON output format
+            output_data = {
+                "success": result.success,
+                "agent": args.agent,
+                "output": result.output,
+                "errors": result.errors if not result.success else [],
+                "metadata": result.metadata,
+            }
+            print(json.dumps(output_data, indent=2))
+        elif not quiet:
+            # Standard verbose output
+            if result.success:
+                print("✅ Agent completed successfully\n")
+                print(result.output)
 
-            if args.output:
-                with open(args.output, "w") as f:
-                    f.write(result.output)
-                print(f"\n📝 Output saved to: {args.output}")
+                if args.output:
+                    with open(args.output, "w") as f:
+                        f.write(result.output)
+                    print(f"\n📝 Output saved to: {args.output}")
 
-            if args.json:
-                print(f"\n📊 Metadata:\n{json.dumps(result.metadata, indent=2)}")
+                if args.json:
+                    print(f"\n📊 Metadata:\n{json.dumps(result.metadata, indent=2)}")
+            else:
+                print("❌ Agent execution failed\n", file=sys.stderr)
+                for error in result.errors:
+                    print(f"  {error}", file=sys.stderr)
+        # else: quiet mode with text format - no output
 
-        else:
-            print("❌ Agent execution failed\n", file=sys.stderr)
-            for error in result.errors:
-                print(f"  {error}", file=sys.stderr)
-            sys.exit(1)
+        # Save output to file if specified (works in all modes)
+        if args.output and result.success and output_format != "json":
+            with open(args.output, "w") as f:
+                f.write(result.output)
+
+        # Exit with appropriate code
+        sys.exit(0 if result.success else 1)
 
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        if output_format == "json":
+            error_data = {"success": False, "error": str(e)}
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
+        else:
+            print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -260,13 +309,19 @@ def cmd_run_workflow(args):
             print("❌ Error: No task provided. Use --task or --task-file", file=sys.stderr)
             sys.exit(1)
 
-        print(f"🔄 Running workflow: {args.workflow}\n")
+        # Quiet mode: skip verbose output
+        quiet = getattr(args, "quiet", False)
+        output_format = getattr(args, "format", "text")
+
+        if not quiet:
+            print(f"🔄 Running workflow: {args.workflow}\n")
 
         # Use demo mode if requested
         if args.demo:
             from .demo_mode import DemoOrchestrator
 
-            print("🎭 DEMO MODE - Simulated responses, no API calls\n")
+            if not quiet:
+                print("🎭 DEMO MODE - Simulated responses, no API calls\n")
             orchestrator = DemoOrchestrator(config_path=args.config)
         else:
             orchestrator = AgentOrchestrator(
@@ -275,21 +330,44 @@ def cmd_run_workflow(args):
 
         results = orchestrator.run_workflow(workflow_name=args.workflow, task=task)
 
-        print("\n" + "=" * 80)
-        print("Workflow Summary")
-        print("=" * 80)
+        # Calculate statistics
+        total_tokens = sum(r.metadata.get("tokens_used", 0) for r in results if r.success)
+        all_success = all(r.success for r in results)
 
-        total_tokens = 0
-        for i, result in enumerate(results, 1):
-            status = "✅" if result.success else "❌"
-            print(f"{i}. {status} {result.agent_name}")
-            if result.success:
-                total_tokens += result.metadata.get("tokens_used", 0)
+        # Handle output based on format
+        if output_format == "json":
+            # JSON output format
+            output_data = {
+                "success": all_success,
+                "workflow": args.workflow,
+                "task": task,
+                "total_tokens": total_tokens,
+                "results": [
+                    {
+                        "agent": r.agent_name,
+                        "success": r.success,
+                        "output": r.output,
+                        "errors": r.errors if not r.success else [],
+                        "metadata": r.metadata,
+                    }
+                    for r in results
+                ],
+            }
+            print(json.dumps(output_data, indent=2))
+        elif not quiet:
+            # Standard verbose output
+            print("\n" + "=" * 80)
+            print("Workflow Summary")
+            print("=" * 80)
 
-        print(f"\nTotal tokens used: {total_tokens:,}")
+            for i, result in enumerate(results, 1):
+                status = "✅" if result.success else "❌"
+                print(f"{i}. {status} {result.agent_name}")
 
-        if args.output:
-            # Save all results to JSON
+            print(f"\nTotal tokens used: {total_tokens:,}")
+
+        # Save to file if specified (works in all modes)
+        if args.output and output_format != "json":
             output_data = {
                 "workflow": args.workflow,
                 "task": task,
@@ -297,14 +375,18 @@ def cmd_run_workflow(args):
             }
             with open(args.output, "w") as f:
                 json.dump(output_data, f, indent=2)
-            print(f"📝 Results saved to: {args.output}")
+            if not quiet:
+                print(f"📝 Results saved to: {args.output}")
 
         # Exit with error if any agent failed
-        if any(not r.success for r in results):
-            sys.exit(1)
+        sys.exit(0 if all_success else 1)
 
     except Exception as e:
-        print(f"❌ Error: {e}", file=sys.stderr)
+        if getattr(args, "format", "text") == "json":
+            error_data = {"success": False, "error": str(e)}
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
+        else:
+            print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -1600,10 +1682,28 @@ For more information: https://github.com/khanh-vu/claude-force
 
     list_agents_parser = list_subparsers.add_parser("agents", help="List all agents")
     list_agents_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    list_agents_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output (CI/CD mode)"
+    )
+    list_agents_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (text or json)",
+    )
     list_agents_parser.set_defaults(func=cmd_list_agents)
 
     list_workflows_parser = list_subparsers.add_parser("workflows", help="List all workflows")
     list_workflows_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    list_workflows_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output (CI/CD mode)"
+    )
+    list_workflows_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (text or json)",
+    )
     list_workflows_parser.set_defaults(func=cmd_list_workflows)
 
     # Info command
@@ -1661,6 +1761,15 @@ For more information: https://github.com/khanh-vu/claude-force
         "--temperature", type=float, default=1.0, help="Temperature (0.0-1.0)"
     )
     run_agent_parser.add_argument("--json", action="store_true", help="Output metadata as JSON")
+    run_agent_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output (CI/CD mode)"
+    )
+    run_agent_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (text or json)",
+    )
     # Hybrid orchestration options
     run_agent_parser.add_argument(
         "--auto-select-model",
@@ -1686,6 +1795,15 @@ For more information: https://github.com/khanh-vu/claude-force
     run_workflow_parser.add_argument("--output", "-o", help="Save results to file (JSON)")
     run_workflow_parser.add_argument(
         "--no-pass-output", action="store_true", help="Don't pass output between agents"
+    )
+    run_workflow_parser.add_argument(
+        "--quiet", "-q", action="store_true", help="Minimal output (CI/CD mode)"
+    )
+    run_workflow_parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="Output format (text or json)",
     )
     run_workflow_parser.set_defaults(func=cmd_run_workflow)
 

@@ -17,7 +17,8 @@ from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 import logging
 
-from .orchestrator import AgentOrchestrator, AgentResult
+from .orchestrator import AgentOrchestrator
+from .base import AgentResult
 
 logger = logging.getLogger(__name__)
 
