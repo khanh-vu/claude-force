@@ -6,8 +6,9 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
 from functools import lru_cache
+from claude_force.base import BaseOrchestrator, AgentResult
 from claude_force.error_helpers import (
     format_agent_not_found_error,
     format_workflow_not_found_error,
@@ -18,23 +19,13 @@ from claude_force.error_helpers import (
 )
 
 
-@dataclass
-class AgentResult:
-    """Result from an agent execution"""
-
-    agent_name: str
-    success: bool
-    output: str
-    metadata: Dict[str, Any]
-    errors: List[str] = None
-
-    def to_dict(self):
-        return asdict(self)
-
-
-class AgentOrchestrator:
+class AgentOrchestrator(BaseOrchestrator):
     """
-    Orchestrates multiple Claude agents with governance and quality gates.
+    Standard orchestrator implementation.
+
+    Inherits from BaseOrchestrator and provides concrete implementation
+    for all abstract methods. This is the main orchestrator used by
+    the CLI and most users.
 
     Usage:
         orchestrator = AgentOrchestrator(config_path=".claude/claude.json")
@@ -357,7 +348,7 @@ class AgentOrchestrator:
                     agent_name=agent_name,
                     task=task,
                     success=True,
-                    execution_time_ms=execution_time_ms,
+                    duration_ms=execution_time_ms,
                     model=model,
                     input_tokens=response.usage.input_tokens,
                     output_tokens=response.usage.output_tokens,
@@ -409,7 +400,7 @@ class AgentOrchestrator:
                     agent_name=agent_name,
                     task=task,
                     success=False,
-                    execution_time_ms=execution_time_ms,
+                    duration_ms=execution_time_ms,
                     model=model,
                     input_tokens=0,
                     output_tokens=0,

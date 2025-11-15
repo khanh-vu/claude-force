@@ -153,7 +153,7 @@ class PerformanceTracker:
         agent_name: str,
         task: str,
         success: bool,
-        execution_time_ms: float,
+        duration_ms: float,
         model: str,
         input_tokens: int,
         output_tokens: int,
@@ -162,13 +162,15 @@ class PerformanceTracker:
         workflow_position: Optional[int] = None,
     ) -> ExecutionMetrics:
         """
-        Record a single agent execution
+        Record a single agent execution.
+
+        Satisfies TrackerProtocol interface.
 
         Args:
             agent_name: Name of agent
             task: Task description
             success: Whether execution succeeded
-            execution_time_ms: Execution time in milliseconds
+            duration_ms: Execution time in milliseconds
             model: Model ID used
             input_tokens: Input tokens used
             output_tokens: Output tokens used
@@ -184,7 +186,7 @@ class PerformanceTracker:
             agent_name=agent_name,
             task_hash=self._task_hash(task),
             success=success,
-            execution_time_ms=execution_time_ms,
+            execution_time_ms=duration_ms,
             model=model,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
