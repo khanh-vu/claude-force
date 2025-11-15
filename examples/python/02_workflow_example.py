@@ -72,9 +72,7 @@ Please investigate, fix, and add tests.
     try:
         print("\n🔄 Running bug-fix workflow...\n")
         results = orchestrator.run_workflow(
-            workflow_name='bug-fix',
-            task=task,
-            pass_output_to_next=True
+            workflow_name="bug-fix", task=task, pass_output_to_next=True
         )
 
         print("\n" + "=" * 70)
@@ -113,6 +111,7 @@ Please investigate, fix, and add tests.
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

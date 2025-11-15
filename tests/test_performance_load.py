@@ -6,6 +6,7 @@ scalability and identify bottlenecks.
 
 Run with: pytest tests/test_performance_load.py -v -s --durations=0
 """
+
 import pytest
 import asyncio
 import time
@@ -23,8 +24,10 @@ from claude_force.response_cache import ResponseCache
 # Load Test Configuration
 # ============================================================================
 
+
 class LoadTestConfig:
     """Configuration for load tests"""
+
     # Light load
     LIGHT_USERS = 5
     LIGHT_DURATION_SECONDS = 10
@@ -48,6 +51,7 @@ class LoadTestConfig:
 # ============================================================================
 # Load Test Helpers
 # ============================================================================
+
 
 def create_mock_api_with_latency(min_ms: int = 50, max_ms: int = 200):
     """Create mock API with variable latency"""
@@ -94,18 +98,26 @@ class LoadTestMetrics:
         total_requests = self.success_count + self.failure_count
 
         return {
-            'total_requests': total_requests,
-            'successful': self.success_count,
-            'failed': self.failure_count,
-            'success_rate': self.success_count / total_requests if total_requests > 0 else 0,
-            'throughput': total_requests / total_time if total_time > 0 else 0,
-            'avg_response_time': statistics.mean(self.request_times),
-            'median_response_time': statistics.median(self.request_times),
-            'p95_response_time': statistics.quantiles(self.request_times, n=20)[18] if len(self.request_times) > 20 else max(self.request_times),
-            'p99_response_time': statistics.quantiles(self.request_times, n=100)[98] if len(self.request_times) > 100 else max(self.request_times),
-            'min_response_time': min(self.request_times),
-            'max_response_time': max(self.request_times),
-            'duration': total_time
+            "total_requests": total_requests,
+            "successful": self.success_count,
+            "failed": self.failure_count,
+            "success_rate": self.success_count / total_requests if total_requests > 0 else 0,
+            "throughput": total_requests / total_time if total_time > 0 else 0,
+            "avg_response_time": statistics.mean(self.request_times),
+            "median_response_time": statistics.median(self.request_times),
+            "p95_response_time": (
+                statistics.quantiles(self.request_times, n=20)[18]
+                if len(self.request_times) > 20
+                else max(self.request_times)
+            ),
+            "p99_response_time": (
+                statistics.quantiles(self.request_times, n=100)[98]
+                if len(self.request_times) > 100
+                else max(self.request_times)
+            ),
+            "min_response_time": min(self.request_times),
+            "max_response_time": max(self.request_times),
+            "duration": total_time,
         }
 
     def print_summary(self, test_name: str):
@@ -139,17 +151,14 @@ class LoadTestMetrics:
 # Cache Load Tests
 # ============================================================================
 
+
 @pytest.mark.load
 def test_cache_concurrent_read_load(tmp_path):
     """
     Load Test: Concurrent cache reads
     Validates that cache can handle many simultaneous reads
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        max_size_mb=100,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", max_size_mb=100, cache_secret="test_secret")
 
     # Pre-populate cache
     for i in range(100):
@@ -174,8 +183,8 @@ def test_cache_concurrent_read_load(tmp_path):
     summary = metrics.print_summary("Cache Concurrent Read Load Test")
 
     # Assertions
-    assert summary['success_rate'] == 1.0  # All reads should succeed
-    assert summary['throughput'] > LoadTestConfig.MIN_THROUGHPUT_PER_SECOND
+    assert summary["success_rate"] == 1.0  # All reads should succeed
+    assert summary["throughput"] > LoadTestConfig.MIN_THROUGHPUT_PER_SECOND
 
 
 @pytest.mark.load
@@ -184,11 +193,7 @@ def test_cache_concurrent_write_load(tmp_path):
     Load Test: Concurrent cache writes
     Validates cache can handle concurrent writes without corruption
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        max_size_mb=100,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", max_size_mb=100, cache_secret="test_secret")
 
     metrics = LoadTestMetrics()
     metrics.start_time = time.time()
@@ -204,7 +209,7 @@ def test_cache_concurrent_write_load(tmp_path):
                 f"response{task_id}" * 100,
                 100,
                 50,
-                0.001
+                0.001,
             )
             duration = time.time() - start
             metrics.record_request(duration, True)
@@ -226,8 +231,8 @@ def test_cache_concurrent_write_load(tmp_path):
     print(f"Integrity failures: {stats['integrity_failures']}")
 
     # Assertions
-    assert summary['success_rate'] > 0.95  # >95% success rate
-    assert stats['integrity_failures'] == 0  # No integrity failures
+    assert summary["success_rate"] > 0.95  # >95% success rate
+    assert stats["integrity_failures"] == 0  # No integrity failures
 
 
 @pytest.mark.load
@@ -236,11 +241,7 @@ def test_cache_mixed_load(tmp_path):
     Load Test: Mixed read/write load
     Simulates realistic cache usage pattern
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        max_size_mb=100,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", max_size_mb=100, cache_secret="test_secret")
 
     # Pre-populate some entries
     for i in range(50):
@@ -252,6 +253,7 @@ def test_cache_mixed_load(tmp_path):
     def mixed_operation(task_id: int):
         """Perform mixed read/write"""
         import random
+
         start = time.time()
 
         try:
@@ -267,7 +269,7 @@ def test_cache_mixed_load(tmp_path):
                     f"response{task_id}" * 100,
                     100,
                     50,
-                    0.001
+                    0.001,
                 )
                 success = True
 
@@ -286,12 +288,13 @@ def test_cache_mixed_load(tmp_path):
     summary = metrics.print_summary("Cache Mixed Load Test")
 
     # Assertions
-    assert summary['success_rate'] > 0.95
+    assert summary["success_rate"] > 0.95
 
 
 # ============================================================================
 # Async Orchestrator Load Tests
 # ============================================================================
+
 
 @pytest.mark.asyncio
 @pytest.mark.load
@@ -307,11 +310,13 @@ async def test_async_light_load():
 
     async def user_session(user_id: int):
         """Simulate a user making requests"""
-        with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-            with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+            with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
                 for _ in range(5):  # 5 requests per user
                     start = time.time()
-                    result = await orchestrator.execute_agent("python-expert", f"task from user {user_id}")
+                    result = await orchestrator.execute_agent(
+                        "python-expert", f"task from user {user_id}"
+                    )
                     duration = time.time() - start
                     metrics.record_request(duration, result.success)
                     await asyncio.sleep(0.1)  # Small delay between requests
@@ -323,8 +328,8 @@ async def test_async_light_load():
     summary = metrics.print_summary("Light Load Test (5 users)")
 
     # Assertions
-    assert summary['success_rate'] > 0.98  # >98% success under light load
-    assert summary['avg_response_time'] < 0.3  # <300ms average
+    assert summary["success_rate"] > 0.98  # >98% success under light load
+    assert summary["avg_response_time"] < 0.3  # <300ms average
 
 
 @pytest.mark.asyncio
@@ -341,11 +346,13 @@ async def test_async_medium_load():
 
     async def user_session(user_id: int):
         """Simulate a user making requests"""
-        with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-            with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+            with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
                 for _ in range(3):  # 3 requests per user
                     start = time.time()
-                    result = await orchestrator.execute_agent("python-expert", f"task from user {user_id}")
+                    result = await orchestrator.execute_agent(
+                        "python-expert", f"task from user {user_id}"
+                    )
                     duration = time.time() - start
                     metrics.record_request(duration, result.success)
                     await asyncio.sleep(0.2)
@@ -357,8 +364,8 @@ async def test_async_medium_load():
     summary = metrics.print_summary("Medium Load Test (20 users)")
 
     # Assertions
-    assert summary['success_rate'] > 0.95  # >95% success under medium load
-    assert summary['avg_response_time'] < 0.5  # <500ms average
+    assert summary["success_rate"] > 0.95  # >95% success under medium load
+    assert summary["avg_response_time"] < 0.5  # <500ms average
 
 
 @pytest.mark.asyncio
@@ -376,11 +383,13 @@ async def test_async_heavy_load():
 
     async def user_session(user_id: int):
         """Simulate a user making requests"""
-        with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-            with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+            with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
                 for _ in range(2):  # 2 requests per user
                     start = time.time()
-                    result = await orchestrator.execute_agent("python-expert", f"task from user {user_id}")
+                    result = await orchestrator.execute_agent(
+                        "python-expert", f"task from user {user_id}"
+                    )
                     duration = time.time() - start
                     metrics.record_request(duration, result.success)
                     await asyncio.sleep(0.3)
@@ -392,7 +401,7 @@ async def test_async_heavy_load():
     summary = metrics.print_summary("Heavy Load Test (50 users)")
 
     # Assertions
-    assert summary['success_rate'] > 0.90  # >90% success under heavy load
+    assert summary["success_rate"] > 0.90  # >90% success under heavy load
 
 
 @pytest.mark.asyncio
@@ -411,11 +420,13 @@ async def test_async_stress_test():
 
     async def user_session(user_id: int):
         """Simulate a user making requests"""
-        with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-            with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+            with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
                 start = time.time()
                 try:
-                    result = await orchestrator.execute_agent("python-expert", f"task from user {user_id}")
+                    result = await orchestrator.execute_agent(
+                        "python-expert", f"task from user {user_id}"
+                    )
                     duration = time.time() - start
                     metrics.record_request(duration, result.success)
                 except Exception as e:
@@ -429,12 +440,13 @@ async def test_async_stress_test():
     summary = metrics.print_summary("Stress Test (100 users)")
 
     # More lenient assertions for stress test
-    assert summary['success_rate'] > 0.80  # >80% success even under stress
+    assert summary["success_rate"] > 0.80  # >80% success even under stress
 
 
 # ============================================================================
 # Sustained Load Tests
 # ============================================================================
+
 
 @pytest.mark.asyncio
 @pytest.mark.load
@@ -457,11 +469,13 @@ async def test_sustained_load():
         """User making requests for duration"""
         end_time = time.time() + duration
 
-        with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-            with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+            with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
                 while time.time() < end_time:
                     start = time.time()
-                    result = await orchestrator.execute_agent("python-expert", f"task from user {user_id}")
+                    result = await orchestrator.execute_agent(
+                        "python-expert", f"task from user {user_id}"
+                    )
                     request_duration = time.time() - start
                     metrics.record_request(request_duration, result.success)
                     await asyncio.sleep(1)  # 1 request per second per user
@@ -472,13 +486,14 @@ async def test_sustained_load():
     summary = metrics.print_summary(f"Sustained Load Test ({duration}s, {users} users)")
 
     # Assertions
-    assert summary['success_rate'] > 0.95
-    assert summary['throughput'] >= users * 0.8  # ~0.8-1 req/s per user
+    assert summary["success_rate"] > 0.95
+    assert summary["throughput"] >= users * 0.8  # ~0.8-1 req/s per user
 
 
 # ============================================================================
 # Ramp-Up Test
 # ============================================================================
+
 
 @pytest.mark.asyncio
 @pytest.mark.load
@@ -501,10 +516,14 @@ async def test_ramp_up_load():
         metrics.start_time = time.time()
 
         async def user_task(user_id: int):
-            with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-                with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+            with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+                with mock.patch.object(
+                    orchestrator, "load_agent_definition", return_value="Agent def"
+                ):
                     start = time.time()
-                    result = await orchestrator.execute_agent("python-expert", f"task from user {user_id}")
+                    result = await orchestrator.execute_agent(
+                        "python-expert", f"task from user {user_id}"
+                    )
                     duration = time.time() - start
                     metrics.record_request(duration, result.success)
 
@@ -527,15 +546,19 @@ async def test_ramp_up_load():
     print("Ramp-Up Test Summary")
     print(f"{'=' * 80}")
     for users, summary in metrics_by_level.items():
-        degradation = (summary['avg_response_time'] / metrics_by_level[5]['avg_response_time'] - 1) * 100
-        print(f"{users:2d} users: {summary['success_rate']:.1%} success, "
-              f"{summary['avg_response_time']*1000:5.1f}ms avg "
-              f"({degradation:+.0f}% vs baseline)")
+        degradation = (
+            summary["avg_response_time"] / metrics_by_level[5]["avg_response_time"] - 1
+        ) * 100
+        print(
+            f"{users:2d} users: {summary['success_rate']:.1%} success, "
+            f"{summary['avg_response_time']*1000:5.1f}ms avg "
+            f"({degradation:+.0f}% vs baseline)"
+        )
 
     # Performance should not degrade linearly with load
     # due to concurrency benefits
-    baseline = metrics_by_level[5]['avg_response_time']
-    heavy = metrics_by_level[40]['avg_response_time']
+    baseline = metrics_by_level[5]["avg_response_time"]
+    heavy = metrics_by_level[40]["avg_response_time"]
     degradation_ratio = heavy / baseline
 
     assert degradation_ratio < 4  # <4x slowdown at 8x load
@@ -545,17 +568,14 @@ async def test_ramp_up_load():
 # Cache Hit Rate Under Load
 # ============================================================================
 
+
 @pytest.mark.asyncio
 @pytest.mark.load
 async def test_cache_hit_rate_under_load(tmp_path):
     """
     Load Test: Cache effectiveness under realistic load
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        max_size_mb=100,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", max_size_mb=100, cache_secret="test_secret")
 
     # Simulate realistic access pattern (Zipf distribution)
     # Some tasks are very popular, most are rare
@@ -619,6 +639,7 @@ async def test_cache_hit_rate_under_load(tmp_path):
 # ============================================================================
 # Load Test Summary
 # ============================================================================
+
 
 @pytest.mark.load
 def test_load_test_summary():

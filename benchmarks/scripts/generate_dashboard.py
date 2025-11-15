@@ -356,8 +356,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 """
 
 
-def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_benchmark.json",
-                       output_path: str = "benchmarks/reports/dashboard/index.html"):
+def generate_dashboard(
+    results_path: str = "benchmarks/reports/results/complete_benchmark.json",
+    output_path: str = "benchmarks/reports/dashboard/index.html",
+):
     """Generate HTML dashboard from benchmark results"""
 
     results_file = Path(results_path)
@@ -402,14 +404,20 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
     dist_rows = []
     for tier, count in accuracy_dist.items():
         percentage = (count / total_tests * 100) if total_tests > 0 else 0
-        badge_class = "badge-success" if "high" in tier.lower() else "badge-warning" if "medium" in tier.lower() else "badge-danger"
-        dist_rows.append(f"""
+        badge_class = (
+            "badge-success"
+            if "high" in tier.lower()
+            else "badge-warning" if "medium" in tier.lower() else "badge-danger"
+        )
+        dist_rows.append(
+            f"""
             <tr>
                 <td><span class="badge {badge_class}">{tier}</span></td>
                 <td>{count}</td>
                 <td>{percentage:.1f}%</td>
             </tr>
-        """)
+        """
+        )
 
     # Generate scenarios rows
     scenarios_data = results.get("scenarios", {})
@@ -419,28 +427,33 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
             badge_map = {
                 "simple": "badge-success",
                 "medium": "badge-warning",
-                "complex": "badge-danger"
+                "complex": "badge-danger",
             }
-            scenarios_rows.append(f"""
+            scenarios_rows.append(
+                f"""
                 <tr>
                     <td>{scenario['name'].replace('_', ' ').replace('-', ' ').title()}</td>
                     <td><span class="badge {badge_map[difficulty]}">{difficulty.upper()}</span></td>
                     <td><span class="badge badge-info">{scenario['status'].upper()}</span></td>
                 </tr>
-            """)
+            """
+            )
 
     # Generate detailed results rows
     detailed_results = results.get("agent_selection", {}).get("detailed_results", [])
     detailed_rows = []
     for result in detailed_results:
         acc = result.get("accuracy", 0)
-        acc_badge = "badge-success" if acc >= 0.8 else "badge-warning" if acc >= 0.5 else "badge-danger"
+        acc_badge = (
+            "badge-success" if acc >= 0.8 else "badge-warning" if acc >= 0.5 else "badge-danger"
+        )
         time_val = round(result.get("selection_time_ms", 0), 2)
 
         expected = ", ".join(result.get("expected_agents", []))
         selected = ", ".join(result.get("selected_agents", []))
 
-        detailed_rows.append(f"""
+        detailed_rows.append(
+            f"""
             <tr>
                 <td>{result.get('task_description', '')[:80]}...</td>
                 <td style="font-size: 0.85em;">{expected}</td>
@@ -448,7 +461,8 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
                 <td><span class="badge {acc_badge}">{acc:.1%}</span></td>
                 <td>{time_val}ms</td>
             </tr>
-        """)
+        """
+        )
 
     # Fill template
     html = HTML_TEMPLATE.format(
@@ -465,7 +479,7 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
         medium_count=scenarios.get("medium", 0),
         complex_count=scenarios.get("complex", 0),
         scenarios_rows="".join(scenarios_rows),
-        detailed_results_rows="".join(detailed_rows)
+        detailed_results_rows="".join(detailed_rows),
     )
 
     # Save dashboard
@@ -473,7 +487,7 @@ def generate_dashboard(results_path: str = "benchmarks/reports/results/complete_
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(html)
 
         print(f"✅ Dashboard generated: {output_path}")
@@ -508,6 +522,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Fatal error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

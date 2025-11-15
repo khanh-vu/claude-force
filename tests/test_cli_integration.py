@@ -31,11 +31,7 @@ class CLITestCase(unittest.TestCase):
         """
         cmd = [sys.executable, "-m", "claude_force.cli"] + list(args)
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            input=input_text,
-            timeout=timeout
+            cmd, capture_output=True, text=True, input=input_text, timeout=timeout
         )
         return result
 
@@ -46,7 +42,7 @@ class CLITestCase(unittest.TestCase):
             expected_code,
             f"Expected exit code {expected_code}, got {result.returncode}\n"
             f"STDOUT: {result.stdout}\n"
-            f"STDERR: {result.stderr}"
+            f"STDERR: {result.stderr}",
         )
 
     def assertInOutput(self, result, text, check_stderr=False):
@@ -55,8 +51,7 @@ class CLITestCase(unittest.TestCase):
         self.assertIn(
             text,
             output,
-            f"Expected '{text}' in {'stderr' if check_stderr else 'stdout'}\n"
-            f"Got: {output}"
+            f"Expected '{text}' in {'stderr' if check_stderr else 'stdout'}\n" f"Got: {output}",
         )
 
     def assertNotInOutput(self, result, text, check_stderr=False):
@@ -66,7 +61,7 @@ class CLITestCase(unittest.TestCase):
             text,
             output,
             f"Did not expect '{text}' in {'stderr' if check_stderr else 'stdout'}\n"
-            f"Got: {output}"
+            f"Got: {output}",
         )
 
 
@@ -95,8 +90,10 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--description", "Test LLM application for chat",
-            "--name", "test-project"
+            "--description",
+            "Test LLM application for chat",
+            "--name",
+            "test-project",
         )
 
         self.assertExitCode(result, 0)
@@ -117,12 +114,7 @@ class TestCLIInit(CLITestCase):
         # Simulate user input: name, description, tech stack, template selection
         user_input = "test-project\nBuild a chat application\n\n1\n"
 
-        result = self.run_cli(
-            "init",
-            self.temp_dir,
-            "--interactive",
-            input_text=user_input
-        )
+        result = self.run_cli("init", self.temp_dir, "--interactive", input_text=user_input)
 
         self.assertExitCode(result, 0)
         self.assertInOutput(result, "Project name")
@@ -133,9 +125,12 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--description", "Test project",
-            "--name", "test-project",
-            "--template", "llm-app"  # Use valid template ID
+            "--description",
+            "Test project",
+            "--name",
+            "test-project",
+            "--template",
+            "llm-app",  # Use valid template ID
         )
 
         self.assertExitCode(result, 0)
@@ -159,9 +154,11 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--description", "Test project",
-            "--name", "test-project",
-            "--force"
+            "--description",
+            "Test project",
+            "--name",
+            "test-project",
+            "--force",
         )
 
         self.assertExitCode(result, 0)
@@ -175,9 +172,11 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--description", "Test project",
-            "--name", "test-project",
-            "--no-examples"
+            "--description",
+            "Test project",
+            "--name",
+            "test-project",
+            "--no-examples",
         )
 
         self.assertExitCode(result, 0)
@@ -192,7 +191,8 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--name", "test-project"
+            "--name",
+            "test-project",
             # Missing --description
         )
 
@@ -205,9 +205,12 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--description", "Test project",
-            "--name", "test-project",
-            "--template", "nonexistent-template-xyz"
+            "--description",
+            "Test project",
+            "--name",
+            "test-project",
+            "--template",
+            "nonexistent-template-xyz",
         )
 
         # Should fail with error
@@ -221,10 +224,7 @@ class TestCLIInit(CLITestCase):
         claude_dir.mkdir()
 
         result = self.run_cli(
-            "init",
-            self.temp_dir,
-            "--description", "Test project",
-            "--name", "test-project"
+            "init", self.temp_dir, "--description", "Test project", "--name", "test-project"
         )
 
         # Should fail with error
@@ -236,8 +236,9 @@ class TestCLIInit(CLITestCase):
         result = self.run_cli(
             "init",
             self.temp_dir,
-            "--name", "test-project",
-            "--verbose"
+            "--name",
+            "test-project",
+            "--verbose",
             # Missing --description to trigger error
         )
 
@@ -257,14 +258,18 @@ class TestCLIRunAgent(CLITestCase):
         # Initialize a project first
         subprocess.run(
             [
-                sys.executable, "-m", "claude_force.cli",
+                sys.executable,
+                "-m",
+                "claude_force.cli",
                 "init",
                 self.temp_dir,
-                "--description", "Test project for agent runs",
-                "--name", "test-agent-project"
+                "--description",
+                "Test project for agent runs",
+                "--name",
+                "test-agent-project",
             ],
             capture_output=True,
-            text=True
+            text=True,
         )
 
     def tearDown(self):
@@ -284,11 +289,13 @@ class TestCLIRunAgent(CLITestCase):
         """Test run agent with --auto-select-model flag."""
         # Note: This will fail without API key, but we can test argument parsing
         result = self.run_cli(
-            "run", "agent",
+            "run",
+            "agent",
             "code-reviewer",
-            "--task", "Review the authentication module",
+            "--task",
+            "Review the authentication module",
             "--auto-select-model",
-            "--estimate-cost"  # Show estimate
+            "--estimate-cost",  # Show estimate
         )
 
         # Will fail due to missing API key or config, but args should parse
@@ -296,34 +303,39 @@ class TestCLIRunAgent(CLITestCase):
         output = result.stdout + result.stderr
         self.assertTrue(
             any(word in output.lower() for word in ["agent", "model", "api", "running"]),
-            "Should mention agent/model/API in output"
+            "Should mention agent/model/API in output",
         )
 
     def test_run_agent_with_estimate(self):
         """Test run agent with --estimate-cost flag."""
         result = self.run_cli(
-            "run", "agent",
+            "run",
+            "agent",
             "code-reviewer",
-            "--task", "Review the code for security issues",
+            "--task",
+            "Review the code for security issues",
             "--auto-select-model",
-            "--estimate-cost"
+            "--estimate-cost",
         )
 
         # Will fail due to missing config/API key, but should accept flags
         output = result.stdout + result.stderr
         self.assertTrue(
             any(word in output.lower() for word in ["cost", "error", "config", "api"]),
-            "Should process estimate-cost flag or show error"
+            "Should process estimate-cost flag or show error",
         )
 
     def test_run_agent_with_threshold(self):
         """Test run agent with --cost-threshold flag."""
         result = self.run_cli(
-            "run", "agent",
+            "run",
+            "agent",
             "code-reviewer",
-            "--task", "Small code review task",
+            "--task",
+            "Small code review task",
             "--auto-select-model",
-            "--cost-threshold", "0.001"  # Very low threshold
+            "--cost-threshold",
+            "0.001",  # Very low threshold
         )
 
         # Will fail due to missing config, but should accept threshold flag
@@ -334,12 +346,14 @@ class TestCLIRunAgent(CLITestCase):
     def test_run_agent_yes_flag(self):
         """Test run agent with --yes flag (auto-confirm)."""
         result = self.run_cli(
-            "run", "agent",
+            "run",
+            "agent",
             "code-reviewer",
-            "--task", "Quick review",
+            "--task",
+            "Quick review",
             "--yes",
             "--auto-select-model",
-            "--estimate-cost"
+            "--estimate-cost",
         )
 
         # Should accept --yes flag (won't prompt)
@@ -349,8 +363,9 @@ class TestCLIRunAgent(CLITestCase):
     def test_run_agent_missing_task(self):
         """Test error when task is not provided."""
         result = self.run_cli(
-            "run", "agent",
-            "code-reviewer"
+            "run",
+            "agent",
+            "code-reviewer",
             # Missing --task
         )
 
@@ -364,11 +379,7 @@ class TestCLIRunAgent(CLITestCase):
         task_file = Path(self.temp_dir) / "task.txt"
         task_file.write_text("Review the authentication code for security")
 
-        result = self.run_cli(
-            "run", "agent",
-            "code-reviewer",
-            "--task-file", str(task_file)
-        )
+        result = self.run_cli("run", "agent", "code-reviewer", "--task-file", str(task_file))
 
         # Will fail due to missing API key/config, but should accept task-file flag
         output = result.stdout + result.stderr
@@ -379,10 +390,7 @@ class TestCLIRunAgent(CLITestCase):
         output_file = Path(self.temp_dir) / "output.txt"
 
         result = self.run_cli(
-            "run", "agent",
-            "code-reviewer",
-            "--task", "Review code",
-            "--output", str(output_file)
+            "run", "agent", "code-reviewer", "--task", "Review code", "--output", str(output_file)
         )
 
         # Will fail due to missing API key/config, but should accept output flag
@@ -391,12 +399,7 @@ class TestCLIRunAgent(CLITestCase):
 
     def test_run_agent_json_output(self):
         """Test run agent with --json flag for structured output."""
-        result = self.run_cli(
-            "run", "agent",
-            "code-reviewer",
-            "--task", "Review code",
-            "--json"
-        )
+        result = self.run_cli("run", "agent", "code-reviewer", "--task", "Review code", "--json")
 
         # Will fail due to missing API key/config, but should accept json flag
         output = result.stdout + result.stderr
@@ -404,11 +407,7 @@ class TestCLIRunAgent(CLITestCase):
 
     def test_run_agent_invalid_agent(self):
         """Test error when invalid agent name is provided."""
-        result = self.run_cli(
-            "run", "agent",
-            "nonexistent-agent-xyz",
-            "--task", "Do something"
-        )
+        result = self.run_cli("run", "agent", "nonexistent-agent-xyz", "--task", "Do something")
 
         # Should fail with error (API key or config missing, or invalid agent)
         self.assertNotEqual(result.returncode, 0)
@@ -416,7 +415,7 @@ class TestCLIRunAgent(CLITestCase):
         # Should mention error in some form
         self.assertTrue(
             any(word in output.lower() for word in ["error", "api", "config"]),
-            "Should show error message"
+            "Should show error message",
         )
 
 

@@ -13,7 +13,7 @@ from claude_force.import_export import (
     AgentPortingTool,
     AgentMetadata,
     ContractMetadata,
-    get_porting_tool
+    get_porting_tool,
 )
 from claude_force.path_validator import PathValidationError
 
@@ -26,7 +26,7 @@ class TestAgentMetadataDataclass(unittest.TestCase):
         metadata = AgentMetadata(
             name="test-agent",
             description="A test agent",
-            content="# Test Agent\n\nThis is a test agent."
+            content="# Test Agent\n\nThis is a test agent.",
         )
 
         self.assertEqual(metadata.name, "test-agent")
@@ -44,7 +44,7 @@ class TestAgentMetadataDataclass(unittest.TestCase):
             expertise=["python", "api"],
             tools=["pytest", "black"],
             model="claude-3-haiku",
-            source="custom"
+            source="custom",
         )
 
         self.assertEqual(metadata.expertise, ["python", "api"])
@@ -109,10 +109,7 @@ Expert Python developer with focus on clean code and best practices.
         agent_file.write_text(agent_content)
 
         # Import agent
-        result = self.tool.import_from_wshobson(
-            agent_file=agent_file,
-            generate_contract=True
-        )
+        result = self.tool.import_from_wshobson(agent_file=agent_file, generate_contract=True)
 
         # Verify import
         self.assertEqual(result["name"], "python-developer")
@@ -130,10 +127,7 @@ Expert Python developer with focus on clean code and best practices.
         agent_file = Path(self.temp_dir) / "test-agent.md"
         agent_file.write_text(agent_content)
 
-        result = self.tool.import_from_wshobson(
-            agent_file=agent_file,
-            generate_contract=False
-        )
+        result = self.tool.import_from_wshobson(agent_file=agent_file, generate_contract=False)
 
         self.assertIsNone(result["contract_path"])
 
@@ -143,10 +137,7 @@ Expert Python developer with focus on clean code and best practices.
         agent_file = Path(self.temp_dir) / "original.md"
         agent_file.write_text(agent_content)
 
-        result = self.tool.import_from_wshobson(
-            agent_file=agent_file,
-            target_name="custom-name"
-        )
+        result = self.tool.import_from_wshobson(agent_file=agent_file, target_name="custom-name")
 
         self.assertEqual(result["name"], "custom-name")
 
@@ -157,9 +148,7 @@ Expert Python developer with focus on clean code and best practices.
     def test_import_nonexistent_file(self):
         """Should raise error for nonexistent file."""
         with self.assertRaises(PathValidationError):
-            self.tool.import_from_wshobson(
-                agent_file=Path("/nonexistent/agent.md")
-            )
+            self.tool.import_from_wshobson(agent_file=Path("/nonexistent/agent.md"))
 
     def test_import_extracts_expertise(self):
         """Should extract expertise from agent content."""
@@ -216,10 +205,7 @@ A test agent for export testing.
 
         # Export agent
         output_dir = Path(self.temp_dir) / "exported"
-        output_file = self.tool.export_to_wshobson(
-            agent_name=agent_name,
-            output_dir=output_dir
-        )
+        output_file = self.tool.export_to_wshobson(agent_name=agent_name, output_dir=output_dir)
 
         # Verify export
         self.assertTrue(output_file.exists())
@@ -233,10 +219,7 @@ A test agent for export testing.
         output_dir = Path(self.temp_dir) / "exported"
 
         with self.assertRaises(FileNotFoundError):
-            self.tool.export_to_wshobson(
-                agent_name="nonexistent-agent",
-                output_dir=output_dir
-            )
+            self.tool.export_to_wshobson(agent_name="nonexistent-agent", output_dir=output_dir)
 
     def test_export_without_metadata(self):
         """Should export without metadata header."""
@@ -249,9 +232,7 @@ A test agent for export testing.
         # Export without metadata
         output_dir = Path(self.temp_dir) / "exported"
         output_file = self.tool.export_to_wshobson(
-            agent_name=agent_name,
-            output_dir=output_dir,
-            include_metadata=False
+            agent_name=agent_name, output_dir=output_dir, include_metadata=False
         )
 
         content = output_file.read_text()
@@ -268,9 +249,7 @@ A test agent for export testing.
         # Export with metadata
         output_dir = Path(self.temp_dir) / "exported"
         output_file = self.tool.export_to_wshobson(
-            agent_name=agent_name,
-            output_dir=output_dir,
-            include_metadata=True
+            agent_name=agent_name, output_dir=output_dir, include_metadata=True
         )
 
         content = output_file.read_text()
@@ -296,10 +275,7 @@ class TestContractGeneration(unittest.TestCase):
         agent_file = Path(self.temp_dir) / "test.md"
         agent_file.write_text(agent_content)
 
-        result = self.tool.import_from_wshobson(
-            agent_file=agent_file,
-            generate_contract=True
-        )
+        result = self.tool.import_from_wshobson(agent_file=agent_file, generate_contract=True)
 
         # Verify contract created
         contract_path = Path(result["contract_path"])
@@ -370,10 +346,7 @@ class TestBulkImport(unittest.TestCase):
             agent_file.write_text(f"# Agent {i}\n\nTest agent {i}.")
 
         # Bulk import
-        results = self.tool.bulk_import(
-            source_dir=self.source_dir,
-            pattern="*.md"
-        )
+        results = self.tool.bulk_import(source_dir=self.source_dir, pattern="*.md")
 
         # Verify results
         self.assertEqual(results["total"], 3)
@@ -388,10 +361,7 @@ class TestBulkImport(unittest.TestCase):
         (self.source_dir / "agent3.md").write_text("# Agent 3\n\nTest.")
 
         # Import only .md files
-        results = self.tool.bulk_import(
-            source_dir=self.source_dir,
-            pattern="*.md"
-        )
+        results = self.tool.bulk_import(source_dir=self.source_dir, pattern="*.md")
 
         # Should import only .md files
         self.assertEqual(results["total"], 2)
@@ -407,9 +377,7 @@ class TestBulkImport(unittest.TestCase):
 
         # Bulk import
         results = self.tool.bulk_import(
-            source_dir=self.source_dir,
-            pattern="*.md",
-            generate_contracts=False  # Simplify test
+            source_dir=self.source_dir, pattern="*.md", generate_contracts=False  # Simplify test
         )
 
         # Should continue despite errors
@@ -419,9 +387,7 @@ class TestBulkImport(unittest.TestCase):
     def test_bulk_import_nonexistent_directory(self):
         """Should raise error for nonexistent directory."""
         with self.assertRaises(FileNotFoundError):
-            self.tool.bulk_import(
-                source_dir=Path("/nonexistent/directory")
-            )
+            self.tool.bulk_import(source_dir=Path("/nonexistent/directory"))
 
 
 class TestBulkExport(unittest.TestCase):
@@ -448,10 +414,7 @@ class TestBulkExport(unittest.TestCase):
 
         # Bulk export
         agent_names = ["agent-0", "agent-1", "agent-2"]
-        results = self.tool.bulk_export(
-            agent_names=agent_names,
-            output_dir=self.output_dir
-        )
+        results = self.tool.bulk_export(agent_names=agent_names, output_dir=self.output_dir)
 
         # Verify results
         self.assertEqual(results["total"], 3)
@@ -467,10 +430,7 @@ class TestBulkExport(unittest.TestCase):
 
         # Try to export valid + nonexistent
         agent_names = ["valid-agent", "nonexistent-agent"]
-        results = self.tool.bulk_export(
-            agent_names=agent_names,
-            output_dir=self.output_dir
-        )
+        results = self.tool.bulk_export(agent_names=agent_names, output_dir=self.output_dir)
 
         # Should export valid, fail on nonexistent
         self.assertEqual(results["total"], 2)

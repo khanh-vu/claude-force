@@ -37,7 +37,7 @@ class TestWorkflowComposerIntegration(unittest.TestCase):
         workflow = composer.compose_workflow(
             goal="Build a REST API with authentication and testing",
             max_agents=5,
-            prefer_builtin=False
+            prefer_builtin=False,
         )
 
         # Verify workflow structure
@@ -49,8 +49,11 @@ class TestWorkflowComposerIntegration(unittest.TestCase):
         # Should include relevant agents for API development
         agent_names_str = " ".join([step.agent.agent_id for step in workflow.steps]).lower()
         self.assertTrue(
-            any(keyword in agent_names_str for keyword in ['backend', 'api', 'developer', 'engineer']),
-            f"Expected backend/API related agents, got: {agent_names_str}"
+            any(
+                keyword in agent_names_str
+                for keyword in ["backend", "api", "developer", "engineer"]
+            ),
+            f"Expected backend/API related agents, got: {agent_names_str}",
         )
 
     def test_compose_workflow_prefer_builtin(self):
@@ -58,9 +61,7 @@ class TestWorkflowComposerIntegration(unittest.TestCase):
         composer = WorkflowComposer(include_marketplace=False)
 
         workflow = composer.compose_workflow(
-            goal="Review code for security issues",
-            max_agents=3,
-            prefer_builtin=True
+            goal="Review code for security issues", max_agents=3, prefer_builtin=True
         )
 
         self.assertIsInstance(workflow, ComposedWorkflow)
@@ -71,9 +72,7 @@ class TestWorkflowComposerIntegration(unittest.TestCase):
         composer = WorkflowComposer(include_marketplace=True)
 
         workflow = composer.compose_workflow(
-            goal="Complete full-stack application development",
-            max_agents=3,
-            prefer_builtin=False
+            goal="Complete full-stack application development", max_agents=3, prefer_builtin=False
         )
 
         self.assertLessEqual(len(workflow.steps), 3)
@@ -82,10 +81,7 @@ class TestWorkflowComposerIntegration(unittest.TestCase):
         """Test workflow composition for a simple goal."""
         composer = WorkflowComposer(include_marketplace=True)
 
-        workflow = composer.compose_workflow(
-            goal="Review Python code",
-            max_agents=2
-        )
+        workflow = composer.compose_workflow(goal="Review Python code", max_agents=2)
 
         self.assertIsInstance(workflow, ComposedWorkflow)
         self.assertGreater(len(workflow.steps), 0)
@@ -135,8 +131,10 @@ class TestMarketplaceIntegration(unittest.TestCase):
         self.assertIsInstance(is_available, bool)
 
 
-@unittest.skipIf(WorkflowComposer is None or AgentMarketplace is None,
-                 "WorkflowComposer or AgentMarketplace not available")
+@unittest.skipIf(
+    WorkflowComposer is None or AgentMarketplace is None,
+    "WorkflowComposer or AgentMarketplace not available",
+)
 class TestWorkflowMarketplaceIntegration(unittest.TestCase):
     """Test integration between workflow composer and marketplace."""
 
@@ -145,8 +143,7 @@ class TestWorkflowMarketplaceIntegration(unittest.TestCase):
         composer = WorkflowComposer(include_marketplace=True)
 
         workflow = composer.compose_workflow(
-            goal="Deploy infrastructure and monitor performance",
-            max_agents=4
+            goal="Deploy infrastructure and monitor performance", max_agents=4
         )
 
         self.assertIsInstance(workflow, ComposedWorkflow)
@@ -156,10 +153,7 @@ class TestWorkflowMarketplaceIntegration(unittest.TestCase):
         """Test composing workflows excluding marketplace."""
         composer = WorkflowComposer(include_marketplace=False)
 
-        workflow = composer.compose_workflow(
-            goal="Review and test code",
-            max_agents=3
-        )
+        workflow = composer.compose_workflow(goal="Review and test code", max_agents=3)
 
         self.assertIsInstance(workflow, ComposedWorkflow)
         self.assertGreater(len(workflow.steps), 0)

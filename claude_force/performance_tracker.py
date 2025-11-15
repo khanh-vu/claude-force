@@ -67,7 +67,7 @@ class PerformanceTracker:
         self,
         metrics_dir: str = ".claude/metrics",
         max_entries: int = 10000,
-        enable_persistence: bool = True
+        enable_persistence: bool = True,
     ):
         """
         Initialize performance tracker with bounded memory.
@@ -249,7 +249,7 @@ class PerformanceTracker:
                 "total_tokens": 0,
                 "in_memory_count": len(self._cache),
                 "max_entries": self.max_entries,
-                "memory_usage_mb": self._estimate_memory_usage()
+                "memory_usage_mb": self._estimate_memory_usage(),
             }
 
         total = len(metrics)
@@ -269,7 +269,7 @@ class PerformanceTracker:
             "time_period": f"last {hours} hours" if hours else "all time",
             "in_memory_count": len(self._cache),
             "max_entries": self.max_entries,
-            "memory_usage_mb": self._estimate_memory_usage()
+            "memory_usage_mb": self._estimate_memory_usage(),
         }
 
     def _estimate_memory_usage(self) -> float:
@@ -443,7 +443,8 @@ class PerformanceTracker:
                 print(f"Warning: Could not read metrics file: {e}")
                 # Fall back to filtering ring buffer only
                 all_metrics = [
-                    m for m in self._cache
+                    m
+                    for m in self._cache
                     if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
                 ]
 
@@ -455,22 +456,25 @@ class PerformanceTracker:
             # Reload ring buffer with most recent max_entries
             self._cache.clear()
             # Take the most recent max_entries from filtered metrics
-            recent_metrics = all_metrics[-self.max_entries:] if len(all_metrics) > self.max_entries else all_metrics
+            recent_metrics = (
+                all_metrics[-self.max_entries :]
+                if len(all_metrics) > self.max_entries
+                else all_metrics
+            )
             self._cache.extend(recent_metrics)
         else:
             # No persistence, just filter in-memory cache
             old_cache = self._cache
             self._cache = deque(
                 (m for m in old_cache if datetime.fromisoformat(m.timestamp).timestamp() > cutoff),
-                maxlen=self.max_entries
+                maxlen=self.max_entries,
             )
 
         self._cache_dirty = True
 
 
 def get_tracker(
-    metrics_dir: str = ".claude/metrics",
-    max_entries: int = 10000
+    metrics_dir: str = ".claude/metrics", max_entries: int = 10000
 ) -> PerformanceTracker:
     """
     Factory function to create performance tracker

@@ -7,11 +7,7 @@ Tests intelligent agent routing and recommendation functionality.
 import unittest
 from unittest.mock import Mock, MagicMock, patch
 
-from claude_force.agent_router import (
-    AgentRouter,
-    AgentMatch,
-    get_agent_router
-)
+from claude_force.agent_router import AgentRouter, AgentMatch, get_agent_router
 
 
 class TestAgentMatch(unittest.TestCase):
@@ -24,7 +20,7 @@ class TestAgentMatch(unittest.TestCase):
             agent_name="Test Agent",
             confidence=0.85,
             source="builtin",
-            installed=True
+            installed=True,
         )
 
         self.assertEqual(match.agent_id, "test-agent")
@@ -46,7 +42,7 @@ class TestAgentMatch(unittest.TestCase):
             plugin_id="test-plugin",
             description="Test description",
             expertise=["python", "api"],
-            reason="Matches keywords"
+            reason="Matches keywords",
         )
 
         self.assertEqual(match.plugin_id, "test-plugin")
@@ -97,8 +93,7 @@ class TestRecommendAgents(unittest.TestCase):
     def test_recommend_frontend_agents(self):
         """Should recommend frontend agents for frontend tasks."""
         matches = self.router.recommend_agents(
-            task="Build a React component with state management",
-            top_k=5
+            task="Build a React component with state management", top_k=5
         )
 
         self.assertIsInstance(matches, list)
@@ -115,8 +110,7 @@ class TestRecommendAgents(unittest.TestCase):
     def test_recommend_backend_agents(self):
         """Should recommend backend agents for backend tasks."""
         matches = self.router.recommend_agents(
-            task="Design REST API with microservices architecture",
-            top_k=5
+            task="Design REST API with microservices architecture", top_k=5
         )
 
         self.assertGreater(len(matches), 0)
@@ -127,8 +121,7 @@ class TestRecommendAgents(unittest.TestCase):
     def test_recommend_ai_agents(self):
         """Should recommend AI agents for AI/ML tasks."""
         matches = self.router.recommend_agents(
-            task="Train machine learning model for classification",
-            top_k=5
+            task="Train machine learning model for classification", top_k=5
         )
 
         self.assertGreater(len(matches), 0)
@@ -139,8 +132,7 @@ class TestRecommendAgents(unittest.TestCase):
     def test_recommend_database_agents(self):
         """Should recommend database agents for database tasks."""
         matches = self.router.recommend_agents(
-            task="Design PostgreSQL schema with migrations",
-            top_k=5
+            task="Design PostgreSQL schema with migrations", top_k=5
         )
 
         self.assertGreater(len(matches), 0)
@@ -151,8 +143,7 @@ class TestRecommendAgents(unittest.TestCase):
     def test_recommend_security_agents(self):
         """Should recommend security agents for security tasks."""
         matches = self.router.recommend_agents(
-            task="Security audit for authentication vulnerability",
-            top_k=5
+            task="Security audit for authentication vulnerability", top_k=5
         )
 
         self.assertGreater(len(matches), 0)
@@ -162,36 +153,24 @@ class TestRecommendAgents(unittest.TestCase):
 
     def test_recommend_top_k_limit(self):
         """Should respect top_k limit."""
-        matches = self.router.recommend_agents(
-            task="Build a web application",
-            top_k=3
-        )
+        matches = self.router.recommend_agents(task="Build a web application", top_k=3)
 
         self.assertLessEqual(len(matches), 3)
 
     def test_recommend_min_confidence(self):
         """Should filter by minimum confidence."""
-        matches = self.router.recommend_agents(
-            task="Build something",
-            min_confidence=0.5
-        )
+        matches = self.router.recommend_agents(task="Build something", min_confidence=0.5)
 
         for match in matches:
             self.assertGreaterEqual(match.confidence, 0.5)
 
     def test_recommend_sorted_by_confidence(self):
         """Recommendations should be sorted by confidence."""
-        matches = self.router.recommend_agents(
-            task="Build React frontend with API",
-            top_k=5
-        )
+        matches = self.router.recommend_agents(task="Build React frontend with API", top_k=5)
 
         if len(matches) > 1:
             for i in range(len(matches) - 1):
-                self.assertGreaterEqual(
-                    matches[i].confidence,
-                    matches[i + 1].confidence
-                )
+                self.assertGreaterEqual(matches[i].confidence, matches[i + 1].confidence)
 
 
 class TestMatchBuiltinAgents(unittest.TestCase):
@@ -203,9 +182,7 @@ class TestMatchBuiltinAgents(unittest.TestCase):
 
     def test_match_builtin_agents(self):
         """Should match builtin agents correctly."""
-        matches = self.router._match_builtin_agents(
-            "Build React frontend with API integration"
-        )
+        matches = self.router._match_builtin_agents("Build React frontend with API integration")
 
         self.assertIsInstance(matches, list)
         self.assertGreater(len(matches), 0)
@@ -217,9 +194,7 @@ class TestMatchBuiltinAgents(unittest.TestCase):
 
     def test_match_includes_reason(self):
         """Matches should include reason."""
-        matches = self.router._match_builtin_agents(
-            "Build React frontend"
-        )
+        matches = self.router._match_builtin_agents("Build React frontend")
 
         if matches:
             first_match = matches[0]
@@ -237,10 +212,7 @@ class TestCalculateConfidence(unittest.TestCase):
     def test_calculate_confidence_single_match(self):
         """Should calculate confidence for single keyword match."""
         keywords = ["react", "frontend", "ui"]
-        confidence = self.router._calculate_confidence(
-            "build react component",
-            keywords
-        )
+        confidence = self.router._calculate_confidence("build react component", keywords)
 
         self.assertGreater(confidence, 0.0)
         self.assertLessEqual(confidence, 1.0)
@@ -249,14 +221,10 @@ class TestCalculateConfidence(unittest.TestCase):
         """Should boost confidence for multiple matches."""
         keywords = ["react", "frontend", "ui"]
 
-        single_match = self.router._calculate_confidence(
-            "build react component",
-            keywords
-        )
+        single_match = self.router._calculate_confidence("build react component", keywords)
 
         multi_match = self.router._calculate_confidence(
-            "build react frontend ui component",
-            keywords
+            "build react frontend ui component", keywords
         )
 
         self.assertGreater(multi_match, single_match)
@@ -264,19 +232,13 @@ class TestCalculateConfidence(unittest.TestCase):
     def test_calculate_confidence_no_match(self):
         """Should return 0 for no matches."""
         keywords = ["python", "backend"]
-        confidence = self.router._calculate_confidence(
-            "javascript frontend",
-            keywords
-        )
+        confidence = self.router._calculate_confidence("javascript frontend", keywords)
 
         self.assertEqual(confidence, 0.0)
 
     def test_calculate_confidence_empty_keywords(self):
         """Should handle empty keywords."""
-        confidence = self.router._calculate_confidence(
-            "some task",
-            []
-        )
+        confidence = self.router._calculate_confidence("some task", [])
 
         self.assertEqual(confidence, 0.0)
 
@@ -290,9 +252,7 @@ class TestAnalyzeTaskComplexity(unittest.TestCase):
 
     def test_analyze_simple_task(self):
         """Should identify simple tasks."""
-        analysis = self.router.analyze_task_complexity(
-            "Fix bug in login function"
-        )
+        analysis = self.router.analyze_task_complexity("Fix bug in login function")
 
         self.assertEqual(analysis["complexity"], "simple")
         self.assertEqual(analysis["estimated_agents"], 1)
@@ -330,9 +290,7 @@ class TestAnalyzeTaskComplexity(unittest.TestCase):
 
     def test_analyze_includes_recommendations(self):
         """Analysis should include agent recommendations."""
-        analysis = self.router.analyze_task_complexity(
-            "Build React application"
-        )
+        analysis = self.router.analyze_task_complexity("Build React application")
 
         self.assertIn("recommendations", analysis)
         self.assertIsInstance(analysis["recommendations"], list)
@@ -354,7 +312,7 @@ class TestGetInstallationPlan(unittest.TestCase):
                 agent_name="Test 1",
                 confidence=0.9,
                 source="builtin",
-                installed=True
+                installed=True,
             )
         ]
 
@@ -374,7 +332,7 @@ class TestGetInstallationPlan(unittest.TestCase):
                 confidence=0.9,
                 source="marketplace",
                 installed=True,
-                plugin_id="test-plugin"
+                plugin_id="test-plugin",
             )
         ]
 
@@ -393,7 +351,7 @@ class TestGetInstallationPlan(unittest.TestCase):
                 confidence=0.9,
                 source="marketplace",
                 installed=False,
-                plugin_id="test-plugin"
+                plugin_id="test-plugin",
             )
         ]
 
@@ -408,7 +366,7 @@ class TestGetInstallationPlan(unittest.TestCase):
         matches = [
             AgentMatch("a1", "A1", 0.9, "builtin", True),
             AgentMatch("a2", "A2", 0.8, "marketplace", True, plugin_id="p1"),
-            AgentMatch("a3", "A3", 0.7, "marketplace", False, plugin_id="p2")
+            AgentMatch("a3", "A3", 0.7, "marketplace", False, plugin_id="p2"),
         ]
 
         plan = self.router.get_installation_plan(matches)
@@ -424,7 +382,7 @@ class TestGetInstallationPlan(unittest.TestCase):
 class TestMarketplaceIntegration(unittest.TestCase):
     """Test marketplace integration."""
 
-    @patch('claude_force.marketplace.get_marketplace_manager')
+    @patch("claude_force.marketplace.get_marketplace_manager")
     def test_marketplace_lazy_loading(self, mock_get_marketplace):
         """Marketplace should be lazy loaded."""
         mock_marketplace = Mock()
@@ -445,10 +403,7 @@ class TestMarketplaceIntegration(unittest.TestCase):
         """Should work without marketplace."""
         router = AgentRouter(include_marketplace=False)
 
-        matches = router.recommend_agents(
-            task="Build something",
-            include_marketplace=False
-        )
+        matches = router.recommend_agents(task="Build something", include_marketplace=False)
 
         # Should still get builtin recommendations
         self.assertIsInstance(matches, list)

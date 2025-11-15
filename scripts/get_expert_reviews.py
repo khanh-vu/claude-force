@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from claude_force.orchestrator import AgentOrchestrator
 
+
 def main():
     orchestrator = AgentOrchestrator()
 
@@ -19,7 +20,10 @@ def main():
         plan_content = f.read()
 
     # Truncate for summary (first 15000 chars to fit in context)
-    plan_summary = plan_content[:15000] + "\n\n[... document continues with implementation details, testing strategy, and appendices ...]"
+    plan_summary = (
+        plan_content[:15000]
+        + "\n\n[... document continues with implementation details, testing strategy, and appendices ...]"
+    )
 
     reviews = {}
 
@@ -76,12 +80,12 @@ Provide:
 
     try:
         result1 = orchestrator.run_agent("claude-code-expert", claude_expert_task)
-        review1 = result1.output if hasattr(result1, 'output') else str(result1)
-        reviews['claude-code-expert'] = review1
+        review1 = result1.output if hasattr(result1, "output") else str(result1)
+        reviews["claude-code-expert"] = review1
         print("\n" + review1 + "\n")
     except Exception as e:
         print(f"Error getting claude-code-expert review: {e}")
-        reviews['claude-code-expert'] = f"ERROR: {e}"
+        reviews["claude-code-expert"] = f"ERROR: {e}"
 
     print("\n" + "=" * 80)
     print("Getting code-reviewer review...")
@@ -141,12 +145,12 @@ Provide specific code review feedback with:
 
     try:
         result2 = orchestrator.run_agent("code-reviewer", code_reviewer_task)
-        review2 = result2.output if hasattr(result2, 'output') else str(result2)
-        reviews['code-reviewer'] = review2
+        review2 = result2.output if hasattr(result2, "output") else str(result2)
+        reviews["code-reviewer"] = review2
         print("\n" + review2 + "\n")
     except Exception as e:
         print(f"Error getting code-reviewer review: {e}")
-        reviews['code-reviewer'] = f"ERROR: {e}"
+        reviews["code-reviewer"] = f"ERROR: {e}"
 
     print("\n" + "=" * 80)
     print("Getting python-expert review...")
@@ -212,17 +216,17 @@ Provide Python-specific feedback:
 
     try:
         result3 = orchestrator.run_agent("python-expert", python_expert_task)
-        review3 = result3.output if hasattr(result3, 'output') else str(result3)
-        reviews['python-expert'] = review3
+        review3 = result3.output if hasattr(result3, "output") else str(result3)
+        reviews["python-expert"] = review3
         print("\n" + review3 + "\n")
     except Exception as e:
         print(f"Error getting python-expert review: {e}")
-        reviews['python-expert'] = f"ERROR: {e}"
+        reviews["python-expert"] = f"ERROR: {e}"
 
     # Save reviews to file
     output_path = Path(__file__).parent.parent / "docs" / "performance-optimization-reviews.md"
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write("# Performance Optimization Plan - Expert Reviews\n\n")
         f.write("**Date:** 2025-11-14\n")
         f.write("**Reviewers:** claude-code-expert, code-reviewer, python-expert\n\n")
@@ -230,25 +234,28 @@ Provide Python-specific feedback:
 
         f.write("## 1. Claude Code Expert Review\n\n")
         f.write("**Focus:** Architecture, Design Patterns, System Design\n\n")
-        f.write(reviews.get('claude-code-expert', 'No review available') + "\n\n")
+        f.write(reviews.get("claude-code-expert", "No review available") + "\n\n")
         f.write("---\n\n")
 
         f.write("## 2. Code Reviewer Review\n\n")
         f.write("**Focus:** Code Quality, Bugs, Security, Testing\n\n")
-        f.write(reviews.get('code-reviewer', 'No review available') + "\n\n")
+        f.write(reviews.get("code-reviewer", "No review available") + "\n\n")
         f.write("---\n\n")
 
         f.write("## 3. Python Expert Review\n\n")
         f.write("**Focus:** Python Best Practices, AsyncIO, Performance\n\n")
-        f.write(reviews.get('python-expert', 'No review available') + "\n\n")
+        f.write(reviews.get("python-expert", "No review available") + "\n\n")
         f.write("---\n\n")
 
         f.write("## Summary\n\n")
-        f.write("All three expert reviews have been completed. See sections above for detailed feedback.\n")
+        f.write(
+            "All three expert reviews have been completed. See sections above for detailed feedback.\n"
+        )
 
     print(f"\n✅ Reviews saved to: {output_path}")
 
     return reviews
+
 
 if __name__ == "__main__":
     main()

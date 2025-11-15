@@ -6,6 +6,7 @@ to validate end-to-end performance improvements.
 
 Run with: pytest tests/test_performance_integration.py -v -s
 """
+
 import pytest
 import asyncio
 import time
@@ -22,6 +23,7 @@ from claude_force.response_cache import ResponseCache
 # Integration Test: Async + Cache
 # ============================================================================
 
+
 @pytest.mark.asyncio
 @pytest.mark.integration
 async def test_cache_speedup_integration(tmp_path):
@@ -29,11 +31,7 @@ async def test_cache_speedup_integration(tmp_path):
     Integration Test: Verify cache provides expected speedup
     Target: 40-200x faster for cached responses
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        ttl_hours=24,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", ttl_hours=24, cache_secret="test_secret")
     orchestrator = AsyncAgentOrchestrator(max_concurrent=10)
 
     # Mock API with realistic delay (2s)
@@ -49,8 +47,8 @@ async def test_cache_speedup_integration(tmp_path):
     task = "What are decorators in Python?"
     model = "claude-3-5-sonnet-20241022"
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', slow_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", slow_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # First call - cache miss (slow)
             start = time.time()
             result1 = await orchestrator.execute_agent(agent_name, task)
@@ -64,9 +62,9 @@ async def test_cache_speedup_integration(tmp_path):
                 task,
                 model,
                 result1.output,
-                result1.metadata['input_tokens'],
-                result1.metadata['output_tokens'],
-                0.001
+                result1.metadata["input_tokens"],
+                result1.metadata["output_tokens"],
+                0.001,
             )
 
     # Second call - cache hit (fast)
@@ -75,7 +73,7 @@ async def test_cache_speedup_integration(tmp_path):
     cached_time = time.time() - start
 
     assert cached_result is not None
-    assert cached_result['cached'] is True
+    assert cached_result["cached"] is True
 
     speedup = uncached_time / cached_time
 
@@ -96,11 +94,7 @@ async def test_concurrent_with_partial_cache(tmp_path):
     Integration Test: Concurrent execution with partial cache hits
     Validates that caching improves overall workflow performance
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        ttl_hours=24,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", ttl_hours=24, cache_secret="test_secret")
     orchestrator = AsyncAgentOrchestrator(max_concurrent=10)
 
     # Mock API with delay
@@ -120,8 +114,8 @@ async def test_concurrent_with_partial_cache(tmp_path):
         ("python-expert", "task2"),  # Duplicate - cache hit
     ]
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', api_with_delay):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", api_with_delay):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # First run - all cache misses
             start = time.time()
             results1 = await orchestrator.execute_multiple(tasks)
@@ -138,9 +132,9 @@ async def test_concurrent_with_partial_cache(tmp_path):
                     task,
                     "claude-3-5-sonnet-20241022",
                     result.output,
-                    result.metadata['input_tokens'],
-                    result.metadata['output_tokens'],
-                    0.001
+                    result.metadata["input_tokens"],
+                    result.metadata["output_tokens"],
+                    0.001,
                 )
 
     # Second run - check cache first
@@ -157,8 +151,8 @@ async def test_concurrent_with_partial_cache(tmp_path):
 
     # Make API calls for cache misses only
     if api_calls_needed:
-        with mock.patch.object(orchestrator, '_call_api_with_retry', api_with_delay):
-            with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "_call_api_with_retry", api_with_delay):
+            with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
                 results2 = await orchestrator.execute_multiple(api_calls_needed)
 
     second_run_time = time.time() - start
@@ -184,11 +178,7 @@ async def test_realistic_workflow_with_cache(tmp_path):
     Integration Test: Realistic multi-agent workflow with caching
     Simulates a typical usage pattern over multiple runs
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        ttl_hours=24,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", ttl_hours=24, cache_secret="test_secret")
     orchestrator = AsyncAgentOrchestrator(max_concurrent=5)
 
     async def api_call(*args, **kwargs):
@@ -203,14 +193,14 @@ async def test_realistic_workflow_with_cache(tmp_path):
     workflow = [
         ("python-expert", "Analyze this code"),
         ("code-reviewer", "Review the analysis"),
-        ("bug-investigator", "Check for bugs")
+        ("bug-investigator", "Check for bugs"),
     ]
 
     run_times = []
     cache_stats_per_run = []
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', api_call):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", api_call):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # Run workflow 5 times (simulating multiple similar tasks)
             for run in range(5):
                 start = time.time()
@@ -230,28 +220,32 @@ async def test_realistic_workflow_with_cache(tmp_path):
                             task,
                             "claude-3-5-sonnet-20241022",
                             result.output,
-                            result.metadata['input_tokens'],
-                            result.metadata['output_tokens'],
-                            0.001
+                            result.metadata["input_tokens"],
+                            result.metadata["output_tokens"],
+                            0.001,
                         )
 
                 run_time = time.time() - start
                 run_times.append(run_time)
 
                 stats = cache.get_stats()
-                cache_stats_per_run.append({
-                    'run': run + 1,
-                    'time': run_time,
-                    'hit_rate': stats['hit_rate'],
-                    'entries': stats['entries']
-                })
+                cache_stats_per_run.append(
+                    {
+                        "run": run + 1,
+                        "time": run_time,
+                        "hit_rate": stats["hit_rate"],
+                        "entries": stats["entries"],
+                    }
+                )
 
     print(f"\n✓ Realistic Workflow with Cache:")
     print(f"{'Run':>4} | {'Time':>8} | {'Hit Rate':>10} | {'Entries':>8}")
     print(f"{'-' * 45}")
 
     for stats in cache_stats_per_run:
-        print(f"{stats['run']:>4} | {stats['time']*1000:>7.0f}ms | {stats['hit_rate']:>10} | {stats['entries']:>8}")
+        print(
+            f"{stats['run']:>4} | {stats['time']*1000:>7.0f}ms | {stats['hit_rate']:>10} | {stats['entries']:>8}"
+        )
 
     # Verify progressive improvement
     first_run = run_times[0]
@@ -286,8 +280,8 @@ async def test_cache_persistence_integration(tmp_path):
         mock_response.model = "claude-3-5-sonnet-20241022"
         return mock_response
 
-    with mock.patch.object(orchestrator1, '_call_api_with_retry', api_call):
-        with mock.patch.object(orchestrator1, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator1, "_call_api_with_retry", api_call):
+        with mock.patch.object(orchestrator1, "load_agent_definition", return_value="Agent def"):
             # Make call and cache
             result = await orchestrator1.execute_agent("python-expert", "persistent task")
             assert result.success
@@ -297,9 +291,9 @@ async def test_cache_persistence_integration(tmp_path):
                 "persistent task",
                 "claude-3-5-sonnet-20241022",
                 result.output,
-                result.metadata['input_tokens'],
-                result.metadata['output_tokens'],
-                0.001
+                result.metadata["input_tokens"],
+                result.metadata["output_tokens"],
+                0.001,
             )
 
     # New session (simulating restart)
@@ -309,8 +303,8 @@ async def test_cache_persistence_integration(tmp_path):
     cached = cache2.get("python-expert", "persistent task", "claude-3-5-sonnet-20241022")
 
     assert cached is not None
-    assert cached['response'] == "Persistent response"
-    assert cached['cached'] is True
+    assert cached["response"] == "Persistent response"
+    assert cached["cached"] is True
 
     print(f"\n✓ Cache Persistence:")
     print(f"  Cache directory: {cache_dir}")
@@ -324,10 +318,7 @@ async def test_error_handling_with_cache(tmp_path):
     """
     Integration Test: Error handling doesn't corrupt cache
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", cache_secret="test_secret")
     orchestrator = AsyncAgentOrchestrator(max_concurrent=10)
 
     call_count = [0]
@@ -343,8 +334,8 @@ async def test_error_handling_with_cache(tmp_path):
         mock_response.model = "claude-3-5-sonnet-20241022"
         return mock_response
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', flaky_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", flaky_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # First call fails then succeeds with retry
             result = await orchestrator.execute_agent("python-expert", "error test")
 
@@ -355,9 +346,9 @@ async def test_error_handling_with_cache(tmp_path):
                     "error test",
                     "claude-3-5-sonnet-20241022",
                     result.output,
-                    result.metadata['input_tokens'],
-                    result.metadata['output_tokens'],
-                    0.001
+                    result.metadata["input_tokens"],
+                    result.metadata["output_tokens"],
+                    0.001,
                 )
 
     # Verify cache integrity
@@ -370,13 +361,14 @@ async def test_error_handling_with_cache(tmp_path):
     print(f"  Cache integrity: OK (failures: {stats['integrity_failures']})")
     print(f"  Cached after retry: {'Yes' if cached else 'No'}")
 
-    assert stats['integrity_failures'] == 0
+    assert stats["integrity_failures"] == 0
     assert cached is not None or not result.success
 
 
 # ============================================================================
 # Performance Comparison Tests
 # ============================================================================
+
 
 @pytest.mark.asyncio
 @pytest.mark.integration
@@ -387,10 +379,7 @@ async def test_sequential_vs_concurrent_vs_cached(tmp_path):
     2. Concurrent execution (async benefit)
     3. Cached execution (cache benefit)
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", cache_secret="test_secret")
     orchestrator = AsyncAgentOrchestrator(max_concurrent=10)
 
     async def api_call(*args, **kwargs):
@@ -404,11 +393,11 @@ async def test_sequential_vs_concurrent_vs_cached(tmp_path):
     tasks: List[Tuple[str, str]] = [
         ("python-expert", "task1"),
         ("python-expert", "task2"),
-        ("python-expert", "task3")
+        ("python-expert", "task3"),
     ]
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', api_call):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", api_call):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # 1. Sequential execution
             start = time.time()
             sequential_results = []
@@ -430,9 +419,9 @@ async def test_sequential_vs_concurrent_vs_cached(tmp_path):
                     task,
                     "claude-3-5-sonnet-20241022",
                     result.output,
-                    result.metadata['input_tokens'],
-                    result.metadata['output_tokens'],
-                    0.001
+                    result.metadata["input_tokens"],
+                    result.metadata["output_tokens"],
+                    0.001,
                 )
 
     # 3. Cached execution
@@ -464,6 +453,7 @@ async def test_sequential_vs_concurrent_vs_cached(tmp_path):
 # ============================================================================
 # Integration Test Summary
 # ============================================================================
+
 
 @pytest.mark.integration
 def test_integration_summary():

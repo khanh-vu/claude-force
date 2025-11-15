@@ -15,6 +15,7 @@ from dataclasses import dataclass, asdict
 @dataclass
 class AgentSelectionMetric:
     """Metrics for a single agent selection"""
+
     task_description: str
     expected_agents: List[str]
     selected_agents: List[str]
@@ -137,7 +138,7 @@ class AgentSelectionBenchmark:
                 selected_agents=selected,
                 selection_time_ms=selection_time,
                 accuracy=accuracy,
-                timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
+                timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
             )
 
             self.results.append(metric)
@@ -180,7 +181,7 @@ class AgentSelectionBenchmark:
                 "normal (1-10ms)": sum(1 for r in self.results if 1 <= r.selection_time_ms < 10),
                 "slow (>= 10ms)": sum(1 for r in self.results if r.selection_time_ms >= 10),
             },
-            "detailed_results": [asdict(r) for r in self.results]
+            "detailed_results": [asdict(r) for r in self.results],
         }
 
         return report
@@ -191,7 +192,7 @@ class AgentSelectionBenchmark:
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(report, f, indent=2)
 
         print(f"\n📊 Report saved to: {output_path}")
@@ -205,56 +206,59 @@ def get_test_cases() -> List[Dict]:
         {
             "description": "Add a health check endpoint to the API",
             "category": "backend",
-            "expected_agents": ["backend-architect"]
+            "expected_agents": ["backend-architect"],
         },
         {
             "description": "Fix bug in email validation that rejects valid emails with plus signs",
             "category": "bug-fix",
-            "expected_agents": ["bug-investigator", "code-reviewer"]
+            "expected_agents": ["bug-investigator", "code-reviewer"],
         },
         {
             "description": "Update API documentation for new /health endpoint",
             "category": "documentation",
-            "expected_agents": ["api-documenter", "document-writer-expert"]
+            "expected_agents": ["api-documenter", "document-writer-expert"],
         },
-
         # Medium tasks
         {
             "description": "Implement JWT-based user authentication with registration and login",
             "category": "backend",
-            "expected_agents": ["backend-architect", "database-architect", "security-specialist"]
+            "expected_agents": ["backend-architect", "database-architect", "security-specialist"],
         },
         {
             "description": "Create a React component for user profile with form validation",
             "category": "frontend",
-            "expected_agents": ["frontend-architect", "ui-components-expert", "frontend-developer"]
+            "expected_agents": ["frontend-architect", "ui-components-expert", "frontend-developer"],
         },
         {
             "description": "Add database schema for orders with relationships to users and products",
             "category": "database",
-            "expected_agents": ["database-architect"]
+            "expected_agents": ["database-architect"],
         },
-
         # Complex tasks
         {
             "description": "Build a complete user authentication system with frontend, backend, database, and security review",
             "category": "full-stack",
-            "expected_agents": ["frontend-architect", "backend-architect", "database-architect", "security-specialist"]
+            "expected_agents": [
+                "frontend-architect",
+                "backend-architect",
+                "database-architect",
+                "security-specialist",
+            ],
         },
         {
             "description": "Create Dockerfile for production deployment with multi-stage build and security hardening",
             "category": "devops",
-            "expected_agents": ["devops-architect", "security-specialist"]
+            "expected_agents": ["devops-architect", "security-specialist"],
         },
         {
             "description": "Review pull request for security vulnerabilities, code quality, and test coverage",
             "category": "code-review",
-            "expected_agents": ["code-reviewer", "security-specialist"]
+            "expected_agents": ["code-reviewer", "security-specialist"],
         },
         {
             "description": "Investigate production bug causing intermittent 500 errors in payment processing",
             "category": "bug-fix",
-            "expected_agents": ["bug-investigator", "backend-architect", "code-reviewer"]
+            "expected_agents": ["bug-investigator", "backend-architect", "code-reviewer"],
         },
     ]
 
@@ -280,10 +284,10 @@ def main():
     print(f"Average Accuracy: {report['summary']['average_accuracy']:.2%}")
     print(f"Average Selection Time: {report['summary']['average_selection_time_ms']:.2f}ms")
     print(f"\nAccuracy Distribution:")
-    for tier, count in report['accuracy_distribution'].items():
+    for tier, count in report["accuracy_distribution"].items():
         print(f"  {tier}: {count} tests")
     print(f"\nPerformance Tiers:")
-    for tier, count in report['performance_tiers'].items():
+    for tier, count in report["performance_tiers"].items():
         print(f"  {tier}: {count} tests")
     print("=" * 70)
 

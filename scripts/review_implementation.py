@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from claude_force.orchestrator import AgentOrchestrator
 
+
 def main():
     orchestrator = AgentOrchestrator()
 
@@ -81,12 +82,12 @@ Provide rating (1-5 stars) and recommendation: APPROVE / APPROVE WITH CHANGES / 
 
     try:
         result1 = orchestrator.run_agent("claude-code-expert", claude_expert_task)
-        review1 = result1.output if hasattr(result1, 'output') else str(result1)
-        reviews['claude-code-expert'] = review1
+        review1 = result1.output if hasattr(result1, "output") else str(result1)
+        reviews["claude-code-expert"] = review1
         print("\n" + review1 + "\n")
     except Exception as e:
         print(f"Error getting claude-code-expert review: {e}")
-        reviews['claude-code-expert'] = f"ERROR: {e}"
+        reviews["claude-code-expert"] = f"ERROR: {e}"
 
     # 2. Code Reviewer Review
     print("\n" + "=" * 80)
@@ -139,12 +140,12 @@ Provide: BUG COUNT, SECURITY ISSUES, and recommendation: APPROVE / FIX REQUIRED 
 
     try:
         result2 = orchestrator.run_agent("code-reviewer", code_reviewer_task)
-        review2 = result2.output if hasattr(result2, 'output') else str(result2)
-        reviews['code-reviewer'] = review2
+        review2 = result2.output if hasattr(result2, "output") else str(result2)
+        reviews["code-reviewer"] = review2
         print("\n" + review2 + "\n")
     except Exception as e:
         print(f"Error getting code-reviewer review: {e}")
-        reviews['code-reviewer'] = f"ERROR: {e}"
+        reviews["code-reviewer"] = f"ERROR: {e}"
 
     # 3. Python Expert Review
     print("\n" + "=" * 80)
@@ -195,17 +196,17 @@ Rate code quality (1-5 stars) and provide: PYTHONIC SCORE, recommendation: APPRO
 
     try:
         result3 = orchestrator.run_agent("python-expert", python_expert_task)
-        review3 = result3.output if hasattr(result3, 'output') else str(result3)
-        reviews['python-expert'] = review3
+        review3 = result3.output if hasattr(result3, "output") else str(result3)
+        reviews["python-expert"] = review3
         print("\n" + review3 + "\n")
     except Exception as e:
         print(f"Error getting python-expert review: {e}")
-        reviews['python-expert'] = f"ERROR: {e}"
+        reviews["python-expert"] = f"ERROR: {e}"
 
     # Save reviews to file
     output_path = Path(__file__).parent.parent / "docs" / "performance-implementation-reviews.md"
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write("# Performance Optimization Implementation - Expert Reviews\n\n")
         f.write("**Date:** 2025-11-14\n")
         f.write("**Code Reviewed:** async_orchestrator.py, response_cache.py\n")
@@ -214,17 +215,17 @@ Rate code quality (1-5 stars) and provide: PYTHONIC SCORE, recommendation: APPRO
 
         f.write("## 1. Architecture & Design Review (claude-code-expert)\n\n")
         f.write("**Focus:** Architecture quality, design patterns, implementation completeness\n\n")
-        f.write(reviews.get('claude-code-expert', 'No review available') + "\n\n")
+        f.write(reviews.get("claude-code-expert", "No review available") + "\n\n")
         f.write("---\n\n")
 
         f.write("## 2. Code Quality & Security Review (code-reviewer)\n\n")
         f.write("**Focus:** Bugs, security vulnerabilities, edge cases\n\n")
-        f.write(reviews.get('code-reviewer', 'No review available') + "\n\n")
+        f.write(reviews.get("code-reviewer", "No review available") + "\n\n")
         f.write("---\n\n")
 
         f.write("## 3. Python Implementation Review (python-expert)\n\n")
         f.write("**Focus:** AsyncIO correctness, Python best practices, performance\n\n")
-        f.write(reviews.get('python-expert', 'No review available') + "\n\n")
+        f.write(reviews.get("python-expert", "No review available") + "\n\n")
         f.write("---\n\n")
 
         f.write("## Summary\n\n")
@@ -234,6 +235,7 @@ Rate code quality (1-5 stars) and provide: PYTHONIC SCORE, recommendation: APPRO
     print(f"\n✅ Implementation reviews saved to: {output_path}")
 
     return reviews
+
 
 if __name__ == "__main__":
     main()

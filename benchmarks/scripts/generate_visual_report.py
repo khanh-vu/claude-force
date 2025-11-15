@@ -51,7 +51,9 @@ def print_metric_box(label: str, value: str, unit: str = ""):
     print(f"└{'─' * 30}┘")
 
 
-def generate_visual_report(results_path: str = "benchmarks/reports/results/complete_benchmark.json"):
+def generate_visual_report(
+    results_path: str = "benchmarks/reports/results/complete_benchmark.json",
+):
     """Generate beautiful ASCII visual report"""
 
     results_file = Path(results_path)
@@ -90,8 +92,12 @@ def generate_visual_report(results_path: str = "benchmarks/reports/results/compl
 
     print("┌─────────────────────────────────────────────────────────────────────────┐")
     print("│                                                                         │")
-    print(f"│    Agents Configured: {system_info.get('agents_configured', 0):>3}          Workflows: {system_info.get('workflows_configured', 0):>2}                    │")
-    print(f"│    Skills Available:  {system_info.get('skills_available', 0):>3}          Scenarios: {scenarios.get('total', 0):>2}                    │")
+    print(
+        f"│    Agents Configured: {system_info.get('agents_configured', 0):>3}          Workflows: {system_info.get('workflows_configured', 0):>2}                    │"
+    )
+    print(
+        f"│    Skills Available:  {system_info.get('skills_available', 0):>3}          Scenarios: {scenarios.get('total', 0):>2}                    │"
+    )
     print("│                                                                         │")
     print("└─────────────────────────────────────────────────────────────────────────┘")
 
@@ -140,11 +146,19 @@ def generate_visual_report(results_path: str = "benchmarks/reports/results/compl
     print("┌──────────────┬────────┬─────────────────────────────────────────────────┐")
     print("│ Difficulty   │ Count  │ Description                                     │")
     print("├──────────────┼────────┼─────────────────────────────────────────────────┤")
-    print(f"│ Simple       │   {scenarios.get('simple', 0):>2}   │ 1-2 agents, basic tasks (5-10 min)             │")
-    print(f"│ Medium       │   {scenarios.get('medium', 0):>2}   │ 3-5 agents, multi-step features (15-25 min)    │")
-    print(f"│ Complex      │   {scenarios.get('complex', 0):>2}   │ 6+ agents, full-stack apps (30+ min)           │")
+    print(
+        f"│ Simple       │   {scenarios.get('simple', 0):>2}   │ 1-2 agents, basic tasks (5-10 min)             │"
+    )
+    print(
+        f"│ Medium       │   {scenarios.get('medium', 0):>2}   │ 3-5 agents, multi-step features (15-25 min)    │"
+    )
+    print(
+        f"│ Complex      │   {scenarios.get('complex', 0):>2}   │ 6+ agents, full-stack apps (30+ min)           │"
+    )
     print("├──────────────┼────────┼─────────────────────────────────────────────────┤")
-    print(f"│ TOTAL        │   {scenarios.get('total', 0):>2}   │                                                 │")
+    print(
+        f"│ TOTAL        │   {scenarios.get('total', 0):>2}   │                                                 │"
+    )
     print("└──────────────┴────────┴─────────────────────────────────────────────────┘")
 
     # Scenario Breakdown
@@ -158,11 +172,15 @@ def generate_visual_report(results_path: str = "benchmarks/reports/results/compl
             scenarios_list = scenarios_data.get(difficulty, [])
             if scenarios_list:
                 emoji = "🟢" if difficulty == "simple" else "🟡" if difficulty == "medium" else "🔴"
-                print(f"│                                                                         │")
-                print(f"│ {emoji} {difficulty.upper()}:                                                       │")
+                print(
+                    f"│                                                                         │"
+                )
+                print(
+                    f"│ {emoji} {difficulty.upper()}:                                                       │"
+                )
                 for scenario in scenarios_list:
-                    name = scenario['name'].replace('_', ' ').replace('-', ' ').title()
-                    status = "✓" if scenario['status'] == 'available' else "○"
+                    name = scenario["name"].replace("_", " ").replace("-", " ").title()
+                    status = "✓" if scenario["status"] == "available" else "○"
                     print(f"│   {status} {name[:65]:65} │")
 
         print("└─────────────────────────────────────────────────────────────────────────┘")
@@ -205,6 +223,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Fatal error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

@@ -62,11 +62,11 @@ Provide:
     try:
         print("🔄 Running code-reviewer agent...")
         result = orchestrator.run_agent(
-            agent_name='code-reviewer',
+            agent_name="code-reviewer",
             task=task,
-            model='claude-3-5-sonnet-20241022',
+            model="claude-3-5-sonnet-20241022",
             max_tokens=4096,
-            temperature=0.3
+            temperature=0.3,
         )
 
         if result.success:
@@ -94,6 +94,7 @@ Provide:
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

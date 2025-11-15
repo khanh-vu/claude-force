@@ -9,6 +9,7 @@ import time
 import requests
 from typing import Optional, Dict, Any
 
+
 class ClaudeForceClient:
     """Client for Claude-Force REST API"""
 
@@ -21,10 +22,7 @@ class ClaudeForceClient:
             api_key: API key for authentication
         """
         self.base_url = base_url.rstrip("/")
-        self.headers = {
-            "X-API-Key": api_key,
-            "Content-Type": "application/json"
-        }
+        self.headers = {"X-API-Key": api_key, "Content-Type": "application/json"}
 
     def health_check(self) -> Dict[str, Any]:
         """Check API health"""
@@ -34,28 +32,16 @@ class ClaudeForceClient:
 
     def list_agents(self) -> Dict[str, Any]:
         """List all available agents"""
-        response = requests.get(
-            f"{self.base_url}/agents",
-            headers=self.headers
-        )
+        response = requests.get(f"{self.base_url}/agents", headers=self.headers)
         response.raise_for_status()
         return response.json()
 
-    def recommend_agents(
-        self,
-        task: str,
-        top_k: int = 3,
-        min_confidence: float = 0.3
-    ) -> list:
+    def recommend_agents(self, task: str, top_k: int = 3, min_confidence: float = 0.3) -> list:
         """Get agent recommendations for a task"""
         response = requests.post(
             f"{self.base_url}/agents/recommend",
             headers=self.headers,
-            json={
-                "task": task,
-                "top_k": top_k,
-                "min_confidence": min_confidence
-            }
+            json={"task": task, "top_k": top_k, "min_confidence": min_confidence},
         )
         response.raise_for_status()
         return response.json()
@@ -66,7 +52,7 @@ class ClaudeForceClient:
         task: str,
         model: str = "claude-3-5-sonnet-20241022",
         max_tokens: int = 4096,
-        temperature: float = 1.0
+        temperature: float = 1.0,
     ) -> Dict[str, Any]:
         """Run an agent synchronously (waits for completion)"""
         response = requests.post(
@@ -77,8 +63,8 @@ class ClaudeForceClient:
                 "task": task,
                 "model": model,
                 "max_tokens": max_tokens,
-                "temperature": temperature
-            }
+                "temperature": temperature,
+            },
         )
         response.raise_for_status()
         return response.json()
@@ -89,7 +75,7 @@ class ClaudeForceClient:
         task: str,
         model: str = "claude-3-5-sonnet-20241022",
         max_tokens: int = 4096,
-        temperature: float = 1.0
+        temperature: float = 1.0,
     ) -> str:
         """
         Run an agent asynchronously (returns immediately)
@@ -105,26 +91,20 @@ class ClaudeForceClient:
                 "task": task,
                 "model": model,
                 "max_tokens": max_tokens,
-                "temperature": temperature
-            }
+                "temperature": temperature,
+            },
         )
         response.raise_for_status()
         return response.json()["task_id"]
 
     def get_task_status(self, task_id: str) -> Dict[str, Any]:
         """Get the status of an async task"""
-        response = requests.get(
-            f"{self.base_url}/tasks/{task_id}",
-            headers=self.headers
-        )
+        response = requests.get(f"{self.base_url}/tasks/{task_id}", headers=self.headers)
         response.raise_for_status()
         return response.json()
 
     def wait_for_task(
-        self,
-        task_id: str,
-        poll_interval: float = 2.0,
-        timeout: float = 300.0
+        self, task_id: str, poll_interval: float = 2.0, timeout: float = 300.0
     ) -> Dict[str, Any]:
         """
         Wait for an async task to complete
@@ -154,20 +134,13 @@ class ClaudeForceClient:
             time.sleep(poll_interval)
 
     def run_workflow(
-        self,
-        workflow_name: str,
-        task: str,
-        model: str = "claude-3-5-sonnet-20241022"
+        self, workflow_name: str, task: str, model: str = "claude-3-5-sonnet-20241022"
     ) -> Dict[str, Any]:
         """Run a multi-agent workflow"""
         response = requests.post(
             f"{self.base_url}/workflows/run",
             headers=self.headers,
-            json={
-                "workflow_name": workflow_name,
-                "task": task,
-                "model": model
-            }
+            json={"workflow_name": workflow_name, "task": task, "model": model},
         )
         response.raise_for_status()
         return response.json()
@@ -176,9 +149,7 @@ class ClaudeForceClient:
         """Get performance metrics summary"""
         params = {"hours": hours} if hours else {}
         response = requests.get(
-            f"{self.base_url}/metrics/summary",
-            headers=self.headers,
-            params=params
+            f"{self.base_url}/metrics/summary", headers=self.headers, params=params
         )
         response.raise_for_status()
         return response.json()
@@ -187,19 +158,14 @@ class ClaudeForceClient:
         """Get per-agent performance metrics"""
         params = {"agent_name": agent_name} if agent_name else {}
         response = requests.get(
-            f"{self.base_url}/metrics/agents",
-            headers=self.headers,
-            params=params
+            f"{self.base_url}/metrics/agents", headers=self.headers, params=params
         )
         response.raise_for_status()
         return response.json()
 
     def get_cost_breakdown(self) -> Dict[str, Any]:
         """Get cost breakdown"""
-        response = requests.get(
-            f"{self.base_url}/metrics/costs",
-            headers=self.headers
-        )
+        response = requests.get(f"{self.base_url}/metrics/costs", headers=self.headers)
         response.raise_for_status()
         return response.json()
 
@@ -211,10 +177,7 @@ def main():
     print("=" * 70 + "\n")
 
     # Initialize client
-    client = ClaudeForceClient(
-        base_url="http://localhost:8000",
-        api_key="dev-key-12345"
-    )
+    client = ClaudeForceClient(base_url="http://localhost:8000", api_key="dev-key-12345")
 
     # 1. Health check
     print("1. Health Check")
@@ -229,7 +192,7 @@ def main():
     print("-" * 70)
     agents = client.list_agents()
     print(f"Found {agents['count']} agents:")
-    for agent in agents['agents'][:5]:
+    for agent in agents["agents"][:5]:
         print(f"  - {agent}")
     print()
 
@@ -241,7 +204,7 @@ def main():
 
     recommendations = client.recommend_agents(task, top_k=3)
     for rec in recommendations:
-        confidence = rec['confidence'] * 100
+        confidence = rec["confidence"] * 100
         print(f"  {rec['agent']}: {confidence:.1f}% confidence")
         print(f"    Reasoning: {rec['reasoning'][:80]}...")
     print()
@@ -254,7 +217,7 @@ def main():
     result = client.run_agent_sync(
         agent_name="code-reviewer",
         task="Review this code:\ndef login(user, pwd): return user == 'admin'",
-        model="claude-3-5-sonnet-20241022"
+        model="claude-3-5-sonnet-20241022",
     )
 
     print(f"Success: {result['success']}")
@@ -269,7 +232,7 @@ def main():
 
     task_id = client.run_agent_async(
         agent_name="bug-investigator",
-        task="Investigate: Users getting 500 errors on /api/users endpoint"
+        task="Investigate: Users getting 500 errors on /api/users endpoint",
     )
 
     print(f"Task ID: {task_id}")
@@ -280,7 +243,7 @@ def main():
     result = client.wait_for_task(task_id, poll_interval=2.0, timeout=60.0)
 
     print(f"Status: {result['status']}")
-    if result['result']:
+    if result["result"]:
         print(f"Success: {result['result']['success']}")
         print(f"Output: {result['result']['output'][:200]}...")
     print()
@@ -292,8 +255,7 @@ def main():
 
     try:
         workflow_result = client.run_workflow(
-            workflow_name="code-quality-gate",
-            task="Review and test the authentication module"
+            workflow_name="code-quality-gate", task="Review and test the authentication module"
         )
 
         print(f"Success: {workflow_result['success']}")
@@ -323,9 +285,9 @@ def main():
     print("-" * 70)
 
     for agent, data in list(agent_metrics.items())[:5]:
-        runs = data.get('executions', 0)
-        success_rate = data.get('success_rate', 0)
-        cost = data.get('total_cost', 0)
+        runs = data.get("executions", 0)
+        success_rate = data.get("success_rate", 0)
+        cost = data.get("total_cost", 0)
         print(f"{agent:<30} {runs:>8} {success_rate:>9.1%} ${cost:>10.4f}")
     print()
 

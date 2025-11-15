@@ -50,8 +50,10 @@ logger = logging.getLogger(__name__)
 # Configuration
 # ==============================================================================
 
+
 class Config:
     """Server configuration"""
+
     API_KEYS = os.getenv("API_KEYS", "dev-key-12345").split(",")
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
     RATE_LIMIT = int(os.getenv("RATE_LIMIT", "100"))  # requests per minute
@@ -63,18 +65,20 @@ class Config:
 # Data Models
 # ==============================================================================
 
+
 class AgentTaskRequest(BaseModel):
     """Request to run an agent"""
+
     agent_name: str = Field(..., description="Name of the agent to run")
     task: str = Field(..., min_length=1, max_length=10000, description="Task description")
     model: Optional[str] = Field(Config.DEFAULT_MODEL, description="Claude model to use")
     max_tokens: Optional[int] = Field(4096, ge=100, le=8000, description="Max tokens")
     temperature: Optional[float] = Field(1.0, ge=0.0, le=2.0, description="Temperature")
 
-    @validator('agent_name')
+    @validator("agent_name")
     def validate_agent_name(cls, v):
         """Validate agent name format"""
-        allowed_chars = set('abcdefghijklmnopqrstuvwxyz0123456789-_')
+        allowed_chars = set("abcdefghijklmnopqrstuvwxyz0123456789-_")
         if not all(c in allowed_chars for c in v.lower()):
             raise ValueError("Agent name can only contain alphanumeric, dash, and underscore")
         return v
@@ -82,6 +86,7 @@ class AgentTaskRequest(BaseModel):
 
 class AgentRecommendRequest(BaseModel):
     """Request for agent recommendations"""
+
     task: str = Field(..., min_length=1, max_length=10000, description="Task description")
     top_k: Optional[int] = Field(3, ge=1, le=10, description="Number of recommendations")
     min_confidence: Optional[float] = Field(0.3, ge=0.0, le=1.0, description="Minimum confidence")
@@ -89,6 +94,7 @@ class AgentRecommendRequest(BaseModel):
 
 class WorkflowRequest(BaseModel):
     """Request to run a workflow"""
+
     workflow_name: str = Field(..., description="Name of the workflow to run")
     task: str = Field(..., min_length=1, max_length=10000, description="Initial task description")
     model: Optional[str] = Field(Config.DEFAULT_MODEL, description="Claude model to use")
@@ -96,6 +102,7 @@ class WorkflowRequest(BaseModel):
 
 class TaskStatus(str, Enum):
     """Task execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -104,6 +111,7 @@ class TaskStatus(str, Enum):
 
 class AgentResponse(BaseModel):
     """Response from agent execution"""
+
     success: bool
     agent_name: str
     task_id: Optional[str] = None
@@ -115,6 +123,7 @@ class AgentResponse(BaseModel):
 
 class AsyncTaskResponse(BaseModel):
     """Response for async task submission"""
+
     task_id: str
     status: TaskStatus
     message: str
@@ -123,6 +132,7 @@ class AsyncTaskResponse(BaseModel):
 
 class TaskStatusResponse(BaseModel):
     """Response for task status check"""
+
     task_id: str
     status: TaskStatus
     agent_name: Optional[str] = None
@@ -136,8 +146,10 @@ class TaskStatusResponse(BaseModel):
 # In-Memory Task Queue (For Demo - Use Redis/Celery in Production)
 # ==============================================================================
 
+
 class TaskQueue:
     """Simple in-memory task queue"""
+
     def __init__(self):
         self.tasks: Dict[str, Dict[str, Any]] = {}
         self.running_count = 0
@@ -155,7 +167,7 @@ class TaskQueue:
             "submitted_at": datetime.utcnow().isoformat(),
             "started_at": None,
             "completed_at": None,
-            "result": None
+            "result": None,
         }
 
         logger.info(f"Task {task_id} submitted to queue")
@@ -184,7 +196,7 @@ app = FastAPI(
     description="REST API for Claude-Force Multi-Agent System",
     version="2.1.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS middleware
@@ -208,19 +220,18 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
 # Authentication
 # ==============================================================================
 
+
 async def verify_api_key(api_key: str = Security(api_key_header)) -> str:
     """Verify API key"""
     if api_key not in Config.API_KEYS:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API key"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
     return api_key
 
 
 # ==============================================================================
 # Startup/Shutdown Events
 # ==============================================================================
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -233,8 +244,7 @@ async def startup_event():
 
     try:
         orchestrator = AgentOrchestrator(
-            anthropic_api_key=Config.ANTHROPIC_API_KEY,
-            enable_tracking=True
+            anthropic_api_key=Config.ANTHROPIC_API_KEY, enable_tracking=True
         )
         logger.info("AgentOrchestrator initialized successfully")
     except Exception as e:
@@ -251,6 +261,7 @@ async def shutdown_event():
 # Background Task Processing
 # ==============================================================================
 
+
 def process_task_background(task_id: str):
     """Process a task in the background"""
     global orchestrator, task_queue
@@ -262,18 +273,14 @@ def process_task_background(task_id: str):
     try:
         # Update status to running
         task_queue.update_task(
-            task_id,
-            status=TaskStatus.RUNNING,
-            started_at=datetime.utcnow().isoformat()
+            task_id, status=TaskStatus.RUNNING, started_at=datetime.utcnow().isoformat()
         )
         task_queue.running_count += 1
 
         # Execute agent
         start_time = time.time()
         result = orchestrator.run_agent(
-            agent_name=task_data["agent_name"],
-            task=task_data["task"],
-            **task_data["kwargs"]
+            agent_name=task_data["agent_name"], task=task_data["task"], **task_data["kwargs"]
         )
         execution_time = (time.time() - start_time) * 1000
 
@@ -285,7 +292,7 @@ def process_task_background(task_id: str):
             output=result.output,
             metadata=result.metadata,
             error=result.error,
-            execution_time_ms=execution_time
+            execution_time_ms=execution_time,
         )
 
         # Update task with result
@@ -293,7 +300,7 @@ def process_task_background(task_id: str):
             task_id,
             status=TaskStatus.COMPLETED,
             completed_at=datetime.utcnow().isoformat(),
-            result=response.dict()
+            result=response.dict(),
         )
 
         logger.info(f"Task {task_id} completed successfully")
@@ -304,7 +311,7 @@ def process_task_background(task_id: str):
             task_id,
             status=TaskStatus.FAILED,
             completed_at=datetime.utcnow().isoformat(),
-            result={"error": str(e)}
+            result={"error": str(e)},
         )
     finally:
         task_queue.running_count -= 1
@@ -314,15 +321,11 @@ def process_task_background(task_id: str):
 # API Endpoints
 # ==============================================================================
 
+
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {
-        "service": "Claude-Force API",
-        "version": "2.1.0",
-        "status": "running",
-        "docs": "/docs"
-    }
+    return {"service": "Claude-Force API", "version": "2.1.0", "status": "running", "docs": "/docs"}
 
 
 @app.get("/health")
@@ -333,7 +336,7 @@ async def health_check():
         "orchestrator": orchestrator is not None,
         "anthropic_api": Config.ANTHROPIC_API_KEY is not None,
         "tasks_running": task_queue.running_count,
-        "tasks_queued": len(task_queue.get_pending_tasks())
+        "tasks_queued": len(task_queue.get_pending_tasks()),
     }
 
 
@@ -345,28 +348,20 @@ async def list_agents(api_key: str = Depends(verify_api_key)):
 
     try:
         agents = orchestrator.list_agents()
-        return {
-            "agents": agents,
-            "count": len(agents)
-        }
+        return {"agents": agents, "count": len(agents)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/agents/recommend", response_model=List[Dict[str, Any]])
-async def recommend_agents(
-    request: AgentRecommendRequest,
-    api_key: str = Depends(verify_api_key)
-):
+async def recommend_agents(request: AgentRecommendRequest, api_key: str = Depends(verify_api_key)):
     """Get agent recommendations for a task"""
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
 
     try:
         recommendations = orchestrator.recommend_agents(
-            task=request.task,
-            top_k=request.top_k,
-            min_confidence=request.min_confidence
+            task=request.task, top_k=request.top_k, min_confidence=request.min_confidence
         )
         return recommendations
     except Exception as e:
@@ -374,10 +369,7 @@ async def recommend_agents(
 
 
 @app.post("/agents/run", response_model=AgentResponse)
-async def run_agent_sync(
-    request: AgentTaskRequest,
-    api_key: str = Depends(verify_api_key)
-):
+async def run_agent_sync(request: AgentTaskRequest, api_key: str = Depends(verify_api_key)):
     """Run an agent synchronously (waits for completion)"""
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
@@ -390,7 +382,7 @@ async def run_agent_sync(
             task=request.task,
             model=request.model,
             max_tokens=request.max_tokens,
-            temperature=request.temperature
+            temperature=request.temperature,
         )
 
         execution_time = (time.time() - start_time) * 1000
@@ -401,7 +393,7 @@ async def run_agent_sync(
             output=result.output,
             metadata=result.metadata,
             error=result.error,
-            execution_time_ms=execution_time
+            execution_time_ms=execution_time,
         )
 
     except Exception as e:
@@ -413,7 +405,7 @@ async def run_agent_sync(
 async def run_agent_async(
     request: AgentTaskRequest,
     background_tasks: BackgroundTasks,
-    api_key: str = Depends(verify_api_key)
+    api_key: str = Depends(verify_api_key),
 ):
     """Run an agent asynchronously (returns immediately with task ID)"""
     if not orchestrator:
@@ -422,8 +414,7 @@ async def run_agent_async(
     # Check if we're at capacity
     if task_queue.running_count >= Config.MAX_CONCURRENT_JOBS:
         raise HTTPException(
-            status_code=429,
-            detail=f"Too many concurrent jobs (max: {Config.MAX_CONCURRENT_JOBS})"
+            status_code=429, detail=f"Too many concurrent jobs (max: {Config.MAX_CONCURRENT_JOBS})"
         )
 
     try:
@@ -433,7 +424,7 @@ async def run_agent_async(
             task=request.task,
             model=request.model,
             max_tokens=request.max_tokens,
-            temperature=request.temperature
+            temperature=request.temperature,
         )
 
         # Schedule background processing
@@ -443,7 +434,7 @@ async def run_agent_async(
             task_id=task_id,
             status=TaskStatus.PENDING,
             message="Task submitted successfully",
-            check_url=f"/tasks/{task_id}"
+            check_url=f"/tasks/{task_id}",
         )
 
     except Exception as e:
@@ -452,10 +443,7 @@ async def run_agent_async(
 
 
 @app.get("/tasks/{task_id}", response_model=TaskStatusResponse)
-async def get_task_status(
-    task_id: str,
-    api_key: str = Depends(verify_api_key)
-):
+async def get_task_status(task_id: str, api_key: str = Depends(verify_api_key)):
     """Get the status of an async task"""
     task_data = task_queue.get_task(task_id)
 
@@ -469,15 +457,12 @@ async def get_task_status(
         submitted_at=task_data["submitted_at"],
         started_at=task_data["started_at"],
         completed_at=task_data["completed_at"],
-        result=task_data["result"]
+        result=task_data["result"],
     )
 
 
 @app.post("/workflows/run", response_model=AgentResponse)
-async def run_workflow(
-    request: WorkflowRequest,
-    api_key: str = Depends(verify_api_key)
-):
+async def run_workflow(request: WorkflowRequest, api_key: str = Depends(verify_api_key)):
     """Run a multi-agent workflow"""
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
@@ -486,9 +471,7 @@ async def run_workflow(
         start_time = time.time()
 
         result = orchestrator.run_workflow(
-            workflow_name=request.workflow_name,
-            initial_task=request.task,
-            model=request.model
+            workflow_name=request.workflow_name, initial_task=request.task, model=request.model
         )
 
         execution_time = (time.time() - start_time) * 1000
@@ -499,7 +482,7 @@ async def run_workflow(
             output=result.output,
             metadata=result.metadata,
             error=result.error,
-            execution_time_ms=execution_time
+            execution_time_ms=execution_time,
         )
 
     except Exception as e:
@@ -508,10 +491,7 @@ async def run_workflow(
 
 
 @app.get("/metrics/summary")
-async def get_metrics_summary(
-    hours: Optional[int] = None,
-    api_key: str = Depends(verify_api_key)
-):
+async def get_metrics_summary(hours: Optional[int] = None, api_key: str = Depends(verify_api_key)):
     """Get performance metrics summary"""
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
@@ -525,8 +505,7 @@ async def get_metrics_summary(
 
 @app.get("/metrics/agents")
 async def get_agent_metrics(
-    agent_name: Optional[str] = None,
-    api_key: str = Depends(verify_api_key)
+    agent_name: Optional[str] = None, api_key: str = Depends(verify_api_key)
 ):
     """Get per-agent performance metrics"""
     if not orchestrator:

@@ -7,10 +7,7 @@ import tempfile
 import shutil
 from pathlib import Path
 
-from claude_force.skills_manager import (
-    ProgressiveSkillsManager,
-    get_skills_manager
-)
+from claude_force.skills_manager import ProgressiveSkillsManager, get_skills_manager
 
 
 class TestProgressiveSkillsManager(unittest.TestCase):
@@ -68,26 +65,34 @@ class TestProgressiveSkillsManager(unittest.TestCase):
         """Test skill analysis based on keywords."""
         # Task mentions testing
         task = "Write unit tests for the authentication module"
-        skills = self.manager.analyze_required_skills("python-expert", task, include_agent_skills=False)
+        skills = self.manager.analyze_required_skills(
+            "python-expert", task, include_agent_skills=False
+        )
 
         self.assertIn("test-generation", skills)
 
         # Task mentions Docker
         task = "Create a Dockerfile for the application"
-        skills = self.manager.analyze_required_skills("python-expert", task, include_agent_skills=False)
+        skills = self.manager.analyze_required_skills(
+            "python-expert", task, include_agent_skills=False
+        )
 
         self.assertIn("dockerfile", skills)
 
         # Task mentions API
         task = "Design a REST API with GraphQL endpoints"
-        skills = self.manager.analyze_required_skills("backend-architect", task, include_agent_skills=False)
+        skills = self.manager.analyze_required_skills(
+            "backend-architect", task, include_agent_skills=False
+        )
 
         self.assertIn("api-design", skills)
 
     def test_analyze_required_skills_multiple_matches(self):
         """Test that multiple skills are detected."""
         task = "Review the API code and write tests for it"
-        skills = self.manager.analyze_required_skills("backend-architect", task, include_agent_skills=False)
+        skills = self.manager.analyze_required_skills(
+            "backend-architect", task, include_agent_skills=False
+        )
 
         # Should match both code-review and test-generation and api-design
         self.assertIn("code-review", skills)
@@ -99,10 +104,14 @@ class TestProgressiveSkillsManager(unittest.TestCase):
         task = "Implement a new feature"  # Generic task
 
         # With agent skills included
-        skills_with = self.manager.analyze_required_skills("frontend-developer", task, include_agent_skills=True)
+        skills_with = self.manager.analyze_required_skills(
+            "frontend-developer", task, include_agent_skills=True
+        )
 
         # Without agent skills
-        skills_without = self.manager.analyze_required_skills("frontend-developer", task, include_agent_skills=False)
+        skills_without = self.manager.analyze_required_skills(
+            "frontend-developer", task, include_agent_skills=False
+        )
 
         # With agent skills should have more (or at least as many)
         # Note: Only for complex/long tasks
@@ -112,7 +121,9 @@ class TestProgressiveSkillsManager(unittest.TestCase):
     def test_analyze_required_skills_no_matches(self):
         """Test task with no matching skills."""
         task = "Explain quantum physics"  # Unrelated task
-        skills = self.manager.analyze_required_skills("python-expert", task, include_agent_skills=False)
+        skills = self.manager.analyze_required_skills(
+            "python-expert", task, include_agent_skills=False
+        )
 
         self.assertEqual(len(skills), 0)
 
@@ -168,9 +179,7 @@ class TestProgressiveSkillsManager(unittest.TestCase):
         """Test token savings estimation."""
         # Load 3 out of 11 skills
         estimate = self.manager.get_token_savings_estimate(
-            loaded_skills=3,
-            total_skills=11,
-            avg_skill_tokens=1500
+            loaded_skills=3, total_skills=11, avg_skill_tokens=1500
         )
 
         self.assertEqual(estimate["loaded_skills"], 3)

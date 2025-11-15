@@ -12,18 +12,9 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import json
 
-from claude_force.quick_start import (
-    QuickStartOrchestrator,
-    get_quick_start_orchestrator
-)
-from claude_force.hybrid_orchestrator import (
-    HybridOrchestrator,
-    get_hybrid_orchestrator
-)
-from claude_force.skills_manager import (
-    ProgressiveSkillsManager,
-    get_skills_manager
-)
+from claude_force.quick_start import QuickStartOrchestrator, get_quick_start_orchestrator
+from claude_force.hybrid_orchestrator import HybridOrchestrator, get_hybrid_orchestrator
+from claude_force.skills_manager import ProgressiveSkillsManager, get_skills_manager
 
 
 class TestQuickStartHybridIntegration(unittest.TestCase):
@@ -46,7 +37,7 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
         matches = orchestrator.match_templates(
             description="Build a chat application with LLM integration",
             tech_stack=["python", "react"],
-            top_k=1
+            top_k=1,
         )
         self.assertGreater(len(matches), 0)
 
@@ -54,42 +45,34 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
 
         # Generate config
         config = orchestrator.generate_config(
-            template=template,
-            project_name="test-chat-app",
-            description="Chat app with AI"
+            template=template, project_name="test-chat-app", description="Chat app with AI"
         )
 
         # Initialize project
         claude_dir = Path(self.temp_dir) / ".claude"
-        result = orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        result = orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         self.assertTrue((claude_dir / "claude.json").exists())
-        self.assertGreater(len(result['created_files']), 0)
+        self.assertGreater(len(result["created_files"]), 0)
 
         # Step 2: Use Hybrid Orchestrator with the initialized project
-        with patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__') as mock_init:
+        with patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__") as mock_init:
             mock_init.return_value = None
 
             hybrid = HybridOrchestrator(
-                config_path=str(claude_dir / "claude.json"),
-                auto_select_model=True
+                config_path=str(claude_dir / "claude.json"), auto_select_model=True
             )
 
             # Test model selection for different tasks
             simple_model = hybrid.select_model_for_agent(
-                "code-reviewer",
-                "Fix typo in README",
-                task_complexity="simple"
+                "code-reviewer", "Fix typo in README", task_complexity="simple"
             )
             self.assertEqual(simple_model, hybrid.MODELS["haiku"])
 
             complex_model = hybrid.select_model_for_agent(
                 "backend-architect",
                 "Design scalable microservices architecture",
-                task_complexity="complex"
+                task_complexity="complex",
             )
             self.assertEqual(complex_model, hybrid.MODELS["sonnet"])
 
@@ -97,42 +80,30 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
         """Test workflow: init → estimate costs before running."""
         # Initialize project
         orchestrator = get_quick_start_orchestrator(use_semantic=False)
-        matches = orchestrator.match_templates(
-            description="REST API service",
-            top_k=1
-        )
+        matches = orchestrator.match_templates(description="REST API service", top_k=1)
 
         template = matches[0]
         config = orchestrator.generate_config(
-            template=template,
-            project_name="test-api",
-            description="REST API"
+            template=template, project_name="test-api", description="REST API"
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
-        orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Estimate costs with Hybrid Orchestrator
-        with patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__') as mock_init:
+        with patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__") as mock_init:
             mock_init.return_value = None
 
             hybrid = HybridOrchestrator(auto_select_model=True)
 
             # Estimate for different complexity tasks
-            simple_estimate = hybrid.estimate_cost(
-                "Fix bug in login endpoint",
-                "backend-developer"
-            )
+            simple_estimate = hybrid.estimate_cost("Fix bug in login endpoint", "backend-developer")
             # Should use cheaper model for simple task
             self.assertIn(simple_estimate.model, [hybrid.MODELS["haiku"], hybrid.MODELS["sonnet"]])
             self.assertLess(simple_estimate.estimated_cost, 0.1)
 
             complex_estimate = hybrid.estimate_cost(
-                "Implement full authentication system with OAuth2 and JWT",
-                "backend-architect"
+                "Implement full authentication system with OAuth2 and JWT", "backend-architect"
             )
             # Complex task estimate should exist
             self.assertIsNotNone(complex_estimate.model)
@@ -147,9 +118,7 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
 
         # System recommends templates
         matches = orchestrator.match_templates(
-            description=description,
-            tech_stack=["python", "tensorflow"],
-            top_k=3
+            description=description, tech_stack=["python", "tensorflow"], top_k=3
         )
 
         self.assertGreater(len(matches), 0)
@@ -159,9 +128,7 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
 
         # Generate project configuration
         config = orchestrator.generate_config(
-            template=selected_template,
-            project_name="ml-pipeline",
-            description=description
+            template=selected_template, project_name="ml-pipeline", description=description
         )
 
         # Verify config has required components
@@ -172,10 +139,7 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
 
         # Initialize project
         claude_dir = Path(self.temp_dir) / ".claude"
-        result = orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        result = orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Verify all necessary files created
         self.assertTrue((claude_dir / "claude.json").exists())
@@ -194,7 +158,7 @@ class TestQuickStartHybridIntegration(unittest.TestCase):
 class TestHybridSkillsIntegration(unittest.TestCase):
     """Test integration between Hybrid Orchestrator and Skills Manager."""
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_hybrid_with_progressive_skills(self, mock_init):
         """Test combined cost optimization: model selection + progressive skills."""
         mock_init.return_value = None
@@ -208,18 +172,12 @@ class TestHybridSkillsIntegration(unittest.TestCase):
         simple_agent = "code-reviewer"
 
         # Hybrid selects cheaper model
-        model = hybrid.select_model_for_agent(
-            simple_agent,
-            simple_task,
-            task_complexity="simple"
-        )
+        model = hybrid.select_model_for_agent(simple_agent, simple_task, task_complexity="simple")
         self.assertEqual(model, hybrid.MODELS["haiku"])
 
         # Skills manager loads only necessary skills
         required_skills = skills_manager.analyze_required_skills(
-            simple_agent,
-            simple_task,
-            include_agent_skills=False
+            simple_agent, simple_task, include_agent_skills=False
         )
         # Simple task should require fewer skills
         self.assertLessEqual(len(required_skills), 3)
@@ -230,22 +188,18 @@ class TestHybridSkillsIntegration(unittest.TestCase):
 
         # Hybrid selects more capable model
         model = hybrid.select_model_for_agent(
-            complex_agent,
-            complex_task,
-            task_complexity="complex"
+            complex_agent, complex_task, task_complexity="complex"
         )
         self.assertEqual(model, hybrid.MODELS["sonnet"])
 
         # Skills manager loads more comprehensive skills
         required_skills = skills_manager.analyze_required_skills(
-            complex_agent,
-            complex_task,
-            include_agent_skills=True
+            complex_agent, complex_task, include_agent_skills=True
         )
         # Complex task should require more skills
         self.assertGreater(len(required_skills), 0)
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_cost_savings_measurement(self, mock_init):
         """Test that hybrid + progressive skills provides measurable cost savings."""
         mock_init.return_value = None
@@ -257,10 +211,7 @@ class TestHybridSkillsIntegration(unittest.TestCase):
         simple_task = "Fix null pointer exception"
         simple_agent = "backend-developer"
 
-        simple_estimate = hybrid.estimate_cost(
-            simple_task,
-            simple_agent
-        )
+        simple_estimate = hybrid.estimate_cost(simple_task, simple_agent)
         # Should provide cost estimate
         self.assertIsNotNone(simple_estimate.model)
         self.assertGreater(simple_estimate.estimated_cost, 0)
@@ -268,9 +219,7 @@ class TestHybridSkillsIntegration(unittest.TestCase):
         # Calculate token savings from progressive skills
         all_skills = skills_manager.get_available_skills()
         required_skills = skills_manager.analyze_required_skills(
-            simple_agent,
-            simple_task,
-            include_agent_skills=False
+            simple_agent, simple_task, include_agent_skills=False
         )
 
         # Progressive skills should reduce token count
@@ -282,24 +231,19 @@ class TestHybridSkillsIntegration(unittest.TestCase):
         complex_task = "Design complete microservices architecture with event sourcing"
         complex_agent = "backend-architect"
 
-        complex_estimate = hybrid.estimate_cost(
-            complex_task,
-            complex_agent
-        )
+        complex_estimate = hybrid.estimate_cost(complex_task, complex_agent)
         # Should provide estimate
         self.assertIsNotNone(complex_estimate.model)
         self.assertGreater(complex_estimate.estimated_cost, 0)
 
         # Even complex tasks benefit from progressive skills vs loading all
         complex_required_skills = skills_manager.analyze_required_skills(
-            complex_agent,
-            complex_task,
-            include_agent_skills=True
+            complex_agent, complex_task, include_agent_skills=True
         )
         # Should still be selective, not loading all skills
         self.assertIsNotNone(complex_required_skills)
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_token_reduction_measurement(self, mock_init):
         """Test measurable token reduction from progressive skills."""
         mock_init.return_value = None
@@ -315,9 +259,7 @@ class TestHybridSkillsIntegration(unittest.TestCase):
 
         for agent, task, expected_max_skills in test_cases:
             required_skills = skills_manager.analyze_required_skills(
-                agent,
-                task,
-                include_agent_skills=False
+                agent, task, include_agent_skills=False
             )
 
             # Progressive loading should be selective
@@ -347,25 +289,18 @@ class TestFullPipelineIntegration(unittest.TestCase):
 
         description = "Full-stack web app with authentication and database"
         matches = quick_start.match_templates(
-            description=description,
-            tech_stack=["python", "react", "postgresql"],
-            top_k=1
+            description=description, tech_stack=["python", "react", "postgresql"], top_k=1
         )
 
         self.assertGreater(len(matches), 0)
         template = matches[0]
 
         config = quick_start.generate_config(
-            template=template,
-            project_name="fullstack-app",
-            description=description
+            template=template, project_name="fullstack-app", description=description
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
-        result = quick_start.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        result = quick_start.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Verify initialization
         self.assertTrue((claude_dir / "claude.json").exists())
@@ -373,13 +308,13 @@ class TestFullPipelineIntegration(unittest.TestCase):
         self.assertGreater(len(config.workflows), 0)
 
         # Phase 2: Cost Optimization Setup
-        with patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__') as mock_init:
+        with patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__") as mock_init:
             mock_init.return_value = None
 
             hybrid = HybridOrchestrator(
                 config_path=str(claude_dir / "claude.json"),
                 auto_select_model=True,
-                cost_threshold=0.50
+                cost_threshold=0.50,
             )
 
             # Test different task complexities
@@ -400,9 +335,7 @@ class TestFullPipelineIntegration(unittest.TestCase):
         sample_agents = ["backend-developer", "code-reviewer", "frontend-developer"]
         for agent in sample_agents:
             required_skills = skills_manager.analyze_required_skills(
-                agent,
-                "Implement feature",
-                include_agent_skills=True
+                agent, "Implement feature", include_agent_skills=True
             )
             self.assertIsNotNone(required_skills)
 
@@ -411,26 +344,18 @@ class TestFullPipelineIntegration(unittest.TestCase):
         # Initialize project
         quick_start = get_quick_start_orchestrator(use_semantic=False)
 
-        matches = quick_start.match_templates(
-            description="Backend API development",
-            top_k=1
-        )
+        matches = quick_start.match_templates(description="Backend API development", top_k=1)
 
         template = matches[0]
         config = quick_start.generate_config(
-            template=template,
-            project_name="api-project",
-            description="REST API"
+            template=template, project_name="api-project", description="REST API"
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
-        quick_start.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        quick_start.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Simulate multi-agent workflow
-        with patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__') as mock_init:
+        with patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__") as mock_init:
             mock_init.return_value = None
 
             hybrid = HybridOrchestrator(auto_select_model=True)
@@ -446,17 +371,13 @@ class TestFullPipelineIntegration(unittest.TestCase):
             for agent, task, expected_complexity in workflow_steps:
                 # Each agent gets optimized model
                 model = hybrid.select_model_for_agent(
-                    agent,
-                    task,
-                    task_complexity=expected_complexity
+                    agent, task, task_complexity=expected_complexity
                 )
                 self.assertIsNotNone(model)
 
                 # Each agent gets relevant skills
                 skills = skills_manager.analyze_required_skills(
-                    agent,
-                    task,
-                    include_agent_skills=True
+                    agent, task, include_agent_skills=True
                 )
                 self.assertIsNotNone(skills)
 
@@ -466,24 +387,19 @@ class TestFullPipelineIntegration(unittest.TestCase):
         quick_start = get_quick_start_orchestrator(use_semantic=False)
 
         # Should handle empty description gracefully
-        matches = quick_start.match_templates(
-            description="",  # Empty description
-            top_k=1
-        )
+        matches = quick_start.match_templates(description="", top_k=1)  # Empty description
         # Should still return templates, just with low confidence
         self.assertIsInstance(matches, list)
 
         # Test Hybrid Orchestrator with invalid complexity
-        with patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__') as mock_init:
+        with patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__") as mock_init:
             mock_init.return_value = None
 
             hybrid = HybridOrchestrator(auto_select_model=True)
 
             # Invalid complexity should default to safe choice
             model = hybrid.select_model_for_agent(
-                "test-agent",
-                "Test task",
-                task_complexity="invalid_complexity"
+                "test-agent", "Test task", task_complexity="invalid_complexity"
             )
             # Should default to Sonnet (safe middle ground)
             self.assertEqual(model, hybrid.MODELS["sonnet"])
@@ -491,9 +407,7 @@ class TestFullPipelineIntegration(unittest.TestCase):
         # Test Skills Manager with unknown agent
         skills_manager = get_skills_manager()
         skills = skills_manager.analyze_required_skills(
-            "nonexistent-agent-xyz",
-            "Some task",
-            include_agent_skills=False
+            "nonexistent-agent-xyz", "Some task", include_agent_skills=False
         )
         # Should return empty list or general skills, not crash
         self.assertIsInstance(skills, list)
@@ -503,23 +417,15 @@ class TestFullPipelineIntegration(unittest.TestCase):
         # Create project
         quick_start = get_quick_start_orchestrator(use_semantic=False)
 
-        matches = quick_start.match_templates(
-            description="Data pipeline",
-            top_k=1
-        )
+        matches = quick_start.match_templates(description="Data pipeline", top_k=1)
 
         template = matches[0]
         original_config = quick_start.generate_config(
-            template=template,
-            project_name="data-pipeline",
-            description="ETL pipeline"
+            template=template, project_name="data-pipeline", description="ETL pipeline"
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
-        quick_start.initialize_project(
-            config=original_config,
-            output_dir=str(claude_dir)
-        )
+        quick_start.initialize_project(config=original_config, output_dir=str(claude_dir))
 
         # Load config and verify persistence
         config_file = claude_dir / "claude.json"
@@ -543,14 +449,11 @@ class TestFullPipelineIntegration(unittest.TestCase):
 
         # Verify we can load this config in Hybrid Orchestrator
         # (This tests that the persisted format is compatible)
-        with patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__') as mock_init:
+        with patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__") as mock_init:
             mock_init.return_value = None
 
             # Should be able to create hybrid orchestrator with persisted config
-            hybrid = HybridOrchestrator(
-                config_path=str(config_file),
-                auto_select_model=True
-            )
+            hybrid = HybridOrchestrator(config_path=str(config_file), auto_select_model=True)
             self.assertIsNotNone(hybrid)
 
 

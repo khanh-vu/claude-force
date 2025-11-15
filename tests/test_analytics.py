@@ -16,7 +16,7 @@ from claude_force.analytics import (
     CrossRepoAnalytics,
     AgentPerformanceMetrics,
     ComparisonReport,
-    get_analytics_manager
+    get_analytics_manager,
 )
 
 
@@ -33,7 +33,7 @@ class TestAgentPerformanceMetrics(unittest.TestCase):
             tokens_used=12000,
             cost_usd=0.045,
             quality_score=8.5,
-            model_used="claude-3-5-sonnet-20241022"
+            model_used="claude-3-5-sonnet-20241022",
         )
 
         self.assertEqual(metrics.agent_id, "test-agent")
@@ -54,7 +54,7 @@ class TestAgentPerformanceMetrics(unittest.TestCase):
             model_used="claude-3-haiku-20240307",
             strengths=["Fast", "Cheap"],
             weaknesses=["Less detailed"],
-            task_suitability="good"
+            task_suitability="good",
         )
 
         self.assertEqual(len(metrics.strengths), 2)
@@ -75,14 +75,11 @@ class TestComparisonReport(unittest.TestCase):
             tokens_used=8000,
             cost_usd=0.03,
             quality_score=8.0,
-            model_used="claude-3-5-sonnet-20241022"
+            model_used="claude-3-5-sonnet-20241022",
         )
 
         report = ComparisonReport(
-            task_description="Test task",
-            agents_compared=1,
-            results=[metrics],
-            winner="test"
+            task_description="Test task", agents_compared=1, results=[metrics], winner="test"
         )
 
         self.assertEqual(report.task_description, "Test task")
@@ -100,13 +97,11 @@ class TestComparisonReport(unittest.TestCase):
             tokens_used=8000,
             cost_usd=0.03,
             quality_score=8.0,
-            model_used="claude-3-5-sonnet-20241022"
+            model_used="claude-3-5-sonnet-20241022",
         )
 
         report = ComparisonReport(
-            task_description="Test task",
-            agents_compared=1,
-            results=[metrics]
+            task_description="Test task", agents_compared=1, results=[metrics]
         )
 
         result = report.to_dict()
@@ -157,9 +152,7 @@ class TestCompareAgents(unittest.TestCase):
     def test_compare_single_agent(self):
         """Should compare single agent."""
         report = self.analytics.compare_agents(
-            task="Review code",
-            agents=["code-reviewer"],
-            simulate=True
+            task="Review code", agents=["code-reviewer"], simulate=True
         )
 
         self.assertEqual(report.agents_compared, 1)
@@ -169,9 +162,7 @@ class TestCompareAgents(unittest.TestCase):
     def test_compare_multiple_agents(self):
         """Should compare multiple agents."""
         report = self.analytics.compare_agents(
-            task="Review code",
-            agents=["code-reviewer", "quick-frontend"],
-            simulate=True
+            task="Review code", agents=["code-reviewer", "quick-frontend"], simulate=True
         )
 
         self.assertEqual(report.agents_compared, 2)
@@ -181,9 +172,7 @@ class TestCompareAgents(unittest.TestCase):
     def test_compare_generates_metrics(self):
         """Should generate performance metrics."""
         report = self.analytics.compare_agents(
-            task="Build app",
-            agents=["frontend-architect"],
-            simulate=True
+            task="Build app", agents=["frontend-architect"], simulate=True
         )
 
         result = report.results[0]
@@ -195,9 +184,7 @@ class TestCompareAgents(unittest.TestCase):
     def test_compare_determines_winner(self):
         """Should determine winner based on quality-to-cost ratio."""
         report = self.analytics.compare_agents(
-            task="Test task",
-            agents=["frontend-architect", "backend-architect"],
-            simulate=True
+            task="Test task", agents=["frontend-architect", "backend-architect"], simulate=True
         )
 
         self.assertIsNotNone(report.winner)
@@ -206,9 +193,7 @@ class TestCompareAgents(unittest.TestCase):
     def test_compare_generates_recommendation(self):
         """Should generate recommendation text."""
         report = self.analytics.compare_agents(
-            task="Test task",
-            agents=["code-reviewer"],
-            simulate=True
+            task="Test task", agents=["code-reviewer"], simulate=True
         )
 
         self.assertIsNotNone(report.recommendation)
@@ -217,9 +202,7 @@ class TestCompareAgents(unittest.TestCase):
     def test_compare_saves_report(self):
         """Should save report to metrics directory."""
         report = self.analytics.compare_agents(
-            task="Test task",
-            agents=["code-reviewer"],
-            simulate=True
+            task="Test task", agents=["code-reviewer"], simulate=True
         )
 
         # Check report was saved
@@ -237,8 +220,7 @@ class TestSimulateAgentPerformance(unittest.TestCase):
     def test_simulate_known_agent(self):
         """Should simulate metrics for known agent."""
         metrics = self.analytics._simulate_agent_performance(
-            "frontend-architect",
-            "Build React app"
+            "frontend-architect", "Build React app"
         )
 
         self.assertEqual(metrics.agent_id, "frontend-architect")
@@ -250,20 +232,14 @@ class TestSimulateAgentPerformance(unittest.TestCase):
 
     def test_simulate_unknown_agent(self):
         """Should simulate metrics for unknown agent with defaults."""
-        metrics = self.analytics._simulate_agent_performance(
-            "unknown-agent",
-            "Do something"
-        )
+        metrics = self.analytics._simulate_agent_performance("unknown-agent", "Do something")
 
         self.assertEqual(metrics.agent_id, "unknown-agent")
         self.assertGreater(metrics.duration_seconds, 0)
 
     def test_simulate_includes_strengths_weaknesses(self):
         """Should include strengths and weaknesses."""
-        metrics = self.analytics._simulate_agent_performance(
-            "code-reviewer",
-            "Review code"
-        )
+        metrics = self.analytics._simulate_agent_performance("code-reviewer", "Review code")
 
         self.assertIsInstance(metrics.strengths, list)
         self.assertIsInstance(metrics.weaknesses, list)
@@ -292,7 +268,7 @@ class TestDetermineWinner(unittest.TestCase):
             tokens_used=8000,
             cost_usd=0.03,
             quality_score=8.0,
-            model_used="claude-3-5-sonnet-20241022"
+            model_used="claude-3-5-sonnet-20241022",
         )
 
         winner = self.analytics._determine_winner([metrics])
@@ -309,7 +285,7 @@ class TestDetermineWinner(unittest.TestCase):
             tokens_used=15000,
             cost_usd=0.10,
             quality_score=9.5,
-            model_used="claude-3-5-sonnet-20241022"
+            model_used="claude-3-5-sonnet-20241022",
         )
 
         medium_quality_cheap = AgentPerformanceMetrics(
@@ -320,13 +296,10 @@ class TestDetermineWinner(unittest.TestCase):
             tokens_used=4000,
             cost_usd=0.005,
             quality_score=7.0,
-            model_used="claude-3-haiku-20240307"
+            model_used="claude-3-haiku-20240307",
         )
 
-        winner = self.analytics._determine_winner([
-            high_quality_expensive,
-            medium_quality_cheap
-        ])
+        winner = self.analytics._determine_winner([high_quality_expensive, medium_quality_cheap])
 
         # Winner should be determined by quality/cost ratio
         self.assertIn(winner, ["expensive", "cheap"])
@@ -335,7 +308,7 @@ class TestDetermineWinner(unittest.TestCase):
 class TestRecommendAgentForTask(unittest.TestCase):
     """Test task-based agent recommendation."""
 
-    @patch('claude_force.agent_router.get_agent_router')
+    @patch("claude_force.agent_router.get_agent_router")
     def test_recommend_returns_agent(self, mock_get_router):
         """Should recommend agent for task."""
         from claude_force.agent_router import AgentMatch
@@ -346,21 +319,18 @@ class TestRecommendAgentForTask(unittest.TestCase):
             agent_name="Test Agent",
             confidence=0.9,
             source="builtin",
-            installed=True
+            installed=True,
         )
         mock_router.recommend_agents.return_value = [mock_agent]
         mock_get_router.return_value = mock_router
 
         analytics = CrossRepoAnalytics()
-        recommendation = analytics.recommend_agent_for_task(
-            task="Build app",
-            priority="balanced"
-        )
+        recommendation = analytics.recommend_agent_for_task(task="Build app", priority="balanced")
 
         self.assertIn("recommendation", recommendation)
         self.assertEqual(recommendation["recommendation"], "test-agent")
 
-    @patch('claude_force.agent_router.get_agent_router')
+    @patch("claude_force.agent_router.get_agent_router")
     def test_recommend_no_agents_found(self, mock_get_router):
         """Should handle no agents found."""
         mock_router = Mock()
@@ -369,24 +339,19 @@ class TestRecommendAgentForTask(unittest.TestCase):
 
         analytics = CrossRepoAnalytics()
         recommendation = analytics.recommend_agent_for_task(
-            task="Unknown task",
-            priority="balanced"
+            task="Unknown task", priority="balanced"
         )
 
         self.assertIsNone(recommendation["recommendation"])
 
-    @patch('claude_force.agent_router.get_agent_router')
+    @patch("claude_force.agent_router.get_agent_router")
     def test_recommend_different_priorities(self, mock_get_router):
         """Should handle different priority options."""
         from claude_force.agent_router import AgentMatch
 
         mock_router = Mock()
         mock_agent = AgentMatch(
-            agent_id="test",
-            agent_name="Test",
-            confidence=0.9,
-            source="builtin",
-            installed=True
+            agent_id="test", agent_name="Test", confidence=0.9, source="builtin", installed=True
         )
         mock_router.recommend_agents.return_value = [mock_agent]
         mock_get_router.return_value = mock_router
@@ -394,10 +359,7 @@ class TestRecommendAgentForTask(unittest.TestCase):
         analytics = CrossRepoAnalytics()
 
         for priority in ["speed", "cost", "quality", "balanced"]:
-            recommendation = analytics.recommend_agent_for_task(
-                task="Test",
-                priority=priority
-            )
+            recommendation = analytics.recommend_agent_for_task(task="Test", priority=priority)
 
             self.assertEqual(recommendation["priority"], priority)
             self.assertIn("guidance", recommendation)

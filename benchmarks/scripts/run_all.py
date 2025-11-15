@@ -31,12 +31,8 @@ class BenchmarkRunner:
         self.results = {
             "metadata": {},
             "agent_selection": {},
-            "scenarios": {
-                "simple": [],
-                "medium": [],
-                "complex": []
-            },
-            "summary": {}
+            "scenarios": {"simple": [], "medium": [], "complex": []},
+            "summary": {},
         }
 
     def run_agent_selection_benchmark(self):
@@ -65,21 +61,17 @@ class BenchmarkRunner:
                 "summary": {
                     "total_tests": 0,
                     "average_accuracy": 0,
-                    "average_selection_time_ms": 0
+                    "average_selection_time_ms": 0,
                 },
                 "accuracy_distribution": {},
                 "performance_tiers": {},
-                "detailed_results": []
+                "detailed_results": [],
             }
 
     def list_scenarios(self) -> dict:
         """List all available scenarios"""
         scenarios_dir = Path("benchmarks/scenarios")
-        scenarios = {
-            "simple": [],
-            "medium": [],
-            "complex": []
-        }
+        scenarios = {"simple": [], "medium": [], "complex": []}
 
         if not scenarios_dir.exists():
             print(f"⚠️  Warning: Scenarios directory not found: {scenarios_dir}")
@@ -90,11 +82,13 @@ class BenchmarkRunner:
                 difficulty_dir = scenarios_dir / difficulty
                 if difficulty_dir.exists():
                     for scenario_file in sorted(difficulty_dir.glob("*.md")):
-                        scenarios[difficulty].append({
-                            "file": str(scenario_file),
-                            "name": scenario_file.stem,
-                            "difficulty": difficulty
-                        })
+                        scenarios[difficulty].append(
+                            {
+                                "file": str(scenario_file),
+                                "name": scenario_file.stem,
+                                "difficulty": difficulty,
+                            }
+                        )
         except Exception as e:
             print(f"⚠️  Warning: Error reading scenarios: {e}")
 
@@ -113,11 +107,9 @@ class BenchmarkRunner:
             print(f"\n{difficulty.upper()} Scenarios: {count}")
             for scenario in scenario_list:
                 print(f"  • {scenario['name']}")
-                self.results["scenarios"][difficulty].append({
-                    "name": scenario["name"],
-                    "file": scenario["file"],
-                    "status": "available"
-                })
+                self.results["scenarios"][difficulty].append(
+                    {"name": scenario["name"], "file": scenario["file"], "status": "available"}
+                )
 
         total_scenarios = sum(len(v) for v in scenarios.values())
         print(f"\nTotal Scenarios Available: {total_scenarios}")
@@ -138,8 +130,7 @@ class BenchmarkRunner:
 
         # Scenario summary
         total_scenarios = sum(
-            len(self.results["scenarios"][d])
-            for d in ["simple", "medium", "complex"]
+            len(self.results["scenarios"][d]) for d in ["simple", "medium", "complex"]
         )
 
         summary = {
@@ -148,25 +139,25 @@ class BenchmarkRunner:
             "agent_selection": {
                 "tests_run": agent_metrics.get("total_tests", 0),
                 "average_accuracy": agent_metrics.get("average_accuracy", 0),
-                "average_time_ms": agent_metrics.get("average_selection_time_ms", 0)
+                "average_time_ms": agent_metrics.get("average_selection_time_ms", 0),
             },
             "scenarios_available": {
                 "simple": len(self.results["scenarios"]["simple"]),
                 "medium": len(self.results["scenarios"]["medium"]),
                 "complex": len(self.results["scenarios"]["complex"]),
-                "total": total_scenarios
+                "total": total_scenarios,
             },
             "system_info": {
                 "agents_configured": 15,
                 "workflows_configured": 6,
-                "skills_available": 9
-            }
+                "skills_available": 9,
+            },
         }
 
         self.results["summary"] = summary
         self.results["metadata"] = {
             "generated_at": datetime.now().isoformat(),
-            "benchmark_version": "1.0.0"
+            "benchmark_version": "1.0.0",
         }
 
         # Print summary
@@ -192,7 +183,7 @@ class BenchmarkRunner:
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 json.dump(self.results, f, indent=2)
 
             print(f"\n📊 Complete results saved to: {output_path}")
@@ -242,6 +233,7 @@ class BenchmarkRunner:
             print(f"\n❌ Benchmark failed: {e}")
             print("=" * 70)
             import traceback
+
             print("\nFull error trace:")
             traceback.print_exc()
             return False

@@ -33,12 +33,7 @@ class CLICommandTestCase(unittest.TestCase):
         """
         cmd = [sys.executable, "-m", "claude_force.cli"] + list(args)
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            input=input_text,
-            timeout=timeout,
-            check=False
+            cmd, capture_output=True, text=True, input=input_text, timeout=timeout, check=False
         )
         return result
 
@@ -59,15 +54,13 @@ class TestCLIListCommands(CLICommandTestCase):
                 "code-reviewer": {
                     "file": "agents/code-reviewer.md",
                     "domains": ["code-quality"],
-                    "priority": 1
+                    "priority": 1,
                 }
             },
-            "workflows": {
-                "review": ["code-reviewer"]
-            }
+            "workflows": {"review": ["code-reviewer"]},
         }
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(config, f)
 
         # Create agent file
@@ -129,25 +122,27 @@ class TestCLIInfoCommands(CLICommandTestCase):
                     "file": "agents/backend-developer.md",
                     "domains": ["backend", "api"],
                     "priority": 2,
-                    "description": "Backend development expert"
+                    "description": "Backend development expert",
                 }
-            }
+            },
         }
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(config, f)
 
         # Create agent file
         agents_dir = self.claude_dir / "agents"
         agents_dir.mkdir()
-        (agents_dir / "backend-developer.md").write_text("""
+        (agents_dir / "backend-developer.md").write_text(
+            """
 # Backend Developer
 
 ## Domain Expertise
 - RESTful APIs
 - Database design
 - Backend architecture
-""")
+"""
+        )
 
         self.original_cwd = os.getcwd()
         os.chdir(self.temp_dir)
@@ -202,29 +197,25 @@ class TestCLIRecommendCommand(CLICommandTestCase):
                 "code-reviewer": {
                     "file": "agents/code-reviewer.md",
                     "domains": ["code-quality", "security"],
-                    "priority": 1
+                    "priority": 1,
                 },
                 "backend-developer": {
                     "file": "agents/backend-developer.md",
                     "domains": ["backend", "api"],
-                    "priority": 2
-                }
-            }
+                    "priority": 2,
+                },
+            },
         }
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(config, f)
 
         # Create agent files
         agents_dir = self.claude_dir / "agents"
         agents_dir.mkdir()
 
-        (agents_dir / "code-reviewer.md").write_text(
-            "Expert in code quality and security reviews"
-        )
-        (agents_dir / "backend-developer.md").write_text(
-            "Backend development specialist for APIs"
-        )
+        (agents_dir / "code-reviewer.md").write_text("Expert in code quality and security reviews")
+        (agents_dir / "backend-developer.md").write_text("Backend development specialist for APIs")
 
         self.original_cwd = os.getcwd()
         os.chdir(self.temp_dir)
@@ -237,8 +228,7 @@ class TestCLIRecommendCommand(CLICommandTestCase):
     def test_recommend_agent(self):
         """Test agent recommendation for a task."""
         result = self.run_command(
-            "recommend",
-            "--task", "Review authentication code for vulnerabilities"
+            "recommend", "--task", "Review authentication code for vulnerabilities"
         )
 
         # May fail if sentence-transformers not installed
@@ -251,11 +241,7 @@ class TestCLIRecommendCommand(CLICommandTestCase):
 
     def test_recommend_with_top_k(self):
         """Test recommendation with top-k limit."""
-        result = self.run_command(
-            "recommend",
-            "--task", "Build REST API",
-            "--top-k", "2"
-        )
+        result = self.run_command("recommend", "--task", "Build REST API", "--top-k", "2")
 
         # Check command accepts top-k parameter
         # (may fail if dependencies missing)
@@ -273,7 +259,7 @@ class TestCLIAnalyzeCommand(CLICommandTestCase):
 
         # Create config
         config = {"name": "test-project", "agents": {}}
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(config, f)
 
         # Create metrics directory with sample data
@@ -281,19 +267,24 @@ class TestCLIAnalyzeCommand(CLICommandTestCase):
         metrics_dir.mkdir()
 
         # Create sample metrics
-        with open(metrics_dir / "executions.jsonl", 'w') as f:
-            f.write(json.dumps({
-                "timestamp": "2024-01-15T10:00:00",
-                "agent_name": "code-reviewer",
-                "task_hash": "abc123",
-                "success": True,
-                "execution_time_ms": 1500.0,
-                "model": "claude-3-5-sonnet-20241022",
-                "input_tokens": 100,
-                "output_tokens": 200,
-                "total_tokens": 300,
-                "estimated_cost": 0.0045
-            }) + '\n')
+        with open(metrics_dir / "executions.jsonl", "w") as f:
+            f.write(
+                json.dumps(
+                    {
+                        "timestamp": "2024-01-15T10:00:00",
+                        "agent_name": "code-reviewer",
+                        "task_hash": "abc123",
+                        "success": True,
+                        "execution_time_ms": 1500.0,
+                        "model": "claude-3-5-sonnet-20241022",
+                        "input_tokens": 100,
+                        "output_tokens": 200,
+                        "total_tokens": 300,
+                        "estimated_cost": 0.0045,
+                    }
+                )
+                + "\n"
+            )
 
         self.original_cwd = os.getcwd()
         os.chdir(self.temp_dir)
@@ -310,9 +301,7 @@ class TestCLIAnalyzeCommand(CLICommandTestCase):
         if result.returncode == 0:
             # Should show analytics
             output = result.stdout.lower()
-            self.assertTrue(
-                any(word in output for word in ["execution", "cost", "token"])
-            )
+            self.assertTrue(any(word in output for word in ["execution", "cost", "token"]))
 
     def test_analyze_json_output(self):
         """Test analyze with JSON format."""
@@ -375,18 +364,18 @@ class TestCLIComposeCommand(CLICommandTestCase):
                 "backend-developer": {
                     "file": "agents/backend-developer.md",
                     "domains": ["backend"],
-                    "priority": 2
+                    "priority": 2,
                 },
                 "code-reviewer": {
                     "file": "agents/code-reviewer.md",
                     "domains": ["code-quality"],
-                    "priority": 1
-                }
+                    "priority": 1,
+                },
             },
-            "workflows": {}
+            "workflows": {},
         }
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(config, f)
 
         # Create agent files
@@ -406,9 +395,7 @@ class TestCLIComposeCommand(CLICommandTestCase):
     def test_compose_workflow(self):
         """Test creating a custom workflow."""
         result = self.run_command(
-            "compose",
-            "custom-workflow",
-            "--agents", "backend-developer", "code-reviewer"
+            "compose", "custom-workflow", "--agents", "backend-developer", "code-reviewer"
         )
 
         # Should either succeed or show helpful message
@@ -432,12 +419,12 @@ class TestCLIExportImportCommands(CLICommandTestCase):
                 "test-agent": {
                     "file": "agents/test-agent.md",
                     "domains": ["testing"],
-                    "priority": 2
+                    "priority": 2,
                 }
-            }
+            },
         }
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(self.config, f)
 
         # Create agent file
@@ -457,10 +444,7 @@ class TestCLIExportImportCommands(CLICommandTestCase):
         """Test exporting configuration."""
         export_file = Path(self.temp_dir) / "export.json"
 
-        result = self.run_command(
-            "export",
-            "--output", str(export_file)
-        )
+        result = self.run_command("export", "--output", str(export_file))
 
         if result.returncode == 0:
             # Verify export file created
@@ -475,16 +459,10 @@ class TestCLIExportImportCommands(CLICommandTestCase):
         """Test importing configuration."""
         # Create import file
         import_file = Path(self.temp_dir) / "import.json"
-        with open(import_file, 'w') as f:
-            json.dump({
-                "name": "imported-project",
-                "agents": {}
-            }, f)
+        with open(import_file, "w") as f:
+            json.dump({"name": "imported-project", "agents": {}}, f)
 
-        result = self.run_command(
-            "import",
-            "--input", str(import_file)
-        )
+        result = self.run_command("import", "--input", str(import_file))
 
         # Should either succeed or show helpful message
         self.assertIn(result.returncode, [0, 1])
@@ -504,15 +482,11 @@ class TestCLIValidationCommands(CLICommandTestCase):
             "name": "test-project",
             "version": "1.0",
             "agents": {
-                "test-agent": {
-                    "file": "agents/test-agent.md",
-                    "domains": ["test"],
-                    "priority": 1
-                }
-            }
+                "test-agent": {"file": "agents/test-agent.md", "domains": ["test"], "priority": 1}
+            },
         }
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(config, f)
 
         # Create agent file
@@ -541,7 +515,7 @@ class TestCLIValidationCommands(CLICommandTestCase):
         # Create invalid config (missing required fields)
         invalid_config = {"name": "test"}  # Missing version, agents, etc.
 
-        with open(self.claude_dir / "claude.json", 'w') as f:
+        with open(self.claude_dir / "claude.json", "w") as f:
             json.dump(invalid_config, f)
 
         result = self.run_command("validate")
