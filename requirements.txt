@@ -3,6 +3,7 @@
 
 # Core
 anthropic>=0.40.0          # Anthropic Claude API client
+PyYAML>=6.0.0              # YAML parsing for templates and configuration
 
 # Performance optimization (async & caching)
 tenacity>=8.0.0            # Retry logic for transient failures

@@ -26,6 +26,7 @@ classifiers = [
 keywords = ["claude", "anthropic", "ai", "agents", "multi-agent", "orchestration"]
 dependencies = [
     "anthropic>=0.40.0",
+    "PyYAML>=6.0.0",
 ]
 requires-python = ">=3.8"
 
