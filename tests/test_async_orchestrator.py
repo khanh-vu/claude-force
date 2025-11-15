@@ -143,14 +143,22 @@ async def test_valid_agent_names():
 @pytest.mark.asyncio
 async def test_timeout_protection():
     """Test that operations timeout correctly."""
-    orchestrator = AsyncAgentOrchestrator(timeout_seconds=1, enable_cache=False)
+    orchestrator = AsyncAgentOrchestrator(
+        timeout_seconds=1, enable_cache=False, api_key="test-key"
+    )
 
     # Mock slow API call
     async def slow_response(*args, **kwargs):
         await asyncio.sleep(10)  # Sleep longer than timeout
         return mock.Mock()
 
-    with mock.patch.object(orchestrator.async_client.messages, "create", side_effect=slow_response):
+    # Create mock client
+    mock_client = mock.Mock()
+    mock_client.messages.create = slow_response
+
+    with mock.patch.object(
+        type(orchestrator), "async_client", new_callable=mock.PropertyMock, return_value=mock_client
+    ):
         with mock.patch.object(
             orchestrator, "load_agent_definition", return_value="Agent definition"
         ):
@@ -240,7 +248,7 @@ async def test_semaphore_initialization():
 @pytest.mark.asyncio
 async def test_retry_on_transient_failure():
     """Test that transient failures are retried."""
-    orchestrator = AsyncAgentOrchestrator(max_retries=3, enable_cache=False)
+    orchestrator = AsyncAgentOrchestrator(max_retries=3, enable_cache=False, api_key="test-key")
 
     # Mock API that fails twice then succeeds
     call_count = 0
@@ -259,7 +267,13 @@ async def test_retry_on_transient_failure():
         mock_response.model = "claude-3-5-sonnet-20241022"
         return mock_response
 
-    with mock.patch.object(orchestrator.async_client.messages, "create", side_effect=flaky_api):
+    # Create mock client
+    mock_client = mock.Mock()
+    mock_client.messages.create = flaky_api
+
+    with mock.patch.object(
+        type(orchestrator), "async_client", new_callable=mock.PropertyMock, return_value=mock_client
+    ):
         with mock.patch.object(
             orchestrator, "load_agent_definition", return_value="Agent definition"
         ):
@@ -272,13 +286,19 @@ async def test_retry_on_transient_failure():
 @pytest.mark.asyncio
 async def test_retry_exhaustion():
     """Test that retry logic gives up after max attempts."""
-    orchestrator = AsyncAgentOrchestrator(max_retries=2, enable_cache=False)
+    orchestrator = AsyncAgentOrchestrator(max_retries=2, enable_cache=False, api_key="test-key")
 
     # Mock API that always fails
     async def always_fail(*args, **kwargs):
         raise ConnectionError("Network error")
 
-    with mock.patch.object(orchestrator.async_client.messages, "create", side_effect=always_fail):
+    # Create mock client
+    mock_client = mock.Mock()
+    mock_client.messages.create = always_fail
+
+    with mock.patch.object(
+        type(orchestrator), "async_client", new_callable=mock.PropertyMock, return_value=mock_client
+    ):
         with mock.patch.object(
             orchestrator, "load_agent_definition", return_value="Agent definition"
         ):
@@ -362,7 +382,7 @@ async def test_performance_tracking():
 @pytest.mark.asyncio
 async def test_client_cleanup():
     """Test that async client is properly cleaned up."""
-    orchestrator = AsyncAgentOrchestrator()
+    orchestrator = AsyncAgentOrchestrator(api_key="test-key")
 
     # Initialize client
     _ = orchestrator.async_client
