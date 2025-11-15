@@ -45,14 +45,11 @@ class TestAgentDefinitionCaching(unittest.TestCase):
                 "test-agent": {
                     "file": "agents/test-agent.md",
                     "contract": "contracts/test-agent.contract",
-                    "domains": ["testing"]
+                    "domains": ["testing"],
                 },
-                "test-agent-no-contract": {
-                    "file": "agents/test-agent.md",
-                    "domains": ["testing"]
-                }
+                "test-agent-no-contract": {"file": "agents/test-agent.md", "domains": ["testing"]},
             },
-            "workflows": {}
+            "workflows": {},
         }
 
         with open(self.config_file, "w") as f:
@@ -64,10 +61,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
     def test_definition_cached_after_first_load(self):
         """Agent definition is cached after first load."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # First load - reads from disk
         definition1 = orchestrator._load_agent_definition("test-agent")
@@ -84,15 +78,12 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
         # Verify cache statistics
         stats = orchestrator.get_cache_stats()
-        self.assertEqual(stats['definition_cache_size'], 1)
-        self.assertIn("test-agent", stats['cached_agents'])
+        self.assertEqual(stats["definition_cache_size"], 1)
+        self.assertIn("test-agent", stats["cached_agents"])
 
     def test_contract_cached_after_first_load(self):
         """Agent contract is cached after first load."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # First load
         contract1 = orchestrator._load_agent_contract("test-agent")
@@ -108,10 +99,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
     def test_cache_speedup(self):
         """Cached access is faster than disk read."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # First load (cold - from disk)
         start = time.perf_counter()
@@ -132,10 +120,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
     def test_clear_cache(self):
         """clear_agent_cache() clears both caches."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Load and verify cached
         orchestrator._load_agent_definition("test-agent")
@@ -152,15 +137,12 @@ class TestAgentDefinitionCaching(unittest.TestCase):
         self.assertEqual(len(orchestrator._contract_cache), 0)
 
         stats = orchestrator.get_cache_stats()
-        self.assertEqual(stats['definition_cache_size'], 0)
-        self.assertEqual(stats['contract_cache_size'], 0)
+        self.assertEqual(stats["definition_cache_size"], 0)
+        self.assertEqual(stats["contract_cache_size"], 0)
 
     def test_cache_maxsize_limit(self):
         """Cache respects maxsize limit (128 by default)."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Artificially set low maxsize for testing
         orchestrator._cache_maxsize = 3
@@ -173,7 +155,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
             orchestrator.config["agents"][agent_name] = {
                 "file": f"agents/{agent_name}.md",
-                "domains": ["testing"]
+                "domains": ["testing"],
             }
 
             # Load the agent
@@ -184,14 +166,11 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
         # Should have most recent 3 agents
         stats = orchestrator.get_cache_stats()
-        self.assertEqual(stats['definition_cache_size'], 3)
+        self.assertEqual(stats["definition_cache_size"], 3)
 
     def test_empty_contract_cached(self):
         """Empty contract (when no contract file) is cached."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Load agent without contract
         contract = orchestrator._load_agent_contract("test-agent-no-contract")
@@ -205,17 +184,14 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
     def test_cache_stats(self):
         """get_cache_stats() returns accurate statistics."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Initial state
         stats = orchestrator.get_cache_stats()
-        self.assertEqual(stats['definition_cache_size'], 0)
-        self.assertEqual(stats['contract_cache_size'], 0)
-        self.assertEqual(stats['cache_maxsize'], 128)
-        self.assertEqual(stats['cached_agents'], [])
+        self.assertEqual(stats["definition_cache_size"], 0)
+        self.assertEqual(stats["contract_cache_size"], 0)
+        self.assertEqual(stats["cache_maxsize"], 128)
+        self.assertEqual(stats["cached_agents"], [])
 
         # Load agent
         orchestrator._load_agent_definition("test-agent")
@@ -223,16 +199,13 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
         # Updated stats
         stats = orchestrator.get_cache_stats()
-        self.assertEqual(stats['definition_cache_size'], 1)
-        self.assertEqual(stats['contract_cache_size'], 1)
-        self.assertIn("test-agent", stats['cached_agents'])
+        self.assertEqual(stats["definition_cache_size"], 1)
+        self.assertEqual(stats["contract_cache_size"], 1)
+        self.assertIn("test-agent", stats["cached_agents"])
 
     def test_cache_after_file_modification(self):
         """Cache can be cleared to reload modified files."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Load original definition
         definition1 = orchestrator._load_agent_definition("test-agent")
@@ -255,10 +228,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
     def test_multiple_agents_cached_independently(self):
         """Multiple agents are cached independently."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Create second agent
         agent2_file = self.agents_dir / "agent2.md"
@@ -266,7 +236,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
         orchestrator.config["agents"]["agent2"] = {
             "file": "agents/agent2.md",
-            "domains": ["testing"]
+            "domains": ["testing"],
         }
 
         # Load both agents
@@ -284,9 +254,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
     def test_cache_persists_across_multiple_calls(self):
         """Cache persists across multiple run_agent calls."""
         orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            anthropic_api_key="test-key",
-            validate_api_key=False
+            config_path=str(self.config_file), anthropic_api_key="test-key", validate_api_key=False
         )
 
         # Simulate multiple executions of the same agent
@@ -297,7 +265,7 @@ class TestAgentDefinitionCaching(unittest.TestCase):
 
         # Should still only have 1 cached entry
         stats = orchestrator.get_cache_stats()
-        self.assertEqual(stats['definition_cache_size'], 1)
+        self.assertEqual(stats["definition_cache_size"], 1)
 
 
 class TestCachingPerformanceBenchmark(unittest.TestCase):
@@ -321,13 +289,8 @@ class TestCachingPerformanceBenchmark(unittest.TestCase):
 
         # Create config
         config = {
-            "agents": {
-                "test-agent": {
-                    "file": "agents/test-agent.md",
-                    "domains": ["testing"]
-                }
-            },
-            "workflows": {}
+            "agents": {"test-agent": {"file": "agents/test-agent.md", "domains": ["testing"]}},
+            "workflows": {},
         }
 
         with open(self.config_file, "w") as f:
@@ -339,10 +302,7 @@ class TestCachingPerformanceBenchmark(unittest.TestCase):
 
     def test_caching_speedup_benchmark(self):
         """Measure actual speedup from caching."""
-        orchestrator = AgentOrchestrator(
-            config_path=str(self.config_file),
-            validate_api_key=False
-        )
+        orchestrator = AgentOrchestrator(config_path=str(self.config_file), validate_api_key=False)
 
         # Benchmark first load (cold)
         cold_times = []
@@ -366,7 +326,7 @@ class TestCachingPerformanceBenchmark(unittest.TestCase):
         self.assertLessEqual(avg_warm, avg_cold)
 
         # Calculate speedup
-        speedup = (avg_cold / avg_warm) if avg_warm > 0 else float('inf')
+        speedup = (avg_cold / avg_warm) if avg_warm > 0 else float("inf")
 
         # Report results
         print(f"\nCaching Performance Benchmark:")

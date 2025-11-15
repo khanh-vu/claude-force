@@ -242,7 +242,7 @@ class AgentOrchestrator:
             "definition_cache_size": len(self._definition_cache),
             "contract_cache_size": len(self._contract_cache),
             "cache_maxsize": self._cache_maxsize,
-            "cached_agents": list(self._definition_cache.keys())
+            "cached_agents": list(self._definition_cache.keys()),
         }
 
     def _build_prompt(
