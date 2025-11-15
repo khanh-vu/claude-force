@@ -421,7 +421,7 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**Version**: 2.2.0
+**Version**: 1.0.0
 **Status**: Production-Ready ✅
 **Tests**: 331/331 Passing ✅
 **Marketplace**: Integrated ✅
