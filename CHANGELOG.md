@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **This release adds 4 new specialized agents for AI/ML, data engineering, prompt engineering, and Claude Code expertise, plus 2 meta skills for system extensibility.**
 
+### Fixed
+
+- **Missing PyYAML dependency** - Added PyYAML>=6.0.0 to requirements.txt and pyproject.toml dependencies
+  - Fixed `ModuleNotFoundError: No module named 'yaml'` error when running `claude-force init`
+  - PyYAML is required for template parsing in quick_start.py, marketplace.py, and import_export.py
+  - Users no longer need to manually install PyYAML
+
 ### Added
 
 #### New Agents (4)
