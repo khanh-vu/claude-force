@@ -31,16 +31,26 @@ from pathlib import Path
 from typing import Optional
 
 from .orchestrator import AgentOrchestrator
+from .constants import (
+    MAX_TASK_SIZE_MB,
+    MAX_TASK_SIZE_BYTES,
+    MAX_TASK_LOG_CHARS,
+    COL_WIDTH_NAME,
+    COL_WIDTH_PRIORITY,
+    COL_WIDTH_AGENT,
+    COL_WIDTH_RUNS,
+    COL_WIDTH_SUCCESS,
+    COL_WIDTH_TIME,
+    COL_WIDTH_COST,
+    percent,
+)
 
 
 # =============================================================================
 # SECURITY CONFIGURATION
 # =============================================================================
 # SEC-02: Input size limits to prevent DoS attacks
-
-# Maximum task input size (10MB)
-MAX_TASK_SIZE_MB = 10
-MAX_TASK_SIZE_BYTES = MAX_TASK_SIZE_MB * 1024 * 1024
+# (Constants imported from constants.py)
 
 
 def validate_task_input(task: Optional[str] = None, task_file: Optional[str] = None) -> str:
@@ -120,7 +130,7 @@ def cmd_list_agents(args):
 
         # Table output
         print("\n📋 Available Agents\n")
-        print(f"{'Name':<30} {'Priority':<10} {'Domains'}")
+        print(f"{'Name':<{COL_WIDTH_NAME}} {'Priority':<{COL_WIDTH_PRIORITY}} {'Domains'}")
         print("-" * 80)
 
         for agent in agents:
@@ -128,7 +138,7 @@ def cmd_list_agents(args):
             if len(agent["domains"]) > 3:
                 domains += "..."
             priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(agent["priority"], "Low")
-            print(f"{agent['name']:<30} {priority_label:<10} {domains}")
+            print(f"{agent['name']:<{COL_WIDTH_NAME}} {priority_label:<{COL_WIDTH_PRIORITY}} {domains}")
 
         print(f"\nTotal: {len(agents)} agents")
 
@@ -453,7 +463,7 @@ def cmd_metrics(args):
                 return
 
             print("Per-Agent Statistics:\n")
-            print(f"{'Agent':<30} {'Runs':>6} {'Success':>8} {'Avg Time':>10} {'Cost':>10}")
+            print(f"{'Agent':<{COL_WIDTH_AGENT}} {'Runs':>{COL_WIDTH_RUNS}} {'Success':>{COL_WIDTH_SUCCESS}} {'Avg Time':>{COL_WIDTH_TIME}} {'Cost':>{COL_WIDTH_COST}}")
             print("-" * 70)
 
             for agent, data in sorted(
@@ -464,7 +474,7 @@ def cmd_metrics(args):
                 cost = f"${data['total_cost']:.4f}"
 
                 print(
-                    f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}"
+                    f"{agent:<{COL_WIDTH_AGENT}} {data['executions']:>{COL_WIDTH_RUNS}} {success_rate:>{COL_WIDTH_SUCCESS}} {avg_time:>{COL_WIDTH_TIME}} {cost:>{COL_WIDTH_COST}}"
                 )
 
         # Cost breakdown
@@ -475,18 +485,18 @@ def cmd_metrics(args):
 
             print("By Agent:")
             for agent, cost in list(costs["by_agent"].items())[:10]:
-                pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
+                pct = percent(cost, costs["total"])
                 bar_length = int(pct / 2)  # 0-50 chars
                 bar = "█" * bar_length
 
-                print(f"  {agent:<30} ${cost:>8.4f} {bar} {pct:.1f}%")
+                print(f"  {agent:<{COL_WIDTH_AGENT}} ${cost:>8.4f} {bar} {pct:.1f}%")
 
             if len(costs["by_agent"]) > 10:
                 print(f"  ... and {len(costs['by_agent']) - 10} more agents")
 
             print("\nBy Model:")
             for model, cost in costs["by_model"].items():
-                pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
+                pct = percent(cost, costs["total"])
                 print(f"  {model:<40} ${cost:>8.4f} ({pct:.1f}%)")
 
         # Export

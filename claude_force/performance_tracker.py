@@ -13,6 +13,13 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from collections import defaultdict, deque
 
+from .constants import (
+    MAX_METRICS_IN_MEMORY,
+    DEFAULT_METRICS_EXPORT_FORMAT,
+    DEFAULT_TREND_INTERVAL_HOURS,
+    METRICS_RETENTION_DAYS,
+)
+
 
 # Claude API pricing (as of 2024-01)
 # https://www.anthropic.com/pricing
@@ -66,7 +73,7 @@ class PerformanceTracker:
     def __init__(
         self,
         metrics_dir: str = ".claude/metrics",
-        max_entries: int = 10000,
+        max_entries: int = MAX_METRICS_IN_MEMORY,
         enable_persistence: bool = True,
     ):
         """
@@ -342,7 +349,7 @@ class PerformanceTracker:
             "total": sum(by_agent.values()),
         }
 
-    def get_trends(self, interval_hours: int = 24) -> Dict[str, List]:
+    def get_trends(self, interval_hours: int = DEFAULT_TREND_INTERVAL_HOURS) -> Dict[str, List]:
         """
         Get performance trends over time
 
@@ -424,7 +431,7 @@ class PerformanceTracker:
         self._summary_cache = None
         self._cache_dirty = True
 
-    def clear_old_metrics(self, days: int = 30):
+    def clear_old_metrics(self, days: int = METRICS_RETENTION_DAYS):
         """
         Clear metrics older than specified days
 
@@ -481,7 +488,7 @@ class PerformanceTracker:
 
 def get_tracker(
     metrics_dir: str = ".claude/metrics",
-    max_entries: int = 10000,
+    max_entries: int = MAX_METRICS_IN_MEMORY,
     enable_persistence: bool = True,
 ) -> PerformanceTracker:
     """

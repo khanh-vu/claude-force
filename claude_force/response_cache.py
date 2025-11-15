@@ -22,6 +22,12 @@ from typing import Optional, Dict, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 
+from .constants import (
+    DEFAULT_CACHE_TTL_HOURS,
+    MAX_CACHE_SIZE_MB,
+    DEFAULT_CACHE_SECRET,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,8 +74,8 @@ class ResponseCache:
     def __init__(
         self,
         cache_dir: Optional[Path] = None,
-        ttl_hours: int = 24,
-        max_size_mb: int = 100,
+        ttl_hours: int = DEFAULT_CACHE_TTL_HOURS,
+        max_size_mb: int = MAX_CACHE_SIZE_MB,
         enabled: bool = True,
         cache_secret: Optional[str] = None,
         exclude_agents: Optional[list] = None,
@@ -121,12 +127,12 @@ class ResponseCache:
 
         # ✅ HMAC secret for integrity verification
         self.cache_secret = cache_secret or os.getenv(
-            "CLAUDE_CACHE_SECRET", "default_secret_change_in_production"
+            "CLAUDE_CACHE_SECRET", DEFAULT_CACHE_SECRET
         )
 
         # ✅ SEC-01: Enforce secure secret in production
         is_production = os.getenv("CLAUDE_ENV") == "production"
-        using_default_secret = self.cache_secret == "default_secret_change_in_production"
+        using_default_secret = self.cache_secret == DEFAULT_CACHE_SECRET
 
         if is_production and using_default_secret:
             raise ValueError(
