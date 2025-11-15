@@ -51,15 +51,13 @@ class TestConcurrentStress:
                 config = orchestrator.generate_config(
                     template=template,
                     project_name=project_name,
-                    description="Test concurrent initialization"
+                    description="Test concurrent initialization",
                 )
 
                 # Initialize project
                 project_dir.parent.mkdir(parents=True, exist_ok=True)
                 orchestrator.initialize_project(
-                    config=config,
-                    output_dir=str(project_dir),
-                    create_examples=False
+                    config=config, output_dir=str(project_dir), create_examples=False
                 )
                 return True
             except Exception as e:
@@ -101,14 +99,14 @@ class TestConcurrentStress:
         num_operations = 100
 
         def random_operation():
-            op = random.choice(['list', 'search', 'get'])
+            op = random.choice(["list", "search", "get"])
             try:
-                if op == 'list':
+                if op == "list":
                     manager.list_available()
-                elif op == 'search':
-                    manager.search(random.choice(['python', 'test', 'api']))
-                elif op == 'get':
-                    manager.get_plugin('wshobson-python-toolkit')
+                elif op == "search":
+                    manager.search(random.choice(["python", "test", "api"]))
+                elif op == "get":
+                    manager.get_plugin("wshobson-python-toolkit")
                 return True
             except Exception as e:
                 return False
@@ -193,17 +191,13 @@ class TestLargeScaleOperations:
 
         # Generate config
         config = orchestrator.generate_config(
-            template=template,
-            project_name="massive_project",
-            description=description
+            template=template, project_name="massive_project", description=description
         )
 
         # Initialize project
         project_dir.parent.mkdir(parents=True, exist_ok=True)
         orchestrator.initialize_project(
-            config=config,
-            output_dir=str(project_dir),
-            create_examples=False
+            config=config, output_dir=str(project_dir), create_examples=False
         )
 
         # Verify project was created
@@ -265,7 +259,8 @@ class TestLargeScaleOperations:
 
         for i in range(50):
             agent_file = wshobson_dir / f"agent_{i}.md"
-            agent_file.write_text(f"""# Agent {i}
+            agent_file.write_text(
+                f"""# Agent {i}
 
 Expert in area {i}.
 
@@ -275,16 +270,14 @@ Expert in area {i}.
 
 ## When to use
 Use this agent for task {i}.
-""")
+"""
+            )
 
         # Bulk import
-        results = tool.bulk_import(
-            source_dir=str(wshobson_dir),
-            pattern="agent_*.md"
-        )
+        results = tool.bulk_import(source_dir=str(wshobson_dir), pattern="agent_*.md")
 
-        assert len(results['imported']) == 50
-        assert len(results['failed']) == 0
+        assert len(results["imported"]) == 50
+        assert len(results["failed"]) == 0
 
     def test_large_workflow_composition(self):
         """Test composing workflows with many agents"""
@@ -293,7 +286,7 @@ Use this agent for task {i}.
         # Request a workflow with maximum agents
         workflow = composer.compose_workflow(
             goal="Build complete enterprise application with all features",
-            max_agents=20  # Request many agents
+            max_agents=20,  # Request many agents
         )
 
         assert workflow is not None
@@ -367,12 +360,15 @@ class TestMemoryAndPerformance:
     def test_large_file_handling(self, tmp_path):
         """Test handling very large configuration files"""
         large_config = {
-            "agents": {f"agent_{i}": {
-                "file": f"agents/agent_{i}.md",
-                "contract": f"contracts/agent_{i}.contract",
-                "domains": [f"domain{j}" for j in range(100)],
-                "priority": 1
-            } for i in range(1000)}  # 1000 agents
+            "agents": {
+                f"agent_{i}": {
+                    "file": f"agents/agent_{i}.md",
+                    "contract": f"contracts/agent_{i}.contract",
+                    "domains": [f"domain{j}" for j in range(100)],
+                    "priority": 1,
+                }
+                for i in range(1000)
+            }  # 1000 agents
         }
 
         config_file = tmp_path / "claude.json"
@@ -400,7 +396,7 @@ class TestMemoryAndPerformance:
                     with open(test_file) as f:
                         data = json.load(f)
                     data["counter"] += 1
-                    with open(test_file, 'w') as f:
+                    with open(test_file, "w") as f:
                         json.dump(data, f)
 
         threads = [threading.Thread(target=increment_counter) for _ in range(10)]
@@ -545,6 +541,7 @@ class TestErrorRecoveryAndResilience:
 
         # Delete the skills directory
         import shutil
+
         if tmp_path.exists():
             shutil.rmtree(tmp_path)
 
@@ -602,7 +599,7 @@ class TestErrorRecoveryAndResilience:
 
     def test_permission_denied_handling(self, tmp_path):
         """Test handling of permission denied errors"""
-        if os.name == 'nt':  # Skip on Windows
+        if os.name == "nt":  # Skip on Windows
             pytest.skip("Permission tests not reliable on Windows")
 
         test_dir = tmp_path / "readonly"
@@ -617,7 +614,7 @@ class TestErrorRecoveryAndResilience:
         # Note: Permission behavior is system-specific (root, containers, etc.)
         # Both success and PermissionError are acceptable outcomes
         try:
-            with open(test_dir / "newfile.json", 'w') as f:
+            with open(test_dir / "newfile.json", "w") as f:
                 f.write("{}")
             # May succeed on some systems (e.g., root, containers)
         except (PermissionError, OSError):
@@ -637,7 +634,7 @@ class TestErrorRecoveryAndResilience:
                     data = json.load(f)
                 time.sleep(0.001)  # Simulate processing
                 data["value"] += 1
-                with open(test_file, 'w') as f:
+                with open(test_file, "w") as f:
                     json.dump(data, f)
                 return True
             except Exception:
@@ -665,8 +662,7 @@ class TestIntegrationScenarios:
         # 2. Compose workflow
         composer = WorkflowComposer()
         workflow = composer.compose_workflow(
-            goal="Build REST API with authentication",
-            max_agents=5
+            goal="Build REST API with authentication", max_agents=5
         )
         assert workflow is not None
 
@@ -701,7 +697,8 @@ class TestIntegrationScenarios:
         wshobson_dir.mkdir()
 
         original_agent = wshobson_dir / "test_agent.md"
-        original_agent.write_text("""# Test Agent
+        original_agent.write_text(
+            """# Test Agent
 
 Expert in testing.
 
@@ -711,12 +708,13 @@ Expert in testing.
 
 ## When to use
 Use for testing tasks.
-""")
+"""
+        )
 
         # Import
         result = tool.import_from_wshobson(str(original_agent))
         assert result is not None
-        assert 'name' in result
+        assert "name" in result
 
         # Export
         export_dir = tmp_path / "export"
@@ -735,8 +733,7 @@ Use for testing tasks.
 
         # Compare agents
         report = analytics.compare_agents(
-            task="Review code for security",
-            agents=["code-reviewer", "security-specialist"]
+            task="Review code for security", agents=["code-reviewer", "security-specialist"]
         )
 
         assert report is not None
@@ -753,7 +750,8 @@ Use for testing tasks.
         agent_dir = agents_dir / "custom_agent"
         agent_dir.mkdir()
         agent_file = agent_dir / "AGENT.md"
-        agent_file.write_text("""# Custom Agent
+        agent_file.write_text(
+            """# Custom Agent
 
 ## Role
 Custom agent for testing
@@ -768,7 +766,8 @@ Custom agent for testing
 
 ## Output Format
 Test results and reports.
-""")
+"""
+        )
 
         # Validate
         validation = contrib_mgr.validate_agent_for_contribution("custom_agent")
@@ -776,8 +775,7 @@ Test results and reports.
 
         # Prepare contribution
         package = contrib_mgr.prepare_contribution(
-            agent_name="custom_agent",
-            target_repo="wshobson"
+            agent_name="custom_agent", target_repo="wshobson"
         )
         assert package is not None
         assert package.agent_name == "custom_agent"
@@ -794,9 +792,9 @@ Test results and reports.
         assert template is not None
 
         # 3. Verify template has required attributes
-        assert hasattr(template, 'name')
-        assert hasattr(template, 'description')
-        assert hasattr(template, 'tech_stack')
+        assert hasattr(template, "name")
+        assert hasattr(template, "description")
+        assert hasattr(template, "tech_stack")
 
 
 class TestEndToEndWorkflows:
@@ -806,20 +804,18 @@ class TestEndToEndWorkflows:
         """Test complete REST API development workflow"""
         # Route to agents
         router = AgentRouter()
-        agent_matches = router.recommend_agents(
-            task="Design REST API with authentication",
-            top_k=5
-        )
+        agent_matches = router.recommend_agents(task="Design REST API with authentication", top_k=5)
 
         assert len(agent_matches) > 0
-        assert any("backend" in m.agent_name.lower() or "api" in m.agent_name.lower()
-                  for m in agent_matches)
+        assert any(
+            "backend" in m.agent_name.lower() or "api" in m.agent_name.lower()
+            for m in agent_matches
+        )
 
         # Compose workflow
         composer = WorkflowComposer()
         workflow = composer.compose_workflow(
-            goal="Build REST API with JWT authentication and PostgreSQL",
-            max_agents=8
+            goal="Build REST API with JWT authentication and PostgreSQL", max_agents=8
         )
 
         assert workflow is not None
@@ -831,18 +827,14 @@ class TestEndToEndWorkflows:
         """Test complete ML pipeline workflow"""
         # Route to agents
         router = AgentRouter()
-        agent_matches = router.recommend_agents(
-            task="Build ML training pipeline",
-            top_k=5
-        )
+        agent_matches = router.recommend_agents(task="Build ML training pipeline", top_k=5)
 
         assert len(agent_matches) > 0
 
         # Compose workflow
         composer = WorkflowComposer()
         workflow = composer.compose_workflow(
-            goal="Train and deploy ML model with monitoring",
-            max_agents=6
+            goal="Train and deploy ML model with monitoring", max_agents=6
         )
 
         assert workflow is not None
@@ -851,18 +843,14 @@ class TestEndToEndWorkflows:
         """Test complete data engineering workflow"""
         # Get recommendations
         router = AgentRouter()
-        matches = router.recommend_agents(
-            task="Build ETL data pipeline",
-            top_k=5
-        )
+        matches = router.recommend_agents(task="Build ETL data pipeline", top_k=5)
 
         assert len(matches) > 0
 
         # Compose workflow
         composer = WorkflowComposer()
         workflow = composer.compose_workflow(
-            goal="Build ETL pipeline with data quality checks",
-            max_agents=5
+            goal="Build ETL pipeline with data quality checks", max_agents=5
         )
 
         assert workflow is not None
@@ -871,18 +859,14 @@ class TestEndToEndWorkflows:
         """Test multi-stage deployment workflow"""
         # Get deployment agents
         router = AgentRouter()
-        matches = router.recommend_agents(
-            task="Deploy to Kubernetes with monitoring",
-            top_k=5
-        )
+        matches = router.recommend_agents(task="Deploy to Kubernetes with monitoring", top_k=5)
 
         assert len(matches) > 0
 
         # Compose deployment workflow
         composer = WorkflowComposer()
         workflow = composer.compose_workflow(
-            goal="Deploy to production with monitoring and rollback",
-            max_agents=6
+            goal="Deploy to production with monitoring and rollback", max_agents=6
         )
 
         assert workflow is not None

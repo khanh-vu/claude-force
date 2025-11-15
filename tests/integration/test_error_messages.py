@@ -32,31 +32,31 @@ class TestEnhancedErrorMessages(unittest.TestCase):
                 "code-reviewer": {
                     "file": "code-reviewer.md",
                     "priority": 1,
-                    "domains": ["code-review", "quality"]
+                    "domains": ["code-review", "quality"],
                 },
                 "test-writer": {
                     "file": "test-writer.md",
                     "priority": 2,
-                    "domains": ["testing", "qa"]
+                    "domains": ["testing", "qa"],
                 },
                 "doc-writer": {
                     "file": "doc-writer.md",
                     "priority": 3,
-                    "domains": ["documentation"]
-                }
+                    "domains": ["documentation"],
+                },
             },
             "workflows": {
                 "full-review": ["code-reviewer", "test-writer"],
-                "quick-check": ["code-reviewer"]
-            }
+                "quick-check": ["code-reviewer"],
+            },
         }
 
         self.config_path = self.config_dir / "claude.json"
-        with open(self.config_path, 'w') as f:
+        with open(self.config_path, "w") as f:
             json.dump(self.config, f)
 
         # Create dummy agent files
-        for agent_name in self.config['agents'].keys():
+        for agent_name in self.config["agents"].keys():
             agent_file = self.config_dir / f"{agent_name}.md"
             agent_file.write_text(f"# {agent_name}\n\nTest agent")
 
@@ -64,10 +64,9 @@ class TestEnhancedErrorMessages(unittest.TestCase):
         """Test agent not found error suggests correct name for typo."""
         from claude_force.orchestrator import AgentOrchestrator
 
-        with patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'}):
+        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
             orchestrator = AgentOrchestrator(
-                config_path=str(self.config_path),
-                enable_tracking=False
+                config_path=str(self.config_path), enable_tracking=False
             )
 
             # Try to get info for misspelled agent
@@ -84,10 +83,9 @@ class TestEnhancedErrorMessages(unittest.TestCase):
         """Test agent not found error shows available agents when no match."""
         from claude_force.orchestrator import AgentOrchestrator
 
-        with patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'}):
+        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
             orchestrator = AgentOrchestrator(
-                config_path=str(self.config_path),
-                enable_tracking=False
+                config_path=str(self.config_path), enable_tracking=False
             )
 
             # Try to get info for non-existent agent
@@ -103,11 +101,10 @@ class TestEnhancedErrorMessages(unittest.TestCase):
         """Test workflow not found error suggests correct name for typo."""
         from claude_force.orchestrator import AgentOrchestrator
 
-        with patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'}):
-            with patch('anthropic.Client') as mock_client:
+        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
+            with patch("anthropic.Client") as mock_client:
                 orchestrator = AgentOrchestrator(
-                    config_path=str(self.config_path),
-                    enable_tracking=False
+                    config_path=str(self.config_path), enable_tracking=False
                 )
 
                 # Try to run workflow with typo
@@ -125,12 +122,12 @@ class TestEnhancedErrorMessages(unittest.TestCase):
         from claude_force.orchestrator import AgentOrchestrator
 
         # Clear any existing API key
-        with patch.dict('os.environ', {}, clear=True):
+        with patch.dict("os.environ", {}, clear=True):
             with self.assertRaises(ValueError) as context:
                 AgentOrchestrator(
                     config_path=str(self.config_path),
                     anthropic_api_key=None,
-                    validate_api_key=True  # Force validation for testing
+                    validate_api_key=True,  # Force validation for testing
                 )
 
             error_msg = str(context.exception)
@@ -143,11 +140,9 @@ class TestEnhancedErrorMessages(unittest.TestCase):
         """Test config not found error provides helpful setup instructions."""
         from claude_force.orchestrator import AgentOrchestrator
 
-        with patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'}):
+        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
             with self.assertRaises(FileNotFoundError) as context:
-                AgentOrchestrator(
-                    config_path="/nonexistent/claude.json"
-                )
+                AgentOrchestrator(config_path="/nonexistent/claude.json")
 
             error_msg = str(context.exception)
             self.assertIn("not found", error_msg)
@@ -157,10 +152,9 @@ class TestEnhancedErrorMessages(unittest.TestCase):
         """Test tracking disabled error provides helpful instructions."""
         from claude_force.orchestrator import AgentOrchestrator
 
-        with patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'}):
+        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
             orchestrator = AgentOrchestrator(
-                config_path=str(self.config_path),
-                enable_tracking=False  # Disable tracking
+                config_path=str(self.config_path), enable_tracking=False  # Disable tracking
             )
 
             # Try to get performance summary when tracking disabled

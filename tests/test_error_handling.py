@@ -11,18 +11,9 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import yaml
 
-from claude_force.quick_start import (
-    QuickStartOrchestrator,
-    get_quick_start_orchestrator
-)
-from claude_force.hybrid_orchestrator import (
-    HybridOrchestrator,
-    get_hybrid_orchestrator
-)
-from claude_force.skills_manager import (
-    ProgressiveSkillsManager,
-    get_skills_manager
-)
+from claude_force.quick_start import QuickStartOrchestrator, get_quick_start_orchestrator
+from claude_force.hybrid_orchestrator import HybridOrchestrator, get_hybrid_orchestrator
+from claude_force.skills_manager import ProgressiveSkillsManager, get_skills_manager
 
 
 class TestQuickStartErrorHandling(unittest.TestCase):
@@ -44,8 +35,7 @@ class TestQuickStartErrorHandling(unittest.TestCase):
         # Should raise ValueError (which wraps the YAML error)
         with self.assertRaises(ValueError) as cm:
             orchestrator = get_quick_start_orchestrator(
-                templates_path=str(templates_file),
-                use_semantic=False
+                templates_path=str(templates_file), use_semantic=False
             )
 
         # Verify it mentions the underlying issue
@@ -58,8 +48,7 @@ class TestQuickStartErrorHandling(unittest.TestCase):
         # Should raise ValueError (which wraps FileNotFoundError)
         with self.assertRaises(ValueError) as cm:
             orchestrator = get_quick_start_orchestrator(
-                templates_path=str(nonexistent),
-                use_semantic=False
+                templates_path=str(nonexistent), use_semantic=False
             )
 
         # Verify it mentions the file not found issue
@@ -99,14 +88,12 @@ class TestQuickStartErrorHandling(unittest.TestCase):
             "my-project!@#$%",
             "project/with/slashes",
             "project\x00null",
-            "project<script>xss</script>"
+            "project<script>xss</script>",
         ]
 
         for name in special_names:
             config = orchestrator.generate_config(
-                template=template,
-                project_name=name,
-                description="Test project"
+                template=template, project_name=name, description="Test project"
             )
             # Should handle gracefully (sanitize or accept)
             self.assertIsNotNone(config)
@@ -118,15 +105,13 @@ class TestQuickStartErrorHandling(unittest.TestCase):
         import os
 
         # Skip on Windows or if running as root (permissions don't work the same)
-        if sys.platform == 'win32' or os.geteuid() == 0:
+        if sys.platform == "win32" or os.geteuid() == 0:
             self.skipTest("Permission handling is platform/user-specific")
 
         orchestrator = get_quick_start_orchestrator(use_semantic=False)
         template = orchestrator.templates[0]
         config = orchestrator.generate_config(
-            template=template,
-            project_name="test",
-            description="Test"
+            template=template, project_name="test", description="Test"
         )
 
         # Create directory with no write permissions
@@ -140,16 +125,12 @@ class TestQuickStartErrorHandling(unittest.TestCase):
             # Permission errors may or may not be raised depending on filesystem
             # This test verifies the code doesn't crash, at minimum
             try:
-                result = orchestrator.initialize_project(
-                    config=config,
-                    output_dir=str(output_dir)
-                )
+                result = orchestrator.initialize_project(config=config, output_dir=str(output_dir))
                 # If it succeeded, permissions weren't enforced (e.g., root user)
                 self.skipTest("Permissions not enforced in this environment")
             except (PermissionError, OSError) as e:
                 # Expected - permission denied
-                self.assertIn("permission", str(e).lower(),
-                             "Error should mention permissions")
+                self.assertIn("permission", str(e).lower(), "Error should mention permissions")
         finally:
             # Cleanup
             no_write_dir.chmod(0o755)
@@ -163,20 +144,19 @@ class TestQuickStartErrorHandling(unittest.TestCase):
             "templates": [
                 {
                     "id": "incomplete",
-                    "name": "Incomplete Template"
+                    "name": "Incomplete Template",
                     # Missing: description, agents, workflows, etc.
                 }
             ]
         }
 
-        with open(templates_file, 'w') as f:
+        with open(templates_file, "w") as f:
             yaml.dump(invalid_template, f)
 
         # Should handle gracefully or raise descriptive error
         try:
             orchestrator = get_quick_start_orchestrator(
-                templates_path=str(templates_file),
-                use_semantic=False
+                templates_path=str(templates_file), use_semantic=False
             )
             # If it loads, the template should be skipped or have defaults
             self.assertIsNotNone(orchestrator)
@@ -188,7 +168,7 @@ class TestQuickStartErrorHandling(unittest.TestCase):
 class TestHybridOrchestratorErrorHandling(unittest.TestCase):
     """Test error handling in HybridOrchestrator."""
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_invalid_model_name(self, mock_init):
         """Test handling of invalid model names."""
         mock_init.return_value = None
@@ -197,15 +177,13 @@ class TestHybridOrchestratorErrorHandling(unittest.TestCase):
         # Invalid model tier - should return default (Sonnet)
         # The method doesn't raise an error, it defaults to safe choice
         model = orchestrator.select_model_for_agent(
-            "test-agent",
-            "Test task",
-            task_complexity="invalid_complexity"
+            "test-agent", "Test task", task_complexity="invalid_complexity"
         )
 
         # Should return the default Sonnet model
         self.assertEqual(model, orchestrator.MODELS["sonnet"])
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_cost_threshold_exceeded(self, mock_init):
         """Test behavior when cost threshold is exceeded."""
         mock_init.return_value = None
@@ -220,7 +198,7 @@ class TestHybridOrchestratorErrorHandling(unittest.TestCase):
             # Verify warning would be logged
             self.assertGreater(estimate.estimated_cost, orchestrator.cost_threshold)
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_empty_task_string(self, mock_init):
         """Test handling of empty task strings."""
         mock_init.return_value = None
@@ -234,7 +212,7 @@ class TestHybridOrchestratorErrorHandling(unittest.TestCase):
         complexity = orchestrator._analyze_task_complexity("   \n\t  ", "test-agent")
         self.assertIn(complexity, ["simple", "complex", "critical"])
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_very_long_task(self, mock_init):
         """Test handling of very long tasks (>100K chars)."""
         mock_init.return_value = None
@@ -249,7 +227,7 @@ class TestHybridOrchestratorErrorHandling(unittest.TestCase):
         # Long tasks should typically be complex
         self.assertEqual(complexity, "complex")
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_unicode_and_emoji_in_tasks(self, mock_init):
         """Test handling of Unicode and emoji in task descriptions."""
         mock_init.return_value = None
@@ -259,25 +237,20 @@ class TestHybridOrchestratorErrorHandling(unittest.TestCase):
             "Build a web app 🚀",
             "Créer une application française",
             "创建一个中文应用",
-            "Создать русское приложение"
+            "Создать русское приложение",
         ]
 
         for task in unicode_tasks:
             complexity = orchestrator._analyze_task_complexity(task, "test-agent")
             self.assertIn(complexity, ["simple", "complex", "critical"])
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_task_with_only_special_characters(self, mock_init):
         """Test handling of tasks with only special characters."""
         mock_init.return_value = None
         orchestrator = HybridOrchestrator()
 
-        special_tasks = [
-            "!@#$%^&*()",
-            "___---===",
-            "[[[]]]",
-            "<script>alert('xss')</script>"
-        ]
+        special_tasks = ["!@#$%^&*()", "___---===", "[[[]]]", "<script>alert('xss')</script>"]
 
         for task in special_tasks:
             complexity = orchestrator._analyze_task_complexity(task, "test-agent")
@@ -314,7 +287,7 @@ class TestSkillsManagerErrorHandling(unittest.TestCase):
         skill_dir.mkdir()
         skill_file = skill_dir / "SKILL.md"
         # Write binary/invalid content
-        skill_file.write_bytes(b'\x00\x01\x02\x03\x04')
+        skill_file.write_bytes(b"\x00\x01\x02\x03\x04")
 
         manager = ProgressiveSkillsManager(skills_dir=str(skills_dir))
 
@@ -431,9 +404,7 @@ class TestSkillsManagerErrorHandling(unittest.TestCase):
 
         # Unknown agent
         skills = manager.analyze_required_skills(
-            "unknown-agent-12345",
-            "Write tests for the API",
-            include_agent_skills=True
+            "unknown-agent-12345", "Write tests for the API", include_agent_skills=True
         )
 
         # Should still work, just won't have agent-specific skills

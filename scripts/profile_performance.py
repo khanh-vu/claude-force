@@ -21,6 +21,7 @@ def measure_startup_time():
     """Measure time to import claude_force."""
     start = time.perf_counter()
     import claude_force
+
     end = time.perf_counter()
     return (end - start) * 1000  # Convert to ms
 
@@ -30,7 +31,7 @@ def measure_config_load_time(config_path: str):
     from claude_force.orchestrator import AgentOrchestrator
 
     # Set dummy API key
-    os.environ['ANTHROPIC_API_KEY'] = 'sk-ant-test-key-dummy'
+    os.environ["ANTHROPIC_API_KEY"] = "sk-ant-test-key-dummy"
 
     start = time.perf_counter()
     try:
@@ -94,7 +95,7 @@ def profile_orchestrator_creation(config_path: str):
     """Profile orchestrator creation with cProfile."""
     from claude_force.orchestrator import AgentOrchestrator
 
-    os.environ['ANTHROPIC_API_KEY'] = 'sk-ant-test-key-dummy'
+    os.environ["ANTHROPIC_API_KEY"] = "sk-ant-test-key-dummy"
 
     profiler = cProfile.Profile()
     profiler.enable()
@@ -106,7 +107,7 @@ def profile_orchestrator_creation(config_path: str):
 
     # Get stats
     s = StringIO()
-    ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+    ps = pstats.Stats(profiler, stream=s).sort_stats("cumulative")
     ps.print_stats(20)  # Top 20 functions
 
     return s.getvalue()

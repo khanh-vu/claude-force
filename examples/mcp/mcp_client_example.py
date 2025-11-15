@@ -47,7 +47,7 @@ class MCPClient:
         agent_name: str,
         task: str,
         model: str = "claude-3-5-sonnet-20241022",
-        request_id: Optional[str] = None
+        request_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Execute an agent via MCP
@@ -64,10 +64,7 @@ class MCPClient:
         payload = {
             "capability": agent_name,
             "action": "execute_agent",
-            "parameters": {
-                "task": task,
-                "model": model
-            }
+            "parameters": {"task": task, "model": model},
         }
 
         if request_id:
@@ -76,56 +73,43 @@ class MCPClient:
         response = requests.post(
             f"{self.base_url}/execute",
             headers={"Content-Type": "application/json"},
-            data=json.dumps(payload)
+            data=json.dumps(payload),
         )
         response.raise_for_status()
         return response.json()
 
     def execute_workflow(
-        self,
-        workflow_name: str,
-        task: str,
-        model: str = "claude-3-5-sonnet-20241022"
+        self, workflow_name: str, task: str, model: str = "claude-3-5-sonnet-20241022"
     ) -> Dict[str, Any]:
         """Execute a workflow via MCP"""
         payload = {
             "capability": workflow_name,
             "action": "execute_workflow",
-            "parameters": {
-                "task": task,
-                "model": model
-            }
+            "parameters": {"task": task, "model": model},
         }
 
         response = requests.post(
             f"{self.base_url}/execute",
             headers={"Content-Type": "application/json"},
-            data=json.dumps(payload)
+            data=json.dumps(payload),
         )
         response.raise_for_status()
         return response.json()
 
     def recommend_agents(
-        self,
-        task: str,
-        top_k: int = 3,
-        min_confidence: float = 0.3
+        self, task: str, top_k: int = 3, min_confidence: float = 0.3
     ) -> Dict[str, Any]:
         """Get agent recommendations via MCP"""
         payload = {
             "capability": "recommend-agents",
             "action": "recommend_agents",
-            "parameters": {
-                "task": task,
-                "top_k": top_k,
-                "min_confidence": min_confidence
-            }
+            "parameters": {"task": task, "top_k": top_k, "min_confidence": min_confidence},
         }
 
         response = requests.post(
             f"{self.base_url}/execute",
             headers={"Content-Type": "application/json"},
-            data=json.dumps(payload)
+            data=json.dumps(payload),
         )
         response.raise_for_status()
         return response.json()
@@ -135,7 +119,7 @@ class MCPClient:
         payload = {
             "capability": "performance-summary",
             "action": "get_performance",
-            "parameters": {}
+            "parameters": {},
         }
 
         if hours is not None:
@@ -144,7 +128,7 @@ class MCPClient:
         response = requests.post(
             f"{self.base_url}/execute",
             headers={"Content-Type": "application/json"},
-            data=json.dumps(payload)
+            data=json.dumps(payload),
         )
         response.raise_for_status()
         return response.json()
@@ -180,7 +164,7 @@ def main():
 
         # Show first 5 capabilities
         print("Sample capabilities:")
-        for cap in caps['capabilities'][:5]:
+        for cap in caps["capabilities"][:5]:
             print(f"  - {cap['name']} ({cap['type']})")
             print(f"    {cap['description']}")
         print()
@@ -194,10 +178,10 @@ def main():
         try:
             recommendations = client.recommend_agents(task, top_k=3)
 
-            if recommendations['success']:
+            if recommendations["success"]:
                 print("Recommendations:")
-                for rec in recommendations['data']['recommendations']:
-                    confidence = rec['confidence'] * 100
+                for rec in recommendations["data"]["recommendations"]:
+                    confidence = rec["confidence"] * 100
                     print(f"  • {rec['agent']}: {confidence:.1f}% confidence")
                     print(f"    Reasoning: {rec['reasoning'][:80]}...")
             else:
@@ -220,17 +204,15 @@ def login(username, password):
 """
 
         result = client.execute_agent(
-            agent_name="code-reviewer",
-            task=code_task,
-            request_id="demo-001"
+            agent_name="code-reviewer", task=code_task, request_id="demo-001"
         )
 
         print(f"Success: {result['success']}")
         print(f"Request ID: {result['request_id']}")
 
-        if result['success']:
+        if result["success"]:
             print("\nAgent Output (first 300 chars):")
-            print(result['data']['output'][:300] + "...")
+            print(result["data"]["output"][:300] + "...")
             print(f"\nExecution time: {result['metadata']['execution_time']:.0f}ms")
         else:
             print(f"Error: {result['error']}")
@@ -243,8 +225,8 @@ def login(username, password):
         try:
             perf = client.get_performance_summary()
 
-            if perf['success']:
-                summary = perf['data']
+            if perf["success"]:
+                summary = perf["data"]
                 print(f"Total executions: {summary.get('total_executions', 0)}")
                 print(f"Success rate: {summary.get('success_rate', 0):.1%}")
                 print(f"Total cost: ${summary.get('total_cost', 0):.4f}")
@@ -278,6 +260,7 @@ def login(username, password):
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

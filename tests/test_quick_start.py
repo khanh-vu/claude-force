@@ -12,7 +12,7 @@ from claude_force.quick_start import (
     QuickStartOrchestrator,
     ProjectTemplate,
     ProjectConfig,
-    get_quick_start_orchestrator
+    get_quick_start_orchestrator,
 )
 
 
@@ -63,15 +63,11 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         tech_stack = ["React", "FastAPI", "PostgreSQL"]
 
         matches_with_tech = self.orchestrator.match_templates(
-            description,
-            tech_stack=tech_stack,
-            top_k=3
+            description, tech_stack=tech_stack, top_k=3
         )
 
         matches_without_tech = self.orchestrator.match_templates(
-            description,
-            tech_stack=None,
-            top_k=3
+            description, tech_stack=None, top_k=3
         )
 
         # Tech stack should influence matching
@@ -97,9 +93,7 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         """Test project configuration generation."""
         template = self.orchestrator.templates[0]
         config = self.orchestrator.generate_config(
-            template=template,
-            project_name="test-project",
-            description="Test project description"
+            template=template, project_name="test-project", description="Test project description"
         )
 
         self.assertIsInstance(config, ProjectConfig)
@@ -115,16 +109,12 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         """Test .claude directory initialization."""
         template = self.orchestrator.templates[0]
         config = self.orchestrator.generate_config(
-            template=template,
-            project_name="test-project",
-            description="Test project"
+            template=template, project_name="test-project", description="Test project"
         )
 
         output_dir = Path(self.temp_dir) / ".claude"
         result = self.orchestrator.initialize_project(
-            config=config,
-            output_dir=str(output_dir),
-            create_examples=True
+            config=config, output_dir=str(output_dir), create_examples=True
         )
 
         # Check result structure
@@ -153,9 +143,7 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         """Test claude.json file generation."""
         template = self.orchestrator.templates[0]
         config = self.orchestrator.generate_config(
-            template=template,
-            project_name="test-project",
-            description="Test project"
+            template=template, project_name="test-project", description="Test project"
         )
 
         claude_json = self.orchestrator._generate_claude_json(config)
@@ -185,9 +173,7 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         """Test task.md template generation."""
         template = self.orchestrator.templates[0]
         config = self.orchestrator.generate_config(
-            template=template,
-            project_name="test-project",
-            description="Test project"
+            template=template, project_name="test-project", description="Test project"
         )
 
         task_md = self.orchestrator._generate_task_template(config)
@@ -204,9 +190,7 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         """Test README.md generation."""
         template = self.orchestrator.templates[0]
         config = self.orchestrator.generate_config(
-            template=template,
-            project_name="test-project",
-            description="Test project"
+            template=template, project_name="test-project", description="Test project"
         )
 
         readme = self.orchestrator._generate_readme(config)
@@ -226,9 +210,7 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         """Test scorecard.md generation."""
         template = self.orchestrator.templates[0]
         config = self.orchestrator.generate_config(
-            template=template,
-            project_name="test-project",
-            description="Test project"
+            template=template, project_name="test-project", description="Test project"
         )
 
         scorecard = self.orchestrator._generate_scorecard(config)
@@ -244,16 +226,13 @@ class TestQuickStartOrchestrator(unittest.TestCase):
     def test_customizations(self):
         """Test project customizations."""
         template = self.orchestrator.templates[0]
-        customizations = {
-            "use_typescript": True,
-            "include_docker": True
-        }
+        customizations = {"use_typescript": True, "include_docker": True}
 
         config = self.orchestrator.generate_config(
             template=template,
             project_name="test-project",
             description="Test project",
-            customizations=customizations
+            customizations=customizations,
         )
 
         self.assertEqual(config.customizations, customizations)
@@ -320,9 +299,9 @@ class TestSemanticMatching(unittest.TestCase):
         # Top match should be LLM-related
         top_match = matches[0]
         self.assertTrue(
-            "llm" in top_match.id or
-            "rag" in " ".join(top_match.keywords).lower() or
-            any("llm" in kw.lower() for kw in top_match.keywords)
+            "llm" in top_match.id
+            or "rag" in " ".join(top_match.keywords).lower()
+            or any("llm" in kw.lower() for kw in top_match.keywords)
         )
 
     def test_embeddings_precomputed(self):
@@ -332,8 +311,7 @@ class TestSemanticMatching(unittest.TestCase):
 
         self.assertIsNotNone(self.orchestrator.template_embeddings)
         self.assertEqual(
-            len(self.orchestrator.template_embeddings),
-            len(self.orchestrator.templates)
+            len(self.orchestrator.template_embeddings), len(self.orchestrator.templates)
         )
 
 
@@ -368,18 +346,18 @@ class TestGetQuickStartOrchestrator(unittest.TestCase):
                         "skills": ["test-skill"],
                         "keywords": ["test"],
                         "tech_stack": {"testing": ["pytest"]},
-                        "use_cases": ["Testing"]
+                        "use_cases": ["Testing"],
                     }
                 ]
             }
 
             import yaml
-            with open(templates_path, 'w') as f:
+
+            with open(templates_path, "w") as f:
                 yaml.dump(templates_data, f)
 
             orchestrator = get_quick_start_orchestrator(
-                templates_path=str(templates_path),
-                use_semantic=False
+                templates_path=str(templates_path), use_semantic=False
             )
 
             self.assertEqual(len(orchestrator.templates), 1)

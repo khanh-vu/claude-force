@@ -16,7 +16,7 @@ from claude_force.path_validator import (
     validate_path,
     validate_agent_file_path,
     validate_config_file_path,
-    PathValidationError
+    PathValidationError,
 )
 
 

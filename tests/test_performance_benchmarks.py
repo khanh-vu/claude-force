@@ -6,6 +6,7 @@ the expected performance improvements from the optimization plan.
 
 Run with: pytest tests/test_performance_benchmarks.py -v -s
 """
+
 import pytest
 import asyncio
 import time
@@ -22,8 +23,10 @@ from claude_force.response_cache import ResponseCache
 # Performance Test Configuration
 # ============================================================================
 
+
 class PerformanceConfig:
     """Configuration for performance tests"""
+
     # Benchmarks
     BENCHMARK_ITERATIONS = 10
     WARMUP_ITERATIONS = 2
@@ -41,8 +44,10 @@ class PerformanceConfig:
 # Mock Helpers
 # ============================================================================
 
+
 def create_mock_api_response(delay_ms: float = 100):
     """Create a mock API response with configurable delay"""
+
     async def mock_api_call(*args, **kwargs):
         await asyncio.sleep(delay_ms / 1000)  # Convert to seconds
         mock_response = mock.Mock()
@@ -50,12 +55,14 @@ def create_mock_api_response(delay_ms: float = 100):
         mock_response.usage = mock.Mock(input_tokens=100, output_tokens=50)
         mock_response.model = "claude-3-5-sonnet-20241022"
         return mock_response
+
     return mock_api_call
 
 
 # ============================================================================
 # Cache Performance Benchmarks
 # ============================================================================
+
 
 @pytest.mark.benchmark
 def test_cache_hit_performance(tmp_path, benchmark):
@@ -77,7 +84,7 @@ def test_cache_hit_performance(tmp_path, benchmark):
     result = benchmark(cache_hit)
 
     # Verify performance
-    assert benchmark.stats['mean'] < 0.001  # <1ms average
+    assert benchmark.stats["mean"] < 0.001  # <1ms average
     print(f"\n✓ Cache hit: {benchmark.stats['mean']*1000:.3f}ms (target: <1ms)")
 
 
@@ -98,7 +105,7 @@ def test_cache_miss_performance(tmp_path, benchmark):
     result = benchmark(cache_miss)
 
     # Verify performance
-    assert benchmark.stats['mean'] < 0.001  # <1ms average
+    assert benchmark.stats["mean"] < 0.001  # <1ms average
     print(f"\n✓ Cache miss: {benchmark.stats['mean']*1000:.3f}ms (target: <1ms)")
 
 
@@ -114,20 +121,14 @@ def test_cache_write_performance(tmp_path, benchmark):
 
     def cache_write():
         cache.set(
-            f"agent{counter[0]}",
-            f"task{counter[0]}",
-            "model",
-            "response" * 100,
-            1000,
-            500,
-            0.001
+            f"agent{counter[0]}", f"task{counter[0]}", "model", "response" * 100, 1000, 500, 0.001
         )
         counter[0] += 1
 
     benchmark(cache_write)
 
     # Verify performance
-    assert benchmark.stats['mean'] < 0.010  # <10ms average
+    assert benchmark.stats["mean"] < 0.010  # <10ms average
     print(f"\n✓ Cache write: {benchmark.stats['mean']*1000:.3f}ms (target: <10ms)")
 
 
@@ -140,7 +141,7 @@ def test_cache_eviction_performance(tmp_path):
     cache = ResponseCache(
         cache_dir=tmp_path / "cache",
         max_size_mb=1,  # 1MB limit to trigger eviction
-        cache_secret="test_secret"
+        cache_secret="test_secret",
     )
 
     # Fill cache with 1000 entries
@@ -168,11 +169,7 @@ def test_cache_large_response_performance(tmp_path):
     """
     Benchmark: Large response caching (2MB response)
     """
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        max_size_mb=10,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", max_size_mb=10, cache_secret="test_secret")
 
     # 2MB response
     large_response = "x" * (2 * 1024 * 1024)
@@ -193,12 +190,13 @@ def test_cache_large_response_performance(tmp_path):
 
     # Should handle large responses efficiently
     assert write_time < 0.5  # <500ms for 2MB write
-    assert read_time < 0.1   # <100ms for 2MB read
+    assert read_time < 0.1  # <100ms for 2MB read
 
 
 # ============================================================================
 # Async Orchestrator Performance Benchmarks
 # ============================================================================
+
 
 @pytest.mark.asyncio
 @pytest.mark.benchmark
@@ -214,8 +212,8 @@ async def test_async_single_agent_latency():
 
     times = []
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # Warmup
             for _ in range(PerformanceConfig.WARMUP_ITERATIONS):
                 await orchestrator.execute_agent("python-expert", "task")
@@ -251,12 +249,10 @@ async def test_concurrent_execution_speedup():
     mock_api = create_mock_api_response(delay_ms=200)
 
     num_agents = 5
-    tasks: List[Tuple[str, str]] = [
-        ("python-expert", f"task{i}") for i in range(num_agents)
-    ]
+    tasks: List[Tuple[str, str]] = [("python-expert", f"task{i}") for i in range(num_agents)]
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # Sequential execution time (simulated)
             sequential_time = 0.2 * num_agents  # 200ms per agent
 
@@ -291,8 +287,8 @@ async def test_concurrency_scaling():
 
     results = {}
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             for num_agents in PerformanceConfig.CONCURRENT_AGENTS:
                 tasks: List[Tuple[str, str]] = [
                     ("python-expert", f"task{i}") for i in range(num_agents)
@@ -308,7 +304,9 @@ async def test_concurrency_scaling():
     print("\n✓ Concurrency Scaling:")
     for num_agents, elapsed in results.items():
         expected_time = 0.1 * ((num_agents + 9) // 10)  # With max_concurrent=10
-        print(f"  {num_agents:2d} agents: {elapsed*1000:6.1f}ms (expected ~{expected_time*1000:.0f}ms)")
+        print(
+            f"  {num_agents:2d} agents: {elapsed*1000:6.1f}ms (expected ~{expected_time*1000:.0f}ms)"
+        )
 
     # Verify scaling is reasonable
     # With 10 concurrent, 20 agents should take ~2x the time of 10 agents
@@ -324,20 +322,17 @@ async def test_timeout_performance():
     Benchmark: Timeout handling performance
     Ensures timeouts work correctly and don't add overhead
     """
-    orchestrator = AsyncAgentOrchestrator(
-        max_concurrent=10,
-        timeout_seconds=1  # 1 second timeout
-    )
+    orchestrator = AsyncAgentOrchestrator(max_concurrent=10, timeout_seconds=1)  # 1 second timeout
 
     # Mock API that times out
     async def slow_api(*args, **kwargs):
         await asyncio.sleep(10)  # Intentionally slow
         return mock.Mock()
 
-    with mock.patch.object(orchestrator, 'async_client') as mock_client:
+    with mock.patch.object(orchestrator, "async_client") as mock_client:
         mock_client.messages.create = slow_api
 
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             start = time.time()
             result = await orchestrator.execute_agent("python-expert", "task")
             elapsed = time.time() - start
@@ -373,8 +368,8 @@ async def test_retry_performance():
         mock_response.model = "claude-3-5-sonnet-20241022"
         return mock_response
 
-    with mock.patch.object(orchestrator.async_client.messages, 'create', flaky_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator.async_client.messages, "create", flaky_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             start = time.time()
             result = await orchestrator.execute_agent("python-expert", "task")
             elapsed = time.time() - start
@@ -398,6 +393,7 @@ async def test_retry_performance():
 # Task Size Performance Tests
 # ============================================================================
 
+
 @pytest.mark.asyncio
 @pytest.mark.benchmark
 async def test_large_task_performance():
@@ -410,8 +406,8 @@ async def test_large_task_performance():
 
     results = {}
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', mock_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", mock_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             for size in PerformanceConfig.LARGE_TASK_SIZES:
                 task = "x" * size
 
@@ -439,6 +435,7 @@ async def test_large_task_performance():
 # Memory Performance Tests
 # ============================================================================
 
+
 @pytest.mark.benchmark
 def test_cache_memory_efficiency(tmp_path):
     """
@@ -446,11 +443,7 @@ def test_cache_memory_efficiency(tmp_path):
     """
     import sys
 
-    cache = ResponseCache(
-        cache_dir=tmp_path / "cache",
-        max_size_mb=10,
-        cache_secret="test_secret"
-    )
+    cache = ResponseCache(cache_dir=tmp_path / "cache", max_size_mb=10, cache_secret="test_secret")
 
     # Measure memory before
     initial_entries = 0
@@ -460,7 +453,7 @@ def test_cache_memory_efficiency(tmp_path):
         cache.set(f"agent{i}", f"task{i}", "model", "response" * 10, 100, 50, 0.001)
 
     entries = len(cache._memory_cache)
-    cache_size_mb = cache.stats['size_bytes'] / (1024 * 1024)
+    cache_size_mb = cache.stats["size_bytes"] / (1024 * 1024)
 
     print(f"\n✓ Cache entries: {entries}")
     print(f"✓ Cache size: {cache_size_mb:.2f} MB")
@@ -473,6 +466,7 @@ def test_cache_memory_efficiency(tmp_path):
 # ============================================================================
 # End-to-End Performance Tests
 # ============================================================================
+
 
 @pytest.mark.asyncio
 @pytest.mark.benchmark
@@ -487,6 +481,7 @@ async def test_realistic_workflow_performance():
     # Mock API with realistic delays (2-5s)
     async def realistic_api(*args, **kwargs):
         import random
+
         await asyncio.sleep(random.uniform(0.5, 1.0))  # 500ms-1s
         mock_response = mock.Mock()
         mock_response.content = [mock.Mock(text="Realistic response " * 100)]
@@ -497,11 +492,11 @@ async def test_realistic_workflow_performance():
     workflow_agents = [
         ("python-expert", "Analyze code"),
         ("code-reviewer", "Review implementation"),
-        ("bug-investigator", "Check for issues")
+        ("bug-investigator", "Check for issues"),
     ]
 
-    with mock.patch.object(orchestrator, '_call_api_with_retry', realistic_api):
-        with mock.patch.object(orchestrator, 'load_agent_definition', return_value="Agent def"):
+    with mock.patch.object(orchestrator, "_call_api_with_retry", realistic_api):
+        with mock.patch.object(orchestrator, "load_agent_definition", return_value="Agent def"):
             # Sequential workflow
             sequential_start = time.time()
             for agent_name, task in workflow_agents:
@@ -531,6 +526,7 @@ async def test_realistic_workflow_performance():
 # ============================================================================
 # Performance Summary
 # ============================================================================
+
 
 @pytest.mark.benchmark
 def test_performance_summary():

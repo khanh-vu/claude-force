@@ -51,14 +51,12 @@ def main():
         try:
             print(f"🔄 Running {agent_name}...")
             result = orchestrator.run_agent(
-                agent_name=agent_name,
-                task=task,
-                model="claude-3-5-sonnet-20241022"
+                agent_name=agent_name, task=task, model="claude-3-5-sonnet-20241022"
             )
 
             status = "✅" if result.success else "❌"
-            time_ms = result.metadata.get('execution_time_ms', 0)
-            tokens = result.metadata.get('tokens_used', 0)
+            time_ms = result.metadata.get("execution_time_ms", 0)
+            tokens = result.metadata.get("tokens_used", 0)
 
             print(f"   {status} Completed in {time_ms:.0f}ms, {tokens:,} tokens\n")
 
@@ -101,12 +99,16 @@ def main():
         print(f"{'Agent':<30} {'Runs':>6} {'Success':>8} {'Avg Time':>10} {'Cost':>10}")
         print("-" * 70)
 
-        for agent, data in sorted(agent_stats.items(), key=lambda x: x[1]['executions'], reverse=True):
+        for agent, data in sorted(
+            agent_stats.items(), key=lambda x: x[1]["executions"], reverse=True
+        ):
             success_rate = f"{data['success_rate']:.1%}"
             avg_time = f"{data['avg_execution_time_ms']:.0f}ms"
             cost = f"${data['total_cost']:.4f}"
 
-            print(f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}")
+            print(
+                f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}"
+            )
 
     except Exception as e:
         print(f"❌ Error getting agent stats: {e}")
@@ -122,16 +124,16 @@ def main():
         print(f"Total Cost: ${costs['total']:.4f}\n")
 
         print("By Agent:")
-        for agent, cost in costs['by_agent'].items():
-            pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+        for agent, cost in costs["by_agent"].items():
+            pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
             bar_length = int(pct / 2)  # 0-50 chars
             bar = "█" * bar_length
 
             print(f"  {agent:<30} ${cost:>8.4f} {bar} {pct:.1f}%")
 
         print("\nBy Model:")
-        for model, cost in costs['by_model'].items():
-            pct = (cost / costs['total'] * 100) if costs['total'] > 0 else 0
+        for model, cost in costs["by_model"].items():
+            pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
             print(f"  {model:<40} ${cost:>8.4f} ({pct:.1f}%)")
 
     except Exception as e:
@@ -161,7 +163,8 @@ def main():
     print("USAGE IN YOUR CODE")
     print("=" * 70 + "\n")
 
-    print("""
+    print(
+        """
 # Enable tracking (default)
 orchestrator = AgentOrchestrator(enable_tracking=True)
 
@@ -182,7 +185,8 @@ orchestrator.export_performance_metrics("metrics.csv", format="csv")
 # claude-force metrics agents
 # claude-force metrics costs
 # claude-force metrics export metrics.json
-    """)
+    """
+    )
 
     print("\n" + "=" * 70)
 

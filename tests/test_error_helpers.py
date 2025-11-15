@@ -102,10 +102,7 @@ class TestErrorHelpers(unittest.TestCase):
 
     def test_format_missing_dependency_error(self):
         """Test missing dependency error message."""
-        error_msg = format_missing_dependency_error(
-            "anthropic",
-            "pip install anthropic"
-        )
+        error_msg = format_missing_dependency_error("anthropic", "pip install anthropic")
 
         self.assertIn("anthropic", error_msg)
         self.assertIn("pip install anthropic", error_msg)

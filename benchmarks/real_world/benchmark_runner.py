@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 @dataclass
 class QualityMetrics:
     """Quality metrics for code."""
+
     pylint_score: float
     pylint_violations: int
     bandit_issues: int
@@ -44,6 +45,7 @@ class QualityMetrics:
 @dataclass
 class BenchmarkResult:
     """Result from a benchmark run."""
+
     scenario_name: str
     agent_name: str
     success: bool
@@ -64,8 +66,7 @@ class RealWorldBenchmark:
     by running agents on real code samples and comparing against baselines.
     """
 
-    def __init__(self, config_path: str = ".claude/claude.json",
-                 api_key: Optional[str] = None):
+    def __init__(self, config_path: str = ".claude/claude.json", api_key: Optional[str] = None):
         """
         Initialize benchmark system.
 
@@ -110,7 +111,7 @@ class RealWorldBenchmark:
             bandit_severity_medium=0,
             bandit_severity_low=0,
             test_coverage=0.0,
-            lines_of_code=0
+            lines_of_code=0,
         )
 
         if not code_path.exists():
@@ -118,18 +119,20 @@ class RealWorldBenchmark:
 
         # Count lines of code
         try:
-            with open(code_path, 'r') as f:
-                metrics.lines_of_code = len([line for line in f if line.strip() and not line.strip().startswith('#')])
+            with open(code_path, "r") as f:
+                metrics.lines_of_code = len(
+                    [line for line in f if line.strip() and not line.strip().startswith("#")]
+                )
         except:
             pass
 
         # Run Pylint
         try:
             result = subprocess.run(
-                ['pylint', str(code_path), '--output-format=json'],
+                ["pylint", str(code_path), "--output-format=json"],
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
             if result.stdout:
                 pylint_data = json.loads(result.stdout) if result.stdout.strip() else []
@@ -144,23 +147,20 @@ class RealWorldBenchmark:
         # Run Bandit (security)
         try:
             result = subprocess.run(
-                ['bandit', '-f', 'json', str(code_path)],
-                capture_output=True,
-                text=True,
-                timeout=30
+                ["bandit", "-f", "json", str(code_path)], capture_output=True, text=True, timeout=30
             )
             if result.stdout:
                 bandit_data = json.loads(result.stdout)
-                results = bandit_data.get('results', [])
+                results = bandit_data.get("results", [])
                 metrics.bandit_issues = len(results)
 
                 for issue in results:
-                    severity = issue.get('issue_severity', '').upper()
-                    if severity == 'HIGH':
+                    severity = issue.get("issue_severity", "").upper()
+                    if severity == "HIGH":
                         metrics.bandit_severity_high += 1
-                    elif severity == 'MEDIUM':
+                    elif severity == "MEDIUM":
                         metrics.bandit_severity_medium += 1
-                    elif severity == 'LOW':
+                    elif severity == "LOW":
                         metrics.bandit_severity_low += 1
         except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
             # Bandit not installed or timeout
@@ -168,8 +168,9 @@ class RealWorldBenchmark:
 
         return metrics
 
-    def calculate_improvement(self, baseline: QualityMetrics,
-                            improved: QualityMetrics) -> Dict[str, float]:
+    def calculate_improvement(
+        self, baseline: QualityMetrics, improved: QualityMetrics
+    ) -> Dict[str, float]:
         """
         Calculate improvement percentages.
 
@@ -184,35 +185,41 @@ class RealWorldBenchmark:
 
         # Pylint score improvement
         if baseline.pylint_score > 0:
-            improvements['pylint_score'] = ((improved.pylint_score - baseline.pylint_score) /
-                                          baseline.pylint_score * 100)
+            improvements["pylint_score"] = (
+                (improved.pylint_score - baseline.pylint_score) / baseline.pylint_score * 100
+            )
         else:
-            improvements['pylint_score'] = 0.0
+            improvements["pylint_score"] = 0.0
 
         # Violations reduction
         if baseline.pylint_violations > 0:
-            improvements['pylint_violations'] = ((baseline.pylint_violations - improved.pylint_violations) /
-                                                baseline.pylint_violations * 100)
+            improvements["pylint_violations"] = (
+                (baseline.pylint_violations - improved.pylint_violations)
+                / baseline.pylint_violations
+                * 100
+            )
         else:
-            improvements['pylint_violations'] = 0.0
+            improvements["pylint_violations"] = 0.0
 
         # Security issues reduction
         if baseline.bandit_issues > 0:
-            improvements['security_issues'] = ((baseline.bandit_issues - improved.bandit_issues) /
-                                              baseline.bandit_issues * 100)
+            improvements["security_issues"] = (
+                (baseline.bandit_issues - improved.bandit_issues) / baseline.bandit_issues * 100
+            )
         else:
-            improvements['security_issues'] = 0.0
+            improvements["security_issues"] = 0.0
 
         # Test coverage improvement
         if baseline.test_coverage >= 0:
-            improvements['test_coverage'] = improved.test_coverage - baseline.test_coverage
+            improvements["test_coverage"] = improved.test_coverage - baseline.test_coverage
         else:
-            improvements['test_coverage'] = 0.0
+            improvements["test_coverage"] = 0.0
 
         return improvements
 
-    def run_benchmark(self, scenario_name: str, agent_name: str,
-                     baseline_code: Path, task: str) -> BenchmarkResult:
+    def run_benchmark(
+        self, scenario_name: str, agent_name: str, baseline_code: Path, task: str
+    ) -> BenchmarkResult:
         """
         Run a single benchmark scenario.
 
@@ -235,13 +242,14 @@ class RealWorldBenchmark:
             if self.demo_mode:
                 # Demo mode - simulate improvements
                 from claude_force.demo_mode import DemoOrchestrator
+
                 orchestrator = DemoOrchestrator(config_path=self.config_path)
             else:
                 # Real mode - use actual API
                 from claude_force.orchestrator import AgentOrchestrator
+
                 orchestrator = AgentOrchestrator(
-                    config_path=self.config_path,
-                    anthropic_api_key=self.api_key
+                    config_path=self.config_path, anthropic_api_key=self.api_key
                 )
 
             # Run agent
@@ -258,7 +266,7 @@ class RealWorldBenchmark:
                     improvement_percent={},
                     agent_output=result.output,
                     timestamp=timestamp,
-                    error=str(result.errors) if result.errors else "Unknown error"
+                    error=str(result.errors) if result.errors else "Unknown error",
                 )
 
             # In demo mode, simulate improvements
@@ -271,13 +279,15 @@ class RealWorldBenchmark:
                     bandit_severity_medium=baseline_metrics.bandit_severity_medium,
                     bandit_severity_low=baseline_metrics.bandit_severity_low,
                     test_coverage=min(100.0, baseline_metrics.test_coverage + 15.0),
-                    lines_of_code=baseline_metrics.lines_of_code
+                    lines_of_code=baseline_metrics.lines_of_code,
                 )
             else:
                 # Real mode: Code extraction from agent output is a planned enhancement
                 # Requires: 1) Running actual agent, 2) Parsing output, 3) Extracting code blocks
                 # Current implementation: Use baseline as fallback
-                logger.info(f"Real mode benchmark for {scenario_name} - using baseline (code extraction pending)")
+                logger.info(
+                    f"Real mode benchmark for {scenario_name} - using baseline (code extraction pending)"
+                )
                 improved_metrics = baseline_metrics
 
             # Calculate improvements
@@ -293,8 +303,10 @@ class RealWorldBenchmark:
                 baseline_metrics=baseline_metrics,
                 improved_metrics=improved_metrics,
                 improvement_percent=improvements,
-                agent_output=result.output[:500] + "..." if len(result.output) > 500 else result.output,
-                timestamp=timestamp
+                agent_output=(
+                    result.output[:500] + "..." if len(result.output) > 500 else result.output
+                ),
+                timestamp=timestamp,
             )
 
         except Exception as e:
@@ -309,11 +321,12 @@ class RealWorldBenchmark:
                 improvement_percent={},
                 agent_output="",
                 timestamp=timestamp,
-                error=str(e)
+                error=str(e),
             )
 
-    def generate_report(self, results: List[BenchmarkResult],
-                       output_path: Optional[Path] = None) -> str:
+    def generate_report(
+        self, results: List[BenchmarkResult], output_path: Optional[Path] = None
+    ) -> str:
         """
         Generate comprehensive benchmark report.
 
@@ -327,14 +340,14 @@ class RealWorldBenchmark:
         if output_path:
             # Save JSON report
             report_data = {
-                'timestamp': datetime.now().isoformat(),
-                'total_benchmarks': len(results),
-                'successful': len([r for r in results if r.success]),
-                'failed': len([r for r in results if not r.success]),
-                'results': [asdict(r) for r in results]
+                "timestamp": datetime.now().isoformat(),
+                "total_benchmarks": len(results),
+                "successful": len([r for r in results if r.success]),
+                "failed": len([r for r in results if not r.success]),
+                "results": [asdict(r) for r in results],
             }
 
-            with open(output_path, 'w') as f:
+            with open(output_path, "w") as f:
                 json.dump(report_data, f, indent=2)
 
         # Generate text report
@@ -352,35 +365,39 @@ class RealWorldBenchmark:
             "=" * 80,
             "RESULTS BY SCENARIO",
             "=" * 80,
-            ""
+            "",
         ]
 
         for result in results:
             status = "✅ SUCCESS" if result.success else "❌ FAILED"
-            report_lines.extend([
-                f"Scenario: {result.scenario_name}",
-                f"Agent: {result.agent_name}",
-                f"Status: {status}",
-                f"Execution Time: {result.execution_time_ms:.2f}ms",
-                ""
-            ])
+            report_lines.extend(
+                [
+                    f"Scenario: {result.scenario_name}",
+                    f"Agent: {result.agent_name}",
+                    f"Status: {status}",
+                    f"Execution Time: {result.execution_time_ms:.2f}ms",
+                    "",
+                ]
+            )
 
             if result.success:
-                report_lines.extend([
-                    "Baseline Metrics:",
-                    f"  Pylint Score: {result.baseline_metrics.pylint_score:.2f}/10",
-                    f"  Pylint Violations: {result.baseline_metrics.pylint_violations}",
-                    f"  Security Issues: {result.baseline_metrics.bandit_issues}",
-                    f"  Test Coverage: {result.baseline_metrics.test_coverage:.1f}%",
-                    "",
-                    "Improved Metrics:",
-                    f"  Pylint Score: {result.improved_metrics.pylint_score:.2f}/10",
-                    f"  Pylint Violations: {result.improved_metrics.pylint_violations}",
-                    f"  Security Issues: {result.improved_metrics.bandit_issues}",
-                    f"  Test Coverage: {result.improved_metrics.test_coverage:.1f}%",
-                    "",
-                    "Improvements:",
-                ])
+                report_lines.extend(
+                    [
+                        "Baseline Metrics:",
+                        f"  Pylint Score: {result.baseline_metrics.pylint_score:.2f}/10",
+                        f"  Pylint Violations: {result.baseline_metrics.pylint_violations}",
+                        f"  Security Issues: {result.baseline_metrics.bandit_issues}",
+                        f"  Test Coverage: {result.baseline_metrics.test_coverage:.1f}%",
+                        "",
+                        "Improved Metrics:",
+                        f"  Pylint Score: {result.improved_metrics.pylint_score:.2f}/10",
+                        f"  Pylint Violations: {result.improved_metrics.pylint_violations}",
+                        f"  Security Issues: {result.improved_metrics.bandit_issues}",
+                        f"  Test Coverage: {result.improved_metrics.test_coverage:.1f}%",
+                        "",
+                        "Improvements:",
+                    ]
+                )
 
                 for key, value in result.improvement_percent.items():
                     report_lines.append(f"  {key}: {value:+.1f}%")
@@ -401,44 +418,21 @@ def main():
     parser = argparse.ArgumentParser(
         description="Run real-world benchmarks for claude-force agents"
     )
+    parser.add_argument("--scenario", help="Scenario name to run")
     parser.add_argument(
-        "--scenario",
-        help="Scenario name to run"
+        "--agent", default="code-reviewer", help="Agent to benchmark (default: code-reviewer)"
+    )
+    parser.add_argument("--baseline", type=Path, help="Path to baseline code file")
+    parser.add_argument(
+        "--task", default="Review and improve this code", help="Task description for agent"
+    )
+    parser.add_argument("--all", action="store_true", help="Run all predefined scenarios")
+    parser.add_argument("--report", type=Path, help="Path to save JSON report")
+    parser.add_argument(
+        "--config", default=".claude/claude.json", help="Path to claude.json configuration"
     )
     parser.add_argument(
-        "--agent",
-        default="code-reviewer",
-        help="Agent to benchmark (default: code-reviewer)"
-    )
-    parser.add_argument(
-        "--baseline",
-        type=Path,
-        help="Path to baseline code file"
-    )
-    parser.add_argument(
-        "--task",
-        default="Review and improve this code",
-        help="Task description for agent"
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help="Run all predefined scenarios"
-    )
-    parser.add_argument(
-        "--report",
-        type=Path,
-        help="Path to save JSON report"
-    )
-    parser.add_argument(
-        "--config",
-        default=".claude/claude.json",
-        help="Path to claude.json configuration"
-    )
-    parser.add_argument(
-        "--demo",
-        action="store_true",
-        help="Run in demo mode (no API key required)"
+        "--demo", action="store_true", help="Run in demo mode (no API key required)"
     )
 
     args = parser.parse_args()
@@ -463,7 +457,7 @@ def main():
             scenario_name=args.scenario,
             agent_name=args.agent,
             baseline_code=args.baseline,
-            task=args.task
+            task=args.task,
         )
 
         results.append(result)

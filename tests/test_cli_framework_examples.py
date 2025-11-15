@@ -11,7 +11,7 @@ from tests.cli_test_framework import (
     CLITestTemplate,
     CLIFixtures,
     CLIMockHelpers,
-    quick_cli_test
+    quick_cli_test,
 )
 
 
@@ -48,10 +48,7 @@ class TestCLIWithTemporaryProject(CLITestTemplate):
     def test_init_command(self):
         """Test init command in temporary directory."""
         result = self.run_cli(
-            "init",
-            str(self.temp_dir),
-            "--name", "test-project",
-            "--description", "Test project"
+            "init", str(self.temp_dir), "--name", "test-project", "--description", "Test project"
         )
 
         self.assert_success(result)
@@ -110,9 +107,7 @@ class TestCLIWithFixtures(CLITestTemplate):
 
         # Create test agent
         agent_path = CLIFixtures.create_test_agent(
-            self.claude_dir,
-            "custom-agent",
-            ["domain1", "domain2"]
+            self.claude_dir, "custom-agent", ["domain1", "domain2"]
         )
 
         self.assert_file_exists(agent_path)
@@ -166,11 +161,7 @@ class TestCLIAdvancedAssertions(CLITestTemplate):
         self.assert_success(result)
 
         # Check for multiple expected strings
-        self.assert_output_contains_all(result, [
-            "test-agent-1",
-            "test-agent-2",
-            "Total: 2 agents"
-        ])
+        self.assert_output_contains_all(result, ["test-agent-1", "test-agent-2", "Total: 2 agents"])
 
     def test_output_regex_matching(self):
         """Test output matches regex pattern."""
@@ -185,25 +176,17 @@ class TestCLIAdvancedAssertions(CLITestTemplate):
     def test_directory_structure_validation(self):
         """Test complete directory structure."""
         result = self.run_cli(
-            "init",
-            str(self.temp_dir),
-            "--name", "test-project",
-            "--description", "Test project"
+            "init", str(self.temp_dir), "--name", "test-project", "--description", "Test project"
         )
         self.assert_success(result)
 
         # Verify expected directory structure
-        self.assert_directory_structure(self.temp_dir, [
-            ".claude/claude.json",
-            ".claude/agents"
-        ])
+        self.assert_directory_structure(self.temp_dir, [".claude/claude.json", ".claude/agents"])
 
     def test_json_value_assertions(self):
         """Test specific JSON values."""
         config = CLIFixtures.create_minimal_config(
-            self.claude_dir,
-            name="my-project",
-            version="2.0.0"
+            self.claude_dir, name="my-project", version="2.0.0"
         )
 
         result = self.run_cli("list", "agents", "--json")
@@ -232,11 +215,7 @@ class TestCLIErrorHandling(CLITestTemplate):
     def test_helpful_error_for_missing_config(self):
         """Test error message when config is missing."""
         result = self.run_cli("list", "agents")
-        self.assert_helpful_error(result, [
-            "Configuration",
-            "not found",
-            "claude-force init"
-        ])
+        self.assert_helpful_error(result, ["Configuration", "not found", "claude-force init"])
 
     def test_helpful_error_for_invalid_agent(self):
         """Test error message for nonexistent agent."""
@@ -257,4 +236,5 @@ class TestCLIErrorHandling(CLITestTemplate):
 
 if __name__ == "__main__":
     import unittest
+
     unittest.main()

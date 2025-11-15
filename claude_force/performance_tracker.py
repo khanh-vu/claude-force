@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from collections import defaultdict
+from collections import defaultdict, deque
 
 
 # Claude API pricing (as of 2024-01)
@@ -63,21 +63,41 @@ class PerformanceTracker:
     Provides analytics, trends, and export functionality.
     """
 
-    def __init__(self, metrics_dir: str = ".claude/metrics"):
+    def __init__(
+        self,
+        metrics_dir: str = ".claude/metrics",
+        max_entries: int = 10000,
+        enable_persistence: bool = True,
+    ):
         """
-        Initialize performance tracker
+        Initialize performance tracker with bounded memory.
 
         Args:
             metrics_dir: Directory to store metrics data
+            max_entries: Maximum metrics to keep in memory (ring buffer)
+            enable_persistence: Whether to persist to disk (JSONL)
+
+        Raises:
+            ValueError: If max_entries is not positive
         """
+        if max_entries <= 0:
+            raise ValueError(f"max_entries must be positive, got {max_entries}")
+
         self.metrics_dir = Path(metrics_dir)
         self.metrics_dir.mkdir(parents=True, exist_ok=True)
 
         self.metrics_file = self.metrics_dir / "executions.jsonl"
         self.summary_file = self.metrics_dir / "summary.json"
 
-        # In-memory cache
-        self._cache: List[ExecutionMetrics] = []
+        # Ring buffer for bounded memory usage
+        self.max_entries = max_entries
+        self.enable_persistence = enable_persistence
+        self._cache = deque(maxlen=max_entries)
+
+        # Summary caching
+        self._summary_cache: Optional[Dict[str, Any]] = None
+        self._cache_dirty = True
+
         self._load_cache()
 
     def _load_cache(self):
@@ -175,21 +195,25 @@ class PerformanceTracker:
             workflow_position=workflow_position,
         )
 
-        # Add to cache
+        # Add to ring buffer (auto-evicts oldest if at capacity)
         self._cache.append(metrics)
+        self._cache_dirty = True
 
-        # Append to file (JSONL format)
-        try:
-            with open(self.metrics_file, "a") as f:
-                f.write(json.dumps(asdict(metrics)) + "\n")
-        except Exception as e:
-            print(f"Warning: Could not save metrics: {e}")
+        # Persist to disk if enabled
+        if self.enable_persistence:
+            try:
+                with open(self.metrics_file, "a") as f:
+                    f.write(json.dumps(asdict(metrics)) + "\n")
+            except Exception as e:
+                print(f"Warning: Could not save metrics: {e}")
 
         return metrics
 
     def get_summary(self, hours: Optional[int] = None) -> Dict[str, Any]:
         """
-        Get summary statistics
+        Get summary statistics with caching.
+
+        Caches computed summary and only recomputes when metrics change.
 
         Args:
             hours: Only include last N hours (None for all time)
@@ -197,7 +221,24 @@ class PerformanceTracker:
         Returns:
             Dictionary with summary statistics
         """
-        metrics = self._cache
+        # If time filter is specified, can't use cache
+        if hours:
+            return self._compute_summary(hours)
+
+        # Use cached summary if available and clean
+        if not self._cache_dirty and self._summary_cache:
+            return self._summary_cache
+
+        # Compute and cache summary
+        summary = self._compute_summary(hours)
+        self._summary_cache = summary
+        self._cache_dirty = False
+
+        return summary
+
+    def _compute_summary(self, hours: Optional[int] = None) -> Dict[str, Any]:
+        """Compute summary statistics (internal helper)"""
+        metrics = list(self._cache)
 
         # Filter by time if specified
         if hours:
@@ -207,7 +248,15 @@ class PerformanceTracker:
             ]
 
         if not metrics:
-            return {"total_executions": 0, "success_rate": 0, "total_cost": 0, "total_tokens": 0}
+            return {
+                "total_executions": 0,
+                "success_rate": 0,
+                "total_cost": 0,
+                "total_tokens": 0,
+                "in_memory_count": len(self._cache),
+                "max_entries": self.max_entries,
+                "memory_usage_mb": self._estimate_memory_usage(),
+            }
 
         total = len(metrics)
         successful = sum(1 for m in metrics if m.success)
@@ -224,7 +273,22 @@ class PerformanceTracker:
             "avg_execution_time_ms": sum(m.execution_time_ms for m in metrics) / total,
             "avg_cost_per_execution": sum(m.estimated_cost for m in metrics) / total,
             "time_period": f"last {hours} hours" if hours else "all time",
+            "in_memory_count": len(self._cache),
+            "max_entries": self.max_entries,
+            "memory_usage_mb": self._estimate_memory_usage(),
         }
+
+    def _estimate_memory_usage(self) -> float:
+        """
+        Estimate memory usage in MB.
+
+        Returns:
+            Estimated memory usage in megabytes
+        """
+        # Rough estimate: ~1KB per metric entry
+        bytes_per_entry = 1024
+        total_bytes = len(self._cache) * bytes_per_entry
+        return total_bytes / (1024 * 1024)
 
     def get_agent_stats(self, agent_name: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -354,6 +418,12 @@ class PerformanceTracker:
         with open(output_file, "w") as f:
             json.dump(data, f, indent=2)
 
+    def clear(self):
+        """Clear all in-memory metrics."""
+        self._cache.clear()
+        self._summary_cache = None
+        self._cache_dirty = True
+
     def clear_old_metrics(self, days: int = 30):
         """
         Clear metrics older than specified days
@@ -363,25 +433,68 @@ class PerformanceTracker:
         """
         cutoff = datetime.now().timestamp() - (days * 86400)
 
-        # Filter cache
-        self._cache = [
-            m for m in self._cache if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
-        ]
+        # If persistence is enabled, filter from disk (not just ring buffer)
+        if self.enable_persistence and self.metrics_file.exists():
+            # Read all metrics from disk
+            all_metrics = []
+            try:
+                with open(self.metrics_file, "r") as f:
+                    for line in f:
+                        if line.strip():
+                            data = json.loads(line)
+                            metric = ExecutionMetrics(**data)
+                            if datetime.fromisoformat(metric.timestamp).timestamp() > cutoff:
+                                all_metrics.append(metric)
+            except Exception as e:
+                print(f"Warning: Could not read metrics file: {e}")
+                # Fall back to filtering ring buffer only
+                all_metrics = [
+                    m
+                    for m in self._cache
+                    if datetime.fromisoformat(m.timestamp).timestamp() > cutoff
+                ]
 
-        # Rewrite file
-        with open(self.metrics_file, "w") as f:
-            for metrics in self._cache:
-                f.write(json.dumps(asdict(metrics)) + "\n")
+            # Rewrite file with filtered metrics
+            with open(self.metrics_file, "w") as f:
+                for metric in all_metrics:
+                    f.write(json.dumps(asdict(metric)) + "\n")
+
+            # Reload ring buffer with most recent max_entries
+            self._cache.clear()
+            # Take the most recent max_entries from filtered metrics
+            recent_metrics = (
+                all_metrics[-self.max_entries :]
+                if len(all_metrics) > self.max_entries
+                else all_metrics
+            )
+            self._cache.extend(recent_metrics)
+        else:
+            # No persistence, just filter in-memory cache
+            old_cache = self._cache
+            self._cache = deque(
+                (m for m in old_cache if datetime.fromisoformat(m.timestamp).timestamp() > cutoff),
+                maxlen=self.max_entries,
+            )
+
+        self._cache_dirty = True
 
 
-def get_tracker(metrics_dir: str = ".claude/metrics") -> PerformanceTracker:
+def get_tracker(
+    metrics_dir: str = ".claude/metrics",
+    max_entries: int = 10000,
+    enable_persistence: bool = True,
+) -> PerformanceTracker:
     """
     Factory function to create performance tracker
 
     Args:
         metrics_dir: Directory to store metrics
+        max_entries: Maximum metrics to keep in memory
+        enable_persistence: Whether to persist to disk (JSONL)
 
     Returns:
         PerformanceTracker instance
     """
-    return PerformanceTracker(metrics_dir)
+    return PerformanceTracker(
+        metrics_dir, max_entries=max_entries, enable_persistence=enable_persistence
+    )

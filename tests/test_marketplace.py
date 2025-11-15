@@ -24,7 +24,7 @@ from claude_force.marketplace import (
     PluginSource,
     PluginCategory,
     InstallationResult,
-    get_marketplace_manager
+    get_marketplace_manager,
 )
 
 
@@ -39,7 +39,7 @@ class TestPluginDataclass(unittest.TestCase):
             description="A test plugin",
             version="1.0.0",
             source=PluginSource.BUILTIN,
-            category=PluginCategory.DEVELOPMENT
+            category=PluginCategory.DEVELOPMENT,
         )
 
         self.assertEqual(plugin.id, "test-plugin")
@@ -60,7 +60,7 @@ class TestPluginDataclass(unittest.TestCase):
             category=PluginCategory.AI_ML,
             agents=["agent1", "agent2"],
             skills=["skill1"],
-            keywords=["ai", "ml"]
+            keywords=["ai", "ml"],
         )
 
         data = plugin.to_dict()
@@ -90,7 +90,7 @@ class TestPluginDataclass(unittest.TestCase):
             "author": "Test Author",
             "repository": "test/repo",
             "installed": True,
-            "installed_version": "1.0.0"
+            "installed_version": "1.0.0",
         }
 
         plugin = Plugin.from_dict(data)
@@ -227,10 +227,7 @@ class TestPluginListing(unittest.TestCase):
 
     def test_list_with_multiple_filters(self):
         """Should handle multiple filters simultaneously."""
-        plugins = self.manager.list_available(
-            category="development",
-            source="builtin"
-        )
+        plugins = self.manager.list_available(category="development", source="builtin")
 
         # All plugins should match both filters
         for plugin in plugins:
@@ -346,8 +343,10 @@ class TestPluginInstallation(unittest.TestCase):
         self.assertIsInstance(result, InstallationResult)
         self.assertTrue(result.success)
         self.assertEqual(result.plugin.id, plugin_id)
-        self.assertGreater(result.agents_added + result.skills_added +
-                          result.workflows_added + result.tools_added, 0)
+        self.assertGreater(
+            result.agents_added + result.skills_added + result.workflows_added + result.tools_added,
+            0,
+        )
 
     def test_install_updates_installed_plugins(self):
         """Installation should update installed_plugins dict."""
@@ -427,7 +426,7 @@ class TestPluginInstallation(unittest.TestCase):
             "version": "1.0.0",
             "source": "builtin",
             "category": "development",
-            "dependencies": [list(self.manager.available_plugins.keys())[0]]
+            "dependencies": [list(self.manager.available_plugins.keys())[0]],
         }
 
         # Add to available plugins
@@ -440,8 +439,7 @@ class TestPluginInstallation(unittest.TestCase):
         # Both plugin and dependency should be installed
         self.assertTrue(result.success)
         self.assertIn("test-with-deps", self.manager.installed_plugins)
-        self.assertIn(test_plugin_data["dependencies"][0],
-                     self.manager.installed_plugins)
+        self.assertIn(test_plugin_data["dependencies"][0], self.manager.installed_plugins)
 
 
 class TestPluginUninstallation(unittest.TestCase):
@@ -614,14 +612,14 @@ class TestDefaultRegistry(unittest.TestCase):
         """All plugins should have at least one of: agents, skills, workflows, tools."""
         for plugin in self.manager.available_plugins.values():
             has_content = (
-                len(plugin.agents) > 0 or
-                len(plugin.skills) > 0 or
-                len(plugin.workflows) > 0 or
-                len(plugin.tools) > 0
+                len(plugin.agents) > 0
+                or len(plugin.skills) > 0
+                or len(plugin.workflows) > 0
+                or len(plugin.tools) > 0
             )
             self.assertTrue(
                 has_content,
-                f"Plugin '{plugin.id}' has no content (no agents, skills, workflows, or tools)"
+                f"Plugin '{plugin.id}' has no content (no agents, skills, workflows, or tools)",
             )
 
 

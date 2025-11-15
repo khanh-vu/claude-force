@@ -37,8 +37,13 @@ class CLITestCase(unittest.TestCase):
     Provides comprehensive helpers for running and validating CLI commands.
     """
 
-    def run_cli(self, *args, input_text: Optional[str] = None,
-                timeout: int = 30, env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess:
+    def run_cli(
+        self,
+        *args,
+        input_text: Optional[str] = None,
+        timeout: int = 30,
+        env: Optional[Dict[str, str]] = None,
+    ) -> subprocess.CompletedProcess:
         """
         Run claude-force CLI command.
 
@@ -63,12 +68,7 @@ class CLITestCase(unittest.TestCase):
             test_env.update(env)
 
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            input=input_text,
-            timeout=timeout,
-            env=test_env
+            cmd, capture_output=True, text=True, input=input_text, timeout=timeout, env=test_env
         )
         return result
 
@@ -79,9 +79,10 @@ class CLITestCase(unittest.TestCase):
         self.assertEqual(
             result.returncode,
             0,
-            msg or f"Expected success (exit code 0), got {result.returncode}\n"
-                   f"STDOUT: {result.stdout}\n"
-                   f"STDERR: {result.stderr}"
+            msg
+            or f"Expected success (exit code 0), got {result.returncode}\n"
+            f"STDOUT: {result.stdout}\n"
+            f"STDERR: {result.stderr}",
         )
 
     def assert_failure(self, result: subprocess.CompletedProcess, msg: Optional[str] = None):
@@ -89,67 +90,80 @@ class CLITestCase(unittest.TestCase):
         self.assertNotEqual(
             result.returncode,
             0,
-            msg or f"Expected failure (non-zero exit code), got {result.returncode}\n"
-                   f"STDOUT: {result.stdout}"
+            msg
+            or f"Expected failure (non-zero exit code), got {result.returncode}\n"
+            f"STDOUT: {result.stdout}",
         )
 
-    def assert_exit_code(self, result: subprocess.CompletedProcess, expected_code: int,
-                        msg: Optional[str] = None):
+    def assert_exit_code(
+        self, result: subprocess.CompletedProcess, expected_code: int, msg: Optional[str] = None
+    ):
         """Assert CLI exit code matches expected value."""
         self.assertEqual(
             result.returncode,
             expected_code,
-            msg or f"Expected exit code {expected_code}, got {result.returncode}\n"
-                   f"STDOUT: {result.stdout}\n"
-                   f"STDERR: {result.stderr}"
+            msg
+            or f"Expected exit code {expected_code}, got {result.returncode}\n"
+            f"STDOUT: {result.stdout}\n"
+            f"STDERR: {result.stderr}",
         )
 
     # Output Assertions
 
-    def assert_in_output(self, result: subprocess.CompletedProcess, text: str,
-                        check_stderr: bool = False, msg: Optional[str] = None):
+    def assert_in_output(
+        self,
+        result: subprocess.CompletedProcess,
+        text: str,
+        check_stderr: bool = False,
+        msg: Optional[str] = None,
+    ):
         """Assert text appears in stdout (or stderr if specified)."""
         output = result.stderr if check_stderr else result.stdout
         self.assertIn(
             text,
             output,
-            msg or f"Expected '{text}' in {'stderr' if check_stderr else 'stdout'}\n"
-                   f"Got: {output}"
+            msg
+            or f"Expected '{text}' in {'stderr' if check_stderr else 'stdout'}\n" f"Got: {output}",
         )
 
-    def assert_not_in_output(self, result: subprocess.CompletedProcess, text: str,
-                            check_stderr: bool = False, msg: Optional[str] = None):
+    def assert_not_in_output(
+        self,
+        result: subprocess.CompletedProcess,
+        text: str,
+        check_stderr: bool = False,
+        msg: Optional[str] = None,
+    ):
         """Assert text does not appear in stdout (or stderr if specified)."""
         output = result.stderr if check_stderr else result.stdout
         self.assertNotIn(
             text,
             output,
-            msg or f"Did not expect '{text}' in {'stderr' if check_stderr else 'stdout'}\n"
-                   f"Got: {output}"
+            msg
+            or f"Did not expect '{text}' in {'stderr' if check_stderr else 'stdout'}\n"
+            f"Got: {output}",
         )
 
-    def assert_output_contains_all(self, result: subprocess.CompletedProcess,
-                                   texts: List[str], check_stderr: bool = False):
+    def assert_output_contains_all(
+        self, result: subprocess.CompletedProcess, texts: List[str], check_stderr: bool = False
+    ):
         """Assert all texts appear in output."""
         output = result.stderr if check_stderr else result.stdout
         for text in texts:
             self.assertIn(
                 text,
                 output,
-                f"Expected '{text}' in {'stderr' if check_stderr else 'stdout'}\n"
-                f"Got: {output}"
+                f"Expected '{text}' in {'stderr' if check_stderr else 'stdout'}\n" f"Got: {output}",
             )
 
-    def assert_output_matches_regex(self, result: subprocess.CompletedProcess,
-                                   pattern: str, check_stderr: bool = False):
+    def assert_output_matches_regex(
+        self, result: subprocess.CompletedProcess, pattern: str, check_stderr: bool = False
+    ):
         """Assert output matches regex pattern."""
         import re
+
         output = result.stderr if check_stderr else result.stdout
         self.assertRegex(
-            output,
-            pattern,
-            f"Output did not match pattern '{pattern}'\n"
-            f"Got: {output}"
+            output, pattern, f"Output did not match pattern '{pattern}'\n" f"Got: {output}"
         )
 
     # JSON Output Assertions
@@ -166,8 +180,7 @@ class CLITestCase(unittest.TestCase):
             return data
         except json.JSONDecodeError as e:
             self.fail(
-                f"Expected valid JSON output, got JSONDecodeError: {e}\n"
-                f"Output: {result.stdout}"
+                f"Expected valid JSON output, got JSONDecodeError: {e}\n" f"Output: {result.stdout}"
             )
 
     def assert_json_has_keys(self, result: subprocess.CompletedProcess, keys: List[str]):
@@ -177,19 +190,17 @@ class CLITestCase(unittest.TestCase):
             self.assertIn(
                 key,
                 data,
-                f"Expected key '{key}' in JSON output\n"
-                f"Got: {json.dumps(data, indent=2)}"
+                f"Expected key '{key}' in JSON output\n" f"Got: {json.dumps(data, indent=2)}",
             )
 
-    def assert_json_value(self, result: subprocess.CompletedProcess,
-                         key: str, expected_value: Any):
+    def assert_json_value(self, result: subprocess.CompletedProcess, key: str, expected_value: Any):
         """Assert specific JSON key has expected value."""
         data = self.assert_json_output(result)
         self.assertEqual(
             data.get(key),
             expected_value,
             f"Expected {key}={expected_value}, got {key}={data.get(key)}\n"
-            f"Full output: {json.dumps(data, indent=2)}"
+            f"Full output: {json.dumps(data, indent=2)}",
         )
 
     # Error Message Assertions
@@ -199,8 +210,7 @@ class CLITestCase(unittest.TestCase):
         self.assert_failure(result)
         self.assert_in_output(result, error_text, check_stderr=True)
 
-    def assert_helpful_error(self, result: subprocess.CompletedProcess,
-                            error_keywords: List[str]):
+    def assert_helpful_error(self, result: subprocess.CompletedProcess, error_keywords: List[str]):
         """Assert error message contains helpful keywords."""
         self.assert_failure(result)
         self.assert_output_contains_all(result, error_keywords, check_stderr=True)
@@ -209,26 +219,17 @@ class CLITestCase(unittest.TestCase):
 
     def assert_file_exists(self, filepath: Path, msg: Optional[str] = None):
         """Assert file exists."""
-        self.assertTrue(
-            filepath.exists(),
-            msg or f"Expected file to exist: {filepath}"
-        )
+        self.assertTrue(filepath.exists(), msg or f"Expected file to exist: {filepath}")
 
     def assert_file_not_exists(self, filepath: Path, msg: Optional[str] = None):
         """Assert file does not exist."""
-        self.assertFalse(
-            filepath.exists(),
-            msg or f"Expected file to not exist: {filepath}"
-        )
+        self.assertFalse(filepath.exists(), msg or f"Expected file to not exist: {filepath}")
 
     def assert_directory_structure(self, base_dir: Path, expected_paths: List[str]):
         """Assert expected directory structure exists."""
         for path in expected_paths:
             full_path = base_dir / path
-            self.assert_file_exists(
-                full_path,
-                f"Expected path in directory structure: {path}"
-            )
+            self.assert_file_exists(full_path, f"Expected path in directory structure: {path}")
 
     def assert_valid_json_file(self, filepath: Path) -> Dict[str, Any]:
         """Assert file exists and contains valid JSON. Returns parsed data."""
@@ -274,20 +275,21 @@ class CLIFixtures:
             "name": kwargs.get("name", "test-project"),
             "version": kwargs.get("version", "1.0.0"),
             "agents": kwargs.get("agents", {}),
-            "workflows": kwargs.get("workflows", {})
+            "workflows": kwargs.get("workflows", {}),
         }
 
         claude_dir.mkdir(parents=True, exist_ok=True)
         config_path = claude_dir / "claude.json"
 
-        with open(config_path, 'w') as f:
+        with open(config_path, "w") as f:
             json.dump(config, f, indent=2)
 
         return config
 
     @staticmethod
-    def create_test_agent(claude_dir: Path, agent_name: str,
-                         domains: Optional[List[str]] = None) -> Path:
+    def create_test_agent(
+        claude_dir: Path, agent_name: str, domains: Optional[List[str]] = None
+    ) -> Path:
         """
         Create a test agent file.
 
@@ -343,14 +345,12 @@ Test agent for {agent_name}
             agents_config[agent_name] = {
                 "file": f"agents/{agent_name}.md",
                 "domains": [f"domain-{i+1}"],
-                "priority": i + 1
+                "priority": i + 1,
             }
 
         # Create config
         config = CLIFixtures.create_minimal_config(
-            claude_dir,
-            agents=agents_config,
-            workflows={"test-workflow": agent_names}
+            claude_dir, agents=agents_config, workflows={"test-workflow": agent_names}
         )
 
         return config
@@ -377,7 +377,7 @@ class CLIMockHelpers:
         if return_value:
             mock_client.return_value = return_value
 
-        with patch('anthropic.Client', return_value=mock_client):
+        with patch("anthropic.Client", return_value=mock_client):
             yield mock_client
 
     @staticmethod
@@ -436,6 +436,7 @@ class CLITestTemplate(CLITestCase):
 
 
 # Convenience functions for quick testing
+
 
 def quick_cli_test(command: str, *args, expected_exit_code: int = 0) -> subprocess.CompletedProcess:
     """

@@ -22,10 +22,7 @@ class TestCLIStressTests:
         """Test CLI help command performance"""
         start = time.time()
         result = subprocess.run(
-            ["python3", "-m", "claude_force", "--help"],
-            capture_output=True,
-            text=True,
-            timeout=5
+            ["python3", "-m", "claude_force", "--help"], capture_output=True, text=True, timeout=5
         )
         elapsed = time.time() - start
 
@@ -45,12 +42,7 @@ class TestCLIStressTests:
 
         def run_command(cmd):
             try:
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
                 return result.returncode in [0, 1]  # Fix: Allow both success and expected errors
             except Exception:
                 return False
@@ -64,7 +56,9 @@ class TestCLIStressTests:
             results = [f.result() for f in as_completed(futures)]
 
         success_rate = sum(results) / len(results)
-        assert success_rate >= 0.75, f"CLI stress success rate: {success_rate}"  # Fix: Lower threshold
+        assert (
+            success_rate >= 0.75
+        ), f"CLI stress success rate: {success_rate}"  # Fix: Lower threshold
 
     def test_cli_init_many_projects(self, tmp_path):
         """Test CLI init command for many projects"""
@@ -73,14 +67,25 @@ class TestCLIStressTests:
         def init_project(idx):
             project_dir = tmp_path / f"cli_project_{idx}"
             try:
-                result = subprocess.run([
-                    "python3", "-m", "claude_force", "init",
-                    str(project_dir),
-                    "--name", f"project{idx}",  # Fix: Add required --name argument
-                    "--description", f"Test project {idx}",
-                    "--tech", "Python,FastAPI",
-                    "--no-examples"
-                ], capture_output=True, text=True, timeout=30)
+                result = subprocess.run(
+                    [
+                        "python3",
+                        "-m",
+                        "claude_force",
+                        "init",
+                        str(project_dir),
+                        "--name",
+                        f"project{idx}",  # Fix: Add required --name argument
+                        "--description",
+                        f"Test project {idx}",
+                        "--tech",
+                        "Python,FastAPI",
+                        "--no-examples",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
                 return result.returncode == 0
             except Exception:
                 return False
@@ -100,13 +105,23 @@ class TestCLIStressTests:
         long_desc = " ".join(["word"] * 1000)
 
         start = time.time()
-        result = subprocess.run([
-            "python3", "-m", "claude_force", "init",
-            str(project_dir),
-            "--description", long_desc,
-            "--tech", "Python",
-            "--no-examples"
-        ], capture_output=True, text=True, timeout=60)
+        result = subprocess.run(
+            [
+                "python3",
+                "-m",
+                "claude_force",
+                "init",
+                str(project_dir),
+                "--description",
+                long_desc,
+                "--tech",
+                "Python",
+                "--no-examples",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
         elapsed = time.time() - start
 
         # Should complete in reasonable time
@@ -123,12 +138,7 @@ class TestCLIStressTests:
         ]
 
         for cmd in invalid_commands:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
             # Should fail gracefully (non-zero exit but no crash)
             assert result.returncode != 0
 
@@ -146,13 +156,23 @@ class TestCLIStressTests:
         for special_input in special_inputs:
             project_dir = tmp_path / f"special_{hash(special_input)}"
             try:
-                subprocess.run([
-                    "python3", "-m", "claude_force", "init",
-                    str(project_dir),
-                    "--description", special_input,
-                    "--tech", "Python",
-                    "--no-examples"
-                ], capture_output=True, text=True, timeout=20)
+                subprocess.run(
+                    [
+                        "python3",
+                        "-m",
+                        "claude_force",
+                        "init",
+                        str(project_dir),
+                        "--description",
+                        special_input,
+                        "--tech",
+                        "Python",
+                        "--no-examples",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=20,
+                )
             except Exception:
                 pass  # Should handle gracefully
 
@@ -167,11 +187,12 @@ class TestCLIStressTests:
 
         def run_recommend(task):
             try:
-                result = subprocess.run([
-                    "python3", "-m", "claude_force",
-                    "recommend",
-                    "--task", task
-                ], capture_output=True, text=True, timeout=15)
+                result = subprocess.run(
+                    ["python3", "-m", "claude_force", "recommend", "--task", task],
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                )
                 return result.returncode == 0
             except Exception:
                 return False
@@ -187,7 +208,7 @@ class TestCLIStressTests:
 class TestOrchestratorStressTests:
     """Stress tests for orchestrator components"""
 
-    @patch('anthropic.Client')  # Fix: Correct import path
+    @patch("anthropic.Client")  # Fix: Correct import path
     def test_orchestrator_concurrent_agent_runs(self, mock_anthropic, tmp_path):
         """Test running multiple agents concurrently (mocked)"""
         from claude_force.orchestrator import AgentOrchestrator
@@ -204,6 +225,7 @@ class TestOrchestratorStressTests:
         claude_dir.mkdir()
         config = {"name": "test", "agents": {}, "workflows": {}}
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
         orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"))
@@ -227,7 +249,7 @@ class TestOrchestratorStressTests:
         success_rate = sum(results) / num_runs
         assert success_rate >= 0.8, f"Agent run success rate: {success_rate}"
 
-    @patch('anthropic.Client')  # Fix: Correct import path
+    @patch("anthropic.Client")  # Fix: Correct import path
     def test_orchestrator_workflow_stress(self, mock_anthropic, tmp_path):
         """Test orchestrator running workflows under stress"""
         from claude_force.orchestrator import AgentOrchestrator
@@ -244,6 +266,7 @@ class TestOrchestratorStressTests:
         claude_dir.mkdir()
         config = {"name": "test", "agents": {}, "workflows": {"frontend-only": []}}
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
         orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"))
@@ -272,11 +295,20 @@ class TestOrchestratorStressTests:
         # Create config for orchestrator
         claude_dir = tmp_path / ".claude"
         claude_dir.mkdir()
-        config = {"name": "test", "agents": {"python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}}, "workflows": {}}
+        config = {
+            "name": "test",
+            "agents": {
+                "python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}
+            },
+            "workflows": {},
+        }
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
-        orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"), validate_api_key=False)
+        orchestrator = AgentOrchestrator(
+            config_path=str(claude_dir / "claude.json"), validate_api_key=False
+        )
 
         # Very large task (50K words)
         large_task = " ".join(["word"] * 50000)
@@ -302,11 +334,20 @@ class TestOrchestratorStressTests:
         # Create config for orchestrator
         claude_dir = tmp_path / ".claude"
         claude_dir.mkdir()
-        config = {"name": "test", "agents": {"python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}}, "workflows": {}}
+        config = {
+            "name": "test",
+            "agents": {
+                "python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}
+            },
+            "workflows": {},
+        }
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
-        orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"), validate_api_key=False)
+        orchestrator = AgentOrchestrator(
+            config_path=str(claude_dir / "claude.json"), validate_api_key=False
+        )
 
         agents = [
             "python-expert",
@@ -337,11 +378,20 @@ class TestOrchestratorStressTests:
         # Create config for orchestrator
         claude_dir = tmp_path / ".claude"
         claude_dir.mkdir()
-        config = {"name": "test", "agents": {"python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}}, "workflows": {}}
+        config = {
+            "name": "test",
+            "agents": {
+                "python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}
+            },
+            "workflows": {},
+        }
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
-        orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"), validate_api_key=False)
+        orchestrator = AgentOrchestrator(
+            config_path=str(claude_dir / "claude.json"), validate_api_key=False
+        )
 
         tracemalloc.start()
         initial_memory = tracemalloc.get_traced_memory()[0]
@@ -368,9 +418,12 @@ class TestOrchestratorStressTests:
         claude_dir.mkdir()
         config = {"name": "test", "agents": {}, "workflows": {}}
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
-        orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"), validate_api_key=False)
+        orchestrator = AgentOrchestrator(
+            config_path=str(claude_dir / "claude.json"), validate_api_key=False
+        )
 
         # Try to run nonexistent agent - should return failed result
         result = orchestrator.run_agent(
@@ -382,7 +435,9 @@ class TestOrchestratorStressTests:
         assert not result.success, "Should return failed result"
         assert result.errors, "Should have error messages"
         error_text = " ".join(result.errors).lower()
-        assert "nonexistent" in error_text or "not found" in error_text, f"Error message should mention agent not found: {result.errors}"
+        assert (
+            "nonexistent" in error_text or "not found" in error_text
+        ), f"Error message should mention agent not found: {result.errors}"
 
     def test_orchestrator_validation_stress(self, tmp_path):
         """Test validation under stress"""
@@ -391,11 +446,20 @@ class TestOrchestratorStressTests:
         # Create config for orchestrator
         claude_dir = tmp_path / ".claude"
         claude_dir.mkdir()
-        config = {"name": "test", "agents": {"python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}}, "workflows": {}}
+        config = {
+            "name": "test",
+            "agents": {
+                "python-expert": {"file": "agents/python-expert.md", "domains": [], "priority": 1}
+            },
+            "workflows": {},
+        }
         import json
+
         (claude_dir / "claude.json").write_text(json.dumps(config))
 
-        orchestrator = AgentOrchestrator(config_path=str(claude_dir / "claude.json"), validate_api_key=False)
+        orchestrator = AgentOrchestrator(
+            config_path=str(claude_dir / "claude.json"), validate_api_key=False
+        )
 
         # Try to run many invalid operations
         invalid_operations = [
@@ -436,7 +500,7 @@ class TestPerformanceTrackerStress:
                 execution_time_ms=100 + i % 100,
                 input_tokens=1000 + i % 500,
                 output_tokens=500 + i % 300,
-                model="claude-3-5-sonnet-20241022"
+                model="claude-3-5-sonnet-20241022",
             )
         elapsed = time.time() - start
 
@@ -452,13 +516,13 @@ class TestPerformanceTrackerStress:
         def log_entry(idx):
             try:
                 tracker.record_execution(
-                success=True,
+                    success=True,
                     agent_name=f"agent_{idx % 5}",
                     task=f"task_{idx}",
                     execution_time_ms=100,
                     input_tokens=1000,
                     output_tokens=500,
-                    model="claude-3-5-sonnet-20241022"
+                    model="claude-3-5-sonnet-20241022",
                 )
                 return True
             except Exception:
@@ -486,7 +550,7 @@ class TestPerformanceTrackerStress:
                 execution_time_ms=100,
                 input_tokens=1000,
                 output_tokens=500,
-                model="claude-3-5-sonnet-20241022"
+                model="claude-3-5-sonnet-20241022",
             )
 
         # Try to read and analyze
@@ -515,7 +579,7 @@ class TestPerformanceTrackerStress:
                 execution_time_ms=100,
                 input_tokens=1000,
                 output_tokens=500,
-                model="claude-3-5-sonnet-20241022"
+                model="claude-3-5-sonnet-20241022",
             )
 
         # Export to different formats
@@ -523,10 +587,7 @@ class TestPerformanceTrackerStress:
 
         start = time.time()
         try:
-            tracker.export_performance_metrics(
-                output_file=str(export_file),
-                format="json"
-            )
+            tracker.export_performance_metrics(output_file=str(export_file), format="json")
         except Exception:
             pass
         elapsed = time.time() - start
@@ -546,9 +607,7 @@ class TestSemanticSelectorStress:
             selector = SemanticAgentSelector()
 
             # Many different queries
-            queries = [
-                f"Build feature {i}" for i in range(100)
-            ]
+            queries = [f"Build feature {i}" for i in range(100)]
 
             start = time.time()
             for query in queries:

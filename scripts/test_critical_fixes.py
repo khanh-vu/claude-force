@@ -1,12 +1,14 @@
 """
 Quick smoke test to verify critical fixes.
 """
+
 import sys
 import asyncio
 from pathlib import Path
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
 
 async def test_fixes():
     """Test critical fixes"""
@@ -20,9 +22,7 @@ async def test_fixes():
     print("\n1. Python 3.8 compatibility (asyncio.wait_for)...")
     try:
         orchestrator = AsyncAgentOrchestrator(
-            config_path=Path(".claude/claude.json"),
-            enable_cache=True,
-            enable_tracking=False
+            config_path=Path(".claude/claude.json"), enable_cache=True, enable_tracking=False
         )
         print("   ✓ AsyncAgentOrchestrator initialized successfully")
         print(f"   ✓ Cache enabled: {orchestrator.enable_cache}")
@@ -75,11 +75,11 @@ async def test_fixes():
     try:
         # This should trigger warning
         import logging
+
         logging.basicConfig(level=logging.WARNING)
 
         test_cache = ResponseCache(
-            cache_dir=Path("/tmp/test_cache"),
-            cache_secret=None  # Will use default
+            cache_dir=Path("/tmp/test_cache"), cache_secret=None  # Will use default
         )
 
         if test_cache.cache_secret == "default_secret_change_in_production":
@@ -104,6 +104,7 @@ async def test_fixes():
 
     return True
 
+
 if __name__ == "__main__":
     try:
         result = asyncio.run(test_fixes())
@@ -111,5 +112,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Test failed with error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

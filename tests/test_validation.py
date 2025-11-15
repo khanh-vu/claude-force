@@ -12,10 +12,7 @@ import json
 import os
 from pathlib import Path
 
-from claude_force.quick_start import (
-    QuickStartOrchestrator,
-    get_quick_start_orchestrator
-)
+from claude_force.quick_start import QuickStartOrchestrator, get_quick_start_orchestrator
 
 
 class TestGeneratedFileValidity(unittest.TestCase):
@@ -32,14 +29,11 @@ class TestGeneratedFileValidity(unittest.TestCase):
         config = orchestrator.generate_config(
             template=template,
             project_name="validation-test",
-            description="Test project for validation"
+            description="Test project for validation",
         )
 
         self.claude_dir = Path(self.temp_dir) / ".claude"
-        orchestrator.initialize_project(
-            config=config,
-            output_dir=str(self.claude_dir)
-        )
+        orchestrator.initialize_project(config=config, output_dir=str(self.claude_dir))
 
     def tearDown(self):
         """Clean up test fixtures."""
@@ -86,8 +80,7 @@ class TestGeneratedFileValidity(unittest.TestCase):
 
         # Should contain markdown headers
         self.assertTrue(
-            content.startswith("#") or "# " in content,
-            "task.md should contain markdown headers"
+            content.startswith("#") or "# " in content, "task.md should contain markdown headers"
         )
 
     def test_readme_md_is_valid_markdown(self):
@@ -124,7 +117,7 @@ class TestGeneratedFileValidity(unittest.TestCase):
         # Should contain scoring sections
         self.assertTrue(
             "score" in content.lower() or "quality" in content.lower(),
-            "scorecard.md should contain scoring information"
+            "scorecard.md should contain scoring information",
         )
 
     def test_file_permissions_correct(self):
@@ -132,7 +125,7 @@ class TestGeneratedFileValidity(unittest.TestCase):
         import sys
 
         # Skip on Windows (permissions work differently)
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             self.skipTest("Permission tests not applicable on Windows")
 
         # Check directory permissions
@@ -142,8 +135,8 @@ class TestGeneratedFileValidity(unittest.TestCase):
         # Directory should be readable and executable (at least 755 or 700)
         self.assertIn(
             claude_dir_mode[0],
-            ['7', '5'],
-            f".claude directory should be accessible, got mode {claude_dir_mode}"
+            ["7", "5"],
+            f".claude directory should be accessible, got mode {claude_dir_mode}",
         )
 
         # Check file permissions
@@ -154,25 +147,18 @@ class TestGeneratedFileValidity(unittest.TestCase):
 
             # File should be readable (at least 644 or 600)
             self.assertIn(
-                file_mode[0],
-                ['6', '7'],
-                f"claude.json should be readable, got mode {file_mode}"
+                file_mode[0], ["6", "7"], f"claude.json should be readable, got mode {file_mode}"
             )
 
     def test_directory_structure_complete(self):
         """All required directories should be created."""
-        required_dirs = [
-            "agents",
-            "contracts",
-            "hooks",
-            "skills"
-        ]
+        required_dirs = ["agents", "contracts", "hooks", "skills"]
 
         for dir_name in required_dirs:
             dir_path = self.claude_dir / dir_name
             self.assertTrue(
                 dir_path.exists() and dir_path.is_dir(),
-                f"Required directory '{dir_name}' should exist"
+                f"Required directory '{dir_name}' should exist",
             )
 
 
@@ -199,17 +185,12 @@ class TestDataIntegrity(unittest.TestCase):
         original_name = "my-project"
 
         config = orchestrator.generate_config(
-            template=template,
-            project_name=original_name,
-            description=original_description
+            template=template, project_name=original_name, description=original_description
         )
 
         # Initialize project
         claude_dir = Path(self.temp_dir) / ".claude"
-        orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Load saved config
         with open(claude_dir / "claude.json") as f:
@@ -226,30 +207,21 @@ class TestDataIntegrity(unittest.TestCase):
         matches = orchestrator.match_templates("Test app", top_k=1)
         template = matches[0]
         config = orchestrator.generate_config(
-            template=template,
-            project_name="atomic-test",
-            description="Test"
+            template=template, project_name="atomic-test", description="Test"
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
 
         # Initialize project
-        result = orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        result = orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         # All files should be fully written (not empty or partial)
-        for file_path in result['created_files']:
+        for file_path in result["created_files"]:
             path = Path(file_path)
             if path.is_file():
                 # File should have content
                 size = path.stat().st_size
-                self.assertGreater(
-                    size,
-                    0,
-                    f"File {path.name} should not be empty"
-                )
+                self.assertGreater(size, 0, f"File {path.name} should not be empty")
 
     def test_generated_files_parseable(self):
         """All generated files should be parseable/readable."""
@@ -258,24 +230,19 @@ class TestDataIntegrity(unittest.TestCase):
         matches = orchestrator.match_templates("API service", top_k=1)
         template = matches[0]
         config = orchestrator.generate_config(
-            template=template,
-            project_name="parse-test",
-            description="Test"
+            template=template, project_name="parse-test", description="Test"
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
-        result = orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        result = orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Try to read all created files
-        for file_path in result['created_files']:
+        for file_path in result["created_files"]:
             path = Path(file_path)
             if path.is_file():
                 try:
                     # For JSON files
-                    if path.suffix == '.json':
+                    if path.suffix == ".json":
                         with open(path) as f:
                             json.load(f)
                     # For text files
@@ -293,16 +260,11 @@ class TestDataIntegrity(unittest.TestCase):
         matches = orchestrator.match_templates("Full-stack app", top_k=1)
         template = matches[0]
         config = orchestrator.generate_config(
-            template=template,
-            project_name="refs-test",
-            description="Test"
+            template=template, project_name="refs-test", description="Test"
         )
 
         claude_dir = Path(self.temp_dir) / ".claude"
-        orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
 
         # Load config
         with open(claude_dir / "claude.json") as f:
@@ -317,7 +279,7 @@ class TestDataIntegrity(unittest.TestCase):
                 self.assertIn(
                     agent_id,
                     agents,
-                    f"Workflow '{workflow_name}' references non-existent agent '{agent_id}'"
+                    f"Workflow '{workflow_name}' references non-existent agent '{agent_id}'",
                 )
 
 

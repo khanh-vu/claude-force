@@ -47,7 +47,7 @@ def authenticate_user(username, password):
     query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
     result = database.execute(query)
     return result.fetchone()
-"""
+""",
         },
         {
             "filename": "api.py",
@@ -57,7 +57,7 @@ def upload_file():
     file = request.files['file']
     file.save(os.path.join('/uploads', file.filename))
     return "File uploaded"
-"""
+""",
         },
         {
             "filename": "config.py",
@@ -67,8 +67,8 @@ DB_HOST = "localhost"
 DB_USER = "admin"
 DB_PASSWORD = "admin123"  # TODO: Move to env
 SECRET_KEY = "hardcoded-secret-key-12345"
-"""
-        }
+""",
+        },
     ]
 
     print(f"📁 Files to review: {len(code_samples)}\n")
@@ -101,29 +101,21 @@ Provide:
 
         try:
             result = orchestrator.run_agent(
-                agent_name='security-specialist',
+                agent_name="security-specialist",
                 task=task,
-                model='claude-3-5-sonnet-20241022',
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=2048,
-                temperature=0.2
+                temperature=0.2,
             )
 
-            results.append({
-                "filename": filename,
-                "success": result.success,
-                "result": result
-            })
+            results.append({"filename": filename, "success": result.success, "result": result})
 
             status = "✅" if result.success else "❌"
             print(f"  {status} {filename} - {'Success' if result.success else 'Failed'}")
 
         except Exception as e:
             print(f"  ❌ {filename} - Error: {e}")
-            results.append({
-                "filename": filename,
-                "success": False,
-                "result": None
-            })
+            results.append({"filename": filename, "success": False, "result": None})
 
     end_time = datetime.now()
     duration = (end_time - start_time).total_seconds()
@@ -171,7 +163,7 @@ Provide:
     output_file = output_dir / f"security_review_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
     try:
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write("SECURITY REVIEW RESULTS\n")
             f.write("=" * 70 + "\n\n")
             f.write(f"Generated: {datetime.now()}\n")

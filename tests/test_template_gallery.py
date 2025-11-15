@@ -15,7 +15,7 @@ from claude_force.template_gallery import (
     TemplateGalleryItem,
     TemplateExample,
     TemplateMetrics,
-    get_template_gallery
+    get_template_gallery,
 )
 
 
@@ -27,7 +27,7 @@ class TestTemplateExample(unittest.TestCase):
         example = TemplateExample(
             task="Build authentication",
             description="OAuth2 authentication flow",
-            expected_output=["Login component", "Auth API", "Tests"]
+            expected_output=["Login component", "Auth API", "Tests"],
         )
 
         self.assertEqual(example.task, "Build authentication")
@@ -43,7 +43,7 @@ class TestTemplateExample(unittest.TestCase):
             description="Description",
             expected_output=["Output"],
             estimated_time="60-90 minutes",
-            complexity="complex"
+            complexity="complex",
         )
 
         self.assertEqual(example.estimated_time, "60-90 minutes")
@@ -65,10 +65,7 @@ class TestTemplateMetrics(unittest.TestCase):
     def test_metrics_with_values(self):
         """TemplateMetrics should store values correctly."""
         metrics = TemplateMetrics(
-            uses_count=100,
-            success_rate=0.95,
-            avg_rating=4.5,
-            total_ratings=20
+            uses_count=100, success_rate=0.95, avg_rating=4.5, total_ratings=20
         )
 
         self.assertEqual(metrics.uses_count, 100)
@@ -93,7 +90,7 @@ class TestTemplateGalleryItem(unittest.TestCase):
             skills=["skill1"],
             keywords=["test"],
             tech_stack=["Python"],
-            use_cases=["Testing"]
+            use_cases=["Testing"],
         )
 
         self.assertEqual(item.template_id, "test-template")
@@ -118,7 +115,7 @@ class TestTemplateGalleryItem(unittest.TestCase):
             keywords=[],
             tech_stack=[],
             use_cases=[],
-            metrics=metrics
+            metrics=metrics,
         )
 
         data = item.to_dict()
@@ -467,31 +464,20 @@ class TestDefaultGallery(unittest.TestCase):
         """All templates should have at least one of: agents, workflows, skills."""
         for template in self.gallery.items.values():
             has_components = (
-                len(template.agents) > 0 or
-                len(template.workflows) > 0 or
-                len(template.skills) > 0
+                len(template.agents) > 0 or len(template.workflows) > 0 or len(template.skills) > 0
             )
-            self.assertTrue(
-                has_components,
-                f"Template '{template.template_id}' has no components"
-            )
+            self.assertTrue(has_components, f"Template '{template.template_id}' has no components")
 
     def test_templates_have_examples(self):
         """Templates should have examples."""
-        templates_with_examples = [
-            t for t in self.gallery.items.values()
-            if len(t.examples) > 0
-        ]
+        templates_with_examples = [t for t in self.gallery.items.values() if len(t.examples) > 0]
 
         # At least some templates should have examples
         self.assertGreater(len(templates_with_examples), 0)
 
     def test_templates_have_metrics(self):
         """Templates should have usage metrics."""
-        templates_with_metrics = [
-            t for t in self.gallery.items.values()
-            if t.metrics is not None
-        ]
+        templates_with_metrics = [t for t in self.gallery.items.values() if t.metrics is not None]
 
         # At least some templates should have metrics
         self.assertGreater(len(templates_with_metrics), 0)

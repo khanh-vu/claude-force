@@ -41,24 +41,24 @@ def main():
     test_cases = [
         {
             "name": "Security Review",
-            "task": "Review this authentication code for SQL injection vulnerabilities and OWASP Top 10 issues"
+            "task": "Review this authentication code for SQL injection vulnerabilities and OWASP Top 10 issues",
         },
         {
             "name": "Bug Investigation",
-            "task": "Users are seeing 500 errors when uploading files. The logs show 'Connection timeout' after 30 seconds"
+            "task": "Users are seeing 500 errors when uploading files. The logs show 'Connection timeout' after 30 seconds",
         },
         {
             "name": "Frontend Feature",
-            "task": "Build a responsive navigation menu with dropdown submenus using React and Tailwind CSS"
+            "task": "Build a responsive navigation menu with dropdown submenus using React and Tailwind CSS",
         },
         {
             "name": "API Design",
-            "task": "Design a RESTful API for user management with authentication, pagination, and filtering"
+            "task": "Design a RESTful API for user management with authentication, pagination, and filtering",
         },
         {
             "name": "Database Schema",
-            "task": "Design database schema for an e-commerce platform with products, orders, and inventory tracking"
-        }
+            "task": "Design database schema for an e-commerce platform with products, orders, and inventory tracking",
+        },
     ]
 
     # Test each case
@@ -71,9 +71,7 @@ def main():
         try:
             # Get recommendations
             recommendations = orchestrator.recommend_agents(
-                test_case['task'],
-                top_k=3,
-                min_confidence=0.2  # Lower threshold for demo
+                test_case["task"], top_k=3, min_confidence=0.2  # Lower threshold for demo
             )
 
             if not recommendations:
@@ -83,7 +81,7 @@ def main():
             print(f"\n📊 Top {len(recommendations)} Recommendations:\n")
 
             for j, rec in enumerate(recommendations, 1):
-                confidence_pct = rec['confidence'] * 100
+                confidence_pct = rec["confidence"] * 100
                 bar_length = int(confidence_pct / 5)
                 bar = "█" * bar_length + "░" * (20 - bar_length)
 
@@ -102,11 +100,8 @@ def main():
                 print()
 
             # Get detailed explanation for top choice
-            top_agent = recommendations[0]['agent']
-            explanation = orchestrator.explain_agent_selection(
-                test_case['task'],
-                top_agent
-            )
+            top_agent = recommendations[0]["agent"]
+            explanation = orchestrator.explain_agent_selection(test_case["task"], top_agent)
 
             print(f"💡 Why '{top_agent}' was selected:")
             print(f"   Rank: #{explanation.get('rank', 'N/A')}")
@@ -137,9 +132,9 @@ def main():
     print(f"   Rank: #{explanation.get('rank', 'N/A')}")
     print(f"   Confidence: {explanation.get('confidence', 0):.3f}")
 
-    if 'all_candidates' in explanation:
+    if "all_candidates" in explanation:
         print(f"\n   Better candidates:")
-        for candidate in explanation['all_candidates'][:5]:
+        for candidate in explanation["all_candidates"][:5]:
             print(f"      • {candidate['agent']}: {candidate['confidence']:.3f}")
 
     # Summary
@@ -157,7 +152,8 @@ def main():
     print("USAGE IN YOUR CODE")
     print(f"{'=' * 70}\n")
 
-    print("""
+    print(
+        """
 # Get recommendations
 recommendations = orchestrator.recommend_agents(
     task="Your task description",
@@ -174,7 +170,8 @@ if recommendations:
 
     # Run the agent
     result = orchestrator.run_agent(top_agent, task=task)
-    """)
+    """
+    )
 
     print("\n" + "=" * 70)
 

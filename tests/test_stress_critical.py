@@ -258,7 +258,7 @@ class TestMemoryAndPerformance:
                     with open(test_file) as f:
                         data = json.load(f)
                     data["counter"] += 1
-                    with open(test_file, 'w') as f:
+                    with open(test_file, "w") as f:
                         json.dump(data, f)
 
         threads = [threading.Thread(target=safe_increment) for _ in range(20)]
@@ -439,6 +439,7 @@ class TestErrorRecovery:
 
         # Delete directory
         import shutil
+
         marketplace_dir = tmp_path / "marketplace"
         if marketplace_dir.exists():
             shutil.rmtree(marketplace_dir)
@@ -495,7 +496,9 @@ class TestIntegrationStress:
     def test_marketplace_to_routing_stress(self):
         """Test marketplace integration under stress"""
         marketplace = MarketplaceManager()
-        router = AgentRouter(include_marketplace=True)  # Fix: enable_marketplace → include_marketplace
+        router = AgentRouter(
+            include_marketplace=True
+        )  # Fix: enable_marketplace → include_marketplace
 
         for _ in range(100):
             # List plugins
@@ -514,8 +517,7 @@ class TestIntegrationStress:
 
         for i in range(50):
             report = analytics.compare_agents(
-                task=f"Review code {i}",
-                agents=agents  # Fix: agent_names → agents
+                task=f"Review code {i}", agents=agents  # Fix: agent_names → agents
             )
             assert report is not None
             assert len(report.results) == 2  # Fix: agent_performances → results

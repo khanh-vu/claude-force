@@ -14,7 +14,7 @@ from claude_force.contribution import (
     ContributionManager,
     ValidationResult,
     ContributionPackage,
-    get_contribution_manager
+    get_contribution_manager,
 )
 
 
@@ -24,10 +24,7 @@ class TestValidationResult(unittest.TestCase):
     def test_validation_result_creation(self):
         """ValidationResult should be creatable."""
         result = ValidationResult(
-            valid=True,
-            errors=[],
-            warnings=["Warning 1"],
-            passed_checks=["Check 1", "Check 2"]
+            valid=True, errors=[], warnings=["Warning 1"], passed_checks=["Check 1", "Check 2"]
         )
 
         self.assertTrue(result.valid)
@@ -38,10 +35,7 @@ class TestValidationResult(unittest.TestCase):
     def test_validation_result_with_errors(self):
         """ValidationResult with errors should be invalid."""
         result = ValidationResult(
-            valid=False,
-            errors=["Error 1", "Error 2"],
-            warnings=[],
-            passed_checks=[]
+            valid=False, errors=["Error 1", "Error 2"], warnings=[], passed_checks=[]
         )
 
         self.assertFalse(result.valid)
@@ -53,17 +47,10 @@ class TestContributionPackage(unittest.TestCase):
 
     def test_package_creation(self):
         """ContributionPackage should be creatable."""
-        validation = ValidationResult(
-            valid=True,
-            errors=[],
-            warnings=[],
-            passed_checks=["Test"]
-        )
+        validation = ValidationResult(valid=True, errors=[], warnings=[], passed_checks=["Test"])
 
         package = ContributionPackage(
-            agent_name="test-agent",
-            export_path=Path("/tmp/test"),
-            validation=validation
+            agent_name="test-agent", export_path=Path("/tmp/test"), validation=validation
         )
 
         self.assertEqual(package.agent_name, "test-agent")
@@ -91,10 +78,7 @@ class TestContributionManagerInit(unittest.TestCase):
             agents_dir = Path(tmpdir) / ".claude" / "agents"
             export_dir = Path(tmpdir) / "exports"
 
-            manager = ContributionManager(
-                agents_dir=agents_dir,
-                export_dir=export_dir
-            )
+            manager = ContributionManager(agents_dir=agents_dir, export_dir=export_dir)
 
             self.assertEqual(manager.export_dir, export_dir)
 
@@ -199,10 +183,7 @@ class TestPrepareContribution(unittest.TestCase):
         self.agents_dir.mkdir(parents=True)
         self.export_dir.mkdir(parents=True)
 
-        self.manager = ContributionManager(
-            agents_dir=self.agents_dir,
-            export_dir=self.export_dir
-        )
+        self.manager = ContributionManager(agents_dir=self.agents_dir, export_dir=self.export_dir)
 
     def tearDown(self):
         """Clean up temporary directory."""
@@ -243,10 +224,7 @@ Example usage of {name}.
         """Should skip validation if requested."""
         self._create_valid_agent("test-agent")
 
-        package = self.manager.prepare_contribution(
-            "test-agent",
-            validate=False
-        )
+        package = self.manager.prepare_contribution("test-agent", validate=False)
 
         self.assertIsNone(package.validation)
 
@@ -272,10 +250,7 @@ Example usage of {name}.
         """Should export in wshobson format."""
         self._create_valid_agent("test-agent")
 
-        package = self.manager.prepare_contribution(
-            "test-agent",
-            target_repo="wshobson"
-        )
+        package = self.manager.prepare_contribution("test-agent", target_repo="wshobson")
 
         # Check agent markdown file exists
         agent_md = package.export_path / "test-agent.md"
@@ -290,10 +265,7 @@ Example usage of {name}.
         """Should export in claude-force format."""
         self._create_valid_agent("test-agent")
 
-        package = self.manager.prepare_contribution(
-            "test-agent",
-            target_repo="claude-force"
-        )
+        package = self.manager.prepare_contribution("test-agent", target_repo="claude-force")
 
         # Check agent markdown file exists
         agent_md = package.export_path / "test-agent.md"
@@ -322,11 +294,7 @@ class TestGeneratePluginStructure(unittest.TestCase):
         export_path = Path(self.tmpdir) / "export"
         export_path.mkdir(parents=True)
 
-        structure = self.manager._generate_plugin_structure(
-            "test-agent",
-            "wshobson",
-            export_path
-        )
+        structure = self.manager._generate_plugin_structure("test-agent", "wshobson", export_path)
 
         self.assertIn("plugin_id", structure)
         self.assertEqual(structure["source"], "community")
@@ -343,9 +311,7 @@ class TestGeneratePluginStructure(unittest.TestCase):
         export_path.mkdir(parents=True)
 
         structure = self.manager._generate_plugin_structure(
-            "test-agent",
-            "claude-force",
-            export_path
+            "test-agent", "claude-force", export_path
         )
 
         self.assertIn("plugin_id", structure)
@@ -372,12 +338,7 @@ class TestGeneratePRTemplate(unittest.TestCase):
         export_path = Path(self.tmpdir) / "export"
         export_path.mkdir(parents=True)
 
-        pr_path = self.manager._generate_pr_template(
-            "test-agent",
-            "wshobson",
-            export_path,
-            None
-        )
+        pr_path = self.manager._generate_pr_template("test-agent", "wshobson", export_path, None)
 
         self.assertTrue(pr_path.exists())
 
@@ -392,17 +353,11 @@ class TestGeneratePRTemplate(unittest.TestCase):
         export_path.mkdir(parents=True)
 
         validation = ValidationResult(
-            valid=True,
-            errors=[],
-            warnings=["Warning 1"],
-            passed_checks=["Check 1", "Check 2"]
+            valid=True, errors=[], warnings=["Warning 1"], passed_checks=["Check 1", "Check 2"]
         )
 
         pr_path = self.manager._generate_pr_template(
-            "test-agent",
-            "wshobson",
-            export_path,
-            validation
+            "test-agent", "wshobson", export_path, validation
         )
 
         content = pr_path.read_text()
@@ -420,25 +375,16 @@ class TestGetContributionInstructions(unittest.TestCase):
 
     def test_get_instructions_wshobson(self):
         """Should generate instructions for wshobson."""
-        validation = ValidationResult(
-            valid=True,
-            errors=[],
-            warnings=[],
-            passed_checks=["Test"]
-        )
+        validation = ValidationResult(valid=True, errors=[], warnings=[], passed_checks=["Test"])
 
         package = ContributionPackage(
             agent_name="test-agent",
             export_path=Path("/tmp/test"),
             validation=validation,
-            pr_template_path=Path("/tmp/test/PR_TEMPLATE.md")
+            pr_template_path=Path("/tmp/test/PR_TEMPLATE.md"),
         )
 
-        instructions = self.manager.get_contribution_instructions(
-            "test-agent",
-            "wshobson",
-            package
-        )
+        instructions = self.manager.get_contribution_instructions("test-agent", "wshobson", package)
 
         self.assertIn("test-agent", instructions)
         self.assertIn("wshobson", instructions)
@@ -449,23 +395,14 @@ class TestGetContributionInstructions(unittest.TestCase):
     def test_get_instructions_with_warnings(self):
         """Should include warnings in instructions."""
         validation = ValidationResult(
-            valid=True,
-            errors=[],
-            warnings=["Warning 1", "Warning 2"],
-            passed_checks=["Test"]
+            valid=True, errors=[], warnings=["Warning 1", "Warning 2"], passed_checks=["Test"]
         )
 
         package = ContributionPackage(
-            agent_name="test-agent",
-            export_path=Path("/tmp/test"),
-            validation=validation
+            agent_name="test-agent", export_path=Path("/tmp/test"), validation=validation
         )
 
-        instructions = self.manager.get_contribution_instructions(
-            "test-agent",
-            "wshobson",
-            package
-        )
+        instructions = self.manager.get_contribution_instructions("test-agent", "wshobson", package)
 
         self.assertIn("Warning 1", instructions)
         self.assertIn("Warning 2", instructions)
@@ -485,10 +422,7 @@ class TestGetContributionManager(unittest.TestCase):
         agents_dir = Path("/tmp/agents")
         export_dir = Path("/tmp/exports")
 
-        manager = get_contribution_manager(
-            agents_dir=agents_dir,
-            export_dir=export_dir
-        )
+        manager = get_contribution_manager(agents_dir=agents_dir, export_dir=export_dir)
 
         self.assertEqual(manager.agents_dir, agents_dir)
         self.assertEqual(manager.export_dir, export_dir)

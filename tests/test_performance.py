@@ -12,14 +12,8 @@ import shutil
 from pathlib import Path
 import tracemalloc
 
-from claude_force.quick_start import (
-    QuickStartOrchestrator,
-    get_quick_start_orchestrator
-)
-from claude_force.skills_manager import (
-    ProgressiveSkillsManager,
-    get_skills_manager
-)
+from claude_force.quick_start import QuickStartOrchestrator, get_quick_start_orchestrator
+from claude_force.skills_manager import ProgressiveSkillsManager, get_skills_manager
 from claude_force.hybrid_orchestrator import (
     HybridOrchestrator,
 )
@@ -41,8 +35,7 @@ class TestTemplateMatchingPerformance(unittest.TestCase):
         for _ in range(5):
             start = time.perf_counter()
             result = orchestrator.match_templates(
-                "Build a web application with authentication",
-                top_k=3
+                "Build a web application with authentication", top_k=3
             )
             elapsed = (time.perf_counter() - start) * 1000  # Convert to ms
 
@@ -52,9 +45,7 @@ class TestTemplateMatchingPerformance(unittest.TestCase):
         # Average should be < 50ms
         avg_time = sum(times) / len(times)
         self.assertLess(
-            avg_time,
-            50,
-            f"Template matching took {avg_time:.2f}ms on average (target: < 50ms)"
+            avg_time, 50, f"Template matching took {avg_time:.2f}ms on average (target: < 50ms)"
         )
 
     def test_caching_speedup(self):
@@ -104,11 +95,7 @@ class TestSkillsLoadingPerformance(unittest.TestCase):
         elapsed = (time.perf_counter() - start) * 1000
 
         self.assertIsNotNone(result)
-        self.assertLess(
-            elapsed,
-            20,
-            f"Skill loading took {elapsed:.2f}ms (target: < 20ms cached)"
-        )
+        self.assertLess(elapsed, 20, f"Skill loading took {elapsed:.2f}ms (target: < 20ms cached)")
 
     def test_cache_hit_rate(self):
         """Cache should be effective for repeated skill access."""
@@ -158,7 +145,7 @@ class TestSkillsLoadingPerformance(unittest.TestCase):
         tracemalloc.stop()
 
         # Calculate memory increase
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_increase = sum(stat.size_diff for stat in top_stats)
 
         # Should be less than 5MB for skill cache
@@ -166,14 +153,14 @@ class TestSkillsLoadingPerformance(unittest.TestCase):
         self.assertLess(
             total_increase,
             max_memory,
-            f"Memory usage increased by {total_increase / 1024 / 1024:.2f}MB (target: < 5MB)"
+            f"Memory usage increased by {total_increase / 1024 / 1024:.2f}MB (target: < 5MB)",
         )
 
 
 class TestCostEstimationPerformance(unittest.TestCase):
     """Test cost estimation performance."""
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_cost_estimation_performance(self, mock_init):
         """Cost estimation should be < 5ms."""
         mock_init.return_value = None
@@ -188,8 +175,7 @@ class TestCostEstimationPerformance(unittest.TestCase):
         for _ in range(10):
             start = time.perf_counter()
             estimate = orchestrator.estimate_cost(
-                "Implement REST API endpoint with validation",
-                "backend-developer"
+                "Implement REST API endpoint with validation", "backend-developer"
             )
             elapsed = (time.perf_counter() - start) * 1000
 
@@ -198,9 +184,7 @@ class TestCostEstimationPerformance(unittest.TestCase):
 
         avg_time = sum(times) / len(times)
         self.assertLess(
-            avg_time,
-            5,
-            f"Cost estimation took {avg_time:.2f}ms on average (target: < 5ms)"
+            avg_time, 5, f"Cost estimation took {avg_time:.2f}ms on average (target: < 5ms)"
         )
 
 
@@ -225,26 +209,19 @@ class TestProjectInitPerformance(unittest.TestCase):
 
         # Generate config
         config = orchestrator.generate_config(
-            template=template,
-            project_name="perf-test",
-            description="Performance test project"
+            template=template, project_name="perf-test", description="Performance test project"
         )
 
         # Benchmark initialization
         claude_dir = Path(self.temp_dir) / ".claude"
 
         start = time.perf_counter()
-        result = orchestrator.initialize_project(
-            config=config,
-            output_dir=str(claude_dir)
-        )
+        result = orchestrator.initialize_project(config=config, output_dir=str(claude_dir))
         elapsed = (time.perf_counter() - start) * 1000
 
-        self.assertGreater(len(result['created_files']), 0)
+        self.assertGreater(len(result["created_files"]), 0)
         self.assertLess(
-            elapsed,
-            500,
-            f"Project initialization took {elapsed:.2f}ms (target: < 500ms)"
+            elapsed, 500, f"Project initialization took {elapsed:.2f}ms (target: < 500ms)"
         )
 
 
@@ -297,7 +274,7 @@ class TestConcurrentOperations(unittest.TestCase):
 class TestLargeScaleOperations(unittest.TestCase):
     """Test performance with large-scale operations."""
 
-    @patch('claude_force.hybrid_orchestrator.AgentOrchestrator.__init__')
+    @patch("claude_force.hybrid_orchestrator.AgentOrchestrator.__init__")
     def test_many_cost_estimations(self, mock_init):
         """Should handle many cost estimations efficiently."""
         mock_init.return_value = None
@@ -305,10 +282,7 @@ class TestLargeScaleOperations(unittest.TestCase):
         orchestrator = HybridOrchestrator(auto_select_model=True)
 
         # Generate 100 different tasks
-        tasks = [
-            f"Implement feature {i} with validation and tests"
-            for i in range(100)
-        ]
+        tasks = [f"Implement feature {i} with validation and tests" for i in range(100)]
 
         start = time.perf_counter()
 
@@ -319,11 +293,7 @@ class TestLargeScaleOperations(unittest.TestCase):
         elapsed = time.perf_counter() - start
 
         # 100 estimates should complete in < 1 second
-        self.assertLess(
-            elapsed,
-            1.0,
-            f"100 cost estimations took {elapsed:.2f}s (target: < 1s)"
-        )
+        self.assertLess(elapsed, 1.0, f"100 cost estimations took {elapsed:.2f}s (target: < 1s)")
 
         # Average per estimation
         avg_per_estimate = (elapsed / 100) * 1000  # ms
