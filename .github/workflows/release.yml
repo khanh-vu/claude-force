@@ -39,7 +39,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest test_claude_system.py -v --override-ini="addopts=" --no-cov
+          pytest test_claude_system.py -v --override-ini="addopts=" -p no:cov
 
       - name: Run security checks
         run: |
