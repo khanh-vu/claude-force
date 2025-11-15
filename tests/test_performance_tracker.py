@@ -337,6 +337,38 @@ class TestPerformanceTrackerBounds(unittest.TestCase):
 
         self.assertEqual(tracker.max_entries, 500)
 
+    def test_factory_function_persistence(self):
+        """Factory function supports enable_persistence parameter."""
+        from claude_force.performance_tracker import get_tracker
+
+        # Test with persistence enabled
+        tracker1 = get_tracker(
+            metrics_dir=self.metrics_dir, max_entries=100, enable_persistence=True
+        )
+        self.assertTrue(tracker1.enable_persistence)
+
+        # Test with persistence disabled
+        tracker2 = get_tracker(
+            metrics_dir=self.metrics_dir, max_entries=100, enable_persistence=False
+        )
+        self.assertFalse(tracker2.enable_persistence)
+
+    def test_max_entries_validation(self):
+        """PerformanceTracker validates max_entries is positive."""
+        # Zero should raise ValueError
+        with self.assertRaises(ValueError) as context:
+            PerformanceTracker(metrics_dir=self.metrics_dir, max_entries=0)
+        self.assertIn("must be positive", str(context.exception))
+
+        # Negative should raise ValueError
+        with self.assertRaises(ValueError) as context:
+            PerformanceTracker(metrics_dir=self.metrics_dir, max_entries=-10)
+        self.assertIn("must be positive", str(context.exception))
+
+        # Positive should work fine
+        tracker = PerformanceTracker(metrics_dir=self.metrics_dir, max_entries=100)
+        self.assertEqual(tracker.max_entries, 100)
+
 
 class TestPerformanceTrackerStress(unittest.TestCase):
     """Stress tests for performance tracker."""

@@ -76,7 +76,13 @@ class PerformanceTracker:
             metrics_dir: Directory to store metrics data
             max_entries: Maximum metrics to keep in memory (ring buffer)
             enable_persistence: Whether to persist to disk (JSONL)
+
+        Raises:
+            ValueError: If max_entries is not positive
         """
+        if max_entries <= 0:
+            raise ValueError(f"max_entries must be positive, got {max_entries}")
+
         self.metrics_dir = Path(metrics_dir)
         self.metrics_dir.mkdir(parents=True, exist_ok=True)
 
@@ -474,7 +480,9 @@ class PerformanceTracker:
 
 
 def get_tracker(
-    metrics_dir: str = ".claude/metrics", max_entries: int = 10000
+    metrics_dir: str = ".claude/metrics",
+    max_entries: int = 10000,
+    enable_persistence: bool = True,
 ) -> PerformanceTracker:
     """
     Factory function to create performance tracker
@@ -482,8 +490,11 @@ def get_tracker(
     Args:
         metrics_dir: Directory to store metrics
         max_entries: Maximum metrics to keep in memory
+        enable_persistence: Whether to persist to disk (JSONL)
 
     Returns:
         PerformanceTracker instance
     """
-    return PerformanceTracker(metrics_dir, max_entries=max_entries)
+    return PerformanceTracker(
+        metrics_dir, max_entries=max_entries, enable_persistence=enable_persistence
+    )
