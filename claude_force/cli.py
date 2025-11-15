@@ -144,7 +144,9 @@ def cmd_list_agents(args):
                 priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(
                     agent["priority"], "Low"
                 )
-                print(f"{agent['name']:<{COL_WIDTH_NAME}} {priority_label:<{COL_WIDTH_PRIORITY}} {domains}")
+                print(
+                    f"{agent['name']:<{COL_WIDTH_NAME}} {priority_label:<{COL_WIDTH_PRIORITY}} {domains}"
+                )
 
             print(f"\nTotal: {len(agents)} agents")
 
@@ -545,7 +547,9 @@ def cmd_metrics(args):
                 return
 
             print("Per-Agent Statistics:\n")
-            print(f"{'Agent':<{COL_WIDTH_AGENT}} {'Runs':>{COL_WIDTH_RUNS}} {'Success':>{COL_WIDTH_SUCCESS}} {'Avg Time':>{COL_WIDTH_TIME}} {'Cost':>{COL_WIDTH_COST}}")
+            print(
+                f"{'Agent':<{COL_WIDTH_AGENT}} {'Runs':>{COL_WIDTH_RUNS}} {'Success':>{COL_WIDTH_SUCCESS}} {'Avg Time':>{COL_WIDTH_TIME}} {'Cost':>{COL_WIDTH_COST}}"
+            )
             print("-" * 70)
 
             for agent, data in sorted(
@@ -611,17 +615,21 @@ def cmd_setup(args):
     from pathlib import Path
 
     try:
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("🚀 Claude Force Setup Wizard")
-        print("="*70)
+        print("=" * 70)
         print("\nThis wizard will help you get started with Claude Force in 5 steps.\n")
 
         # Step 1: Check Python version
         print("[1/5] Checking Python version...")
         import sys
+
         py_version = sys.version_info
         if py_version < (3, 8):
-            print(f"❌ Error: Python 3.8+ required (found {py_version.major}.{py_version.minor})", file=sys.stderr)
+            print(
+                f"❌ Error: Python 3.8+ required (found {py_version.major}.{py_version.minor})",
+                file=sys.stderr,
+            )
             sys.exit(1)
         print(f"✅ Python {py_version.major}.{py_version.minor}.{py_version.micro} detected\n")
 
@@ -629,17 +637,18 @@ def cmd_setup(args):
         print("[2/5] Checking dependencies...")
         try:
             import anthropic
+
             print("✅ Dependencies already installed\n")
         except ImportError:
             if args.interactive:
                 install = input("Dependencies not found. Install now? (y/n) [y]: ").strip().lower()
-                if install in ('', 'y', 'yes'):
+                if install in ("", "y", "yes"):
                     print("Installing dependencies...")
                     try:
                         subprocess.run(
                             [sys.executable, "-m", "pip", "install", "anthropic"],
                             check=True,
-                            capture_output=True
+                            capture_output=True,
                         )
                         print("✅ Dependencies installed\n")
                     except subprocess.CalledProcessError as e:
@@ -659,7 +668,11 @@ def cmd_setup(args):
 
         if api_key:
             print(f"✅ API key found in environment (ANTHROPIC_API_KEY)")
-            masked_key = api_key[:8] + "*" * (len(api_key) - 12) + api_key[-4:] if len(api_key) > 12 else "***"
+            masked_key = (
+                api_key[:8] + "*" * (len(api_key) - 12) + api_key[-4:]
+                if len(api_key) > 12
+                else "***"
+            )
             print(f"   Key: {masked_key}\n")
         else:
             if args.interactive:
@@ -708,7 +721,7 @@ def cmd_setup(args):
         print("[4/5] Project initialization...")
         if args.interactive:
             init = input("Initialize a new project now? (y/n) [y]: ").strip().lower()
-            if init in ('', 'y', 'yes'):
+            if init in ("", "y", "yes"):
                 project_dir = input("Project directory [.]: ").strip() or "."
                 project_dir = Path(project_dir)
 
@@ -716,6 +729,7 @@ def cmd_setup(args):
                     print(f"⚠️  Project already initialized in {project_dir}")
                 else:
                     print(f"\n📁 Initializing project in {project_dir}...")
+
                     # Call init with interactive mode
                     class InitArgs:
                         directory = str(project_dir)
@@ -743,14 +757,14 @@ def cmd_setup(args):
         print("[5/5] Testing configuration...")
         if os.getenv("ANTHROPIC_API_KEY") and args.interactive:
             test = input("Run a test agent to verify setup? (y/n) [y]: ").strip().lower()
-            if test in ('', 'y', 'yes'):
+            if test in ("", "y", "yes"):
                 print("\n🧪 Running test agent (demo mode - no API calls)...")
                 try:
                     from .demo_mode import DemoOrchestrator
+
                     orch = DemoOrchestrator()
                     result = orch.run_agent(
-                        "document-writer-expert",
-                        "Write a welcome message for Claude Force"
+                        "document-writer-expert", "Write a welcome message for Claude Force"
                     )
 
                     if result.success:
@@ -769,9 +783,9 @@ def cmd_setup(args):
             print("⚠️  Skipping test (API key not configured or non-interactive mode)\n")
 
         # Success!
-        print("="*70)
+        print("=" * 70)
         print("✅ Setup Complete!")
-        print("="*70)
+        print("=" * 70)
         print("\n🎉 You're ready to use Claude Force!\n")
 
         print("📚 Next Steps:")
@@ -957,10 +971,10 @@ def cmd_init(args):
         sys.exit(1)
     except Exception as e:
 
-# =============================================================================
-# MARKETPLACE
-# =============================================================================
-# Functions: cmd_marketplace_list, cmd_marketplace_search, cmd_marketplace_install, cmd_marketplace_uninstall, cmd_marketplace_info
+        # =============================================================================
+        # MARKETPLACE
+        # =============================================================================
+        # Functions: cmd_marketplace_list, cmd_marketplace_search, cmd_marketplace_install, cmd_marketplace_uninstall, cmd_marketplace_info
 
         print(f"❌ Error: {e}", file=sys.stderr)
         import traceback
@@ -1164,11 +1178,10 @@ def cmd_marketplace_info(args):
 
         print("\n" + "=" * 80)
 
-
-# =============================================================================
-# IMPORT/EXPORT
-# =============================================================================
-# Functions: cmd_import_agent, cmd_export_agent, cmd_import_bulk
+        # =============================================================================
+        # IMPORT/EXPORT
+        # =============================================================================
+        # Functions: cmd_import_agent, cmd_export_agent, cmd_import_bulk
 
         if not plugin.installed:
             print(f"\n💡 Install: claude-force marketplace install {plugin.id}")
@@ -1482,11 +1495,10 @@ def cmd_gallery_popular(args):
             print(f"   {template.description}")
             print(f"   ID: {template.template_id}")
 
-
-# =============================================================================
-# RECOMMENDATION & ANALYSIS
-# =============================================================================
-# Functions: cmd_recommend, cmd_analyze_task
+        # =============================================================================
+        # RECOMMENDATION & ANALYSIS
+        # =============================================================================
+        # Functions: cmd_recommend, cmd_analyze_task
 
         print("\n" + "=" * 80)
         print(f"\n💡 Initialize: claude-force init --template <template-id>")
@@ -1648,10 +1660,10 @@ def cmd_analyze_task(args):
 
     except Exception as e:
 
-# =============================================================================
-# CONTRIBUTION
-# =============================================================================
-# Functions: cmd_contribute_validate, cmd_contribute_prepare
+        # =============================================================================
+        # CONTRIBUTION
+        # =============================================================================
+        # Functions: cmd_contribute_validate, cmd_contribute_prepare
 
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
@@ -1758,10 +1770,10 @@ def cmd_contribute_prepare(args):
         sys.exit(1)
     except Exception as e:
 
-# =============================================================================
-# WORKFLOW COMPOSITION
-# =============================================================================
-# Functions: cmd_compose
+        # =============================================================================
+        # WORKFLOW COMPOSITION
+        # =============================================================================
+        # Functions: cmd_compose
 
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
@@ -1977,6 +1989,7 @@ def cmd_analyze_recommend(args):
             traceback.print_exc()
         sys.exit(1)
 
+
 # =============================================================================
 # DIAGNOSTIC COMMANDS
 # =============================================================================
@@ -2031,7 +2044,6 @@ def cmd_diagnose(args):
 # MAIN ENTRY POINT
 # =============================================================================
 # Functions: main()
-
 
 
 def main():
@@ -2249,12 +2261,13 @@ For more information: https://github.com/khanh-vu/claude-force
         "setup", help="Interactive setup wizard for first-time configuration"
     )
     setup_parser.add_argument(
-        "--interactive", "-i", action="store_true", default=True,
-        help="Interactive mode (default)"
+        "--interactive", "-i", action="store_true", default=True, help="Interactive mode (default)"
     )
     setup_parser.add_argument(
-        "--non-interactive", action="store_false", dest="interactive",
-        help="Non-interactive mode (requires API key in environment)"
+        "--non-interactive",
+        action="store_false",
+        dest="interactive",
+        help="Non-interactive mode (requires API key in environment)",
     )
     setup_parser.set_defaults(func=cmd_setup)
 

@@ -167,6 +167,7 @@ TEMPLATE_TIME_COMPLEX = "60-90 minutes"
 # CONVERSION UTILITIES
 # =============================================================================
 
+
 def ms_to_seconds(milliseconds: float) -> float:
     """Convert milliseconds to seconds."""
     return milliseconds / 1000

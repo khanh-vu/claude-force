@@ -208,10 +208,10 @@ class AgentRouter:
                 for kw in agent_info["keywords"]:
                     kw_lower = kw.lower()
                     # Single word: use set lookup (fast)
-                    if ' ' not in kw and kw_lower in task_words:
+                    if " " not in kw and kw_lower in task_words:
                         matched_keywords.append(kw)
                     # Multi-word: use substring search (necessary for correctness)
-                    elif ' ' in kw and kw_lower in task_lower:
+                    elif " " in kw and kw_lower in task_lower:
                         matched_keywords.append(kw)
 
                 reason = f"Matches keywords: {', '.join(matched_keywords[:3])}"
@@ -292,7 +292,7 @@ class AgentRouter:
         multi_word_kw = []
 
         for kw in keywords:
-            if ' ' in kw:
+            if " " in kw:
                 multi_word_kw.append(kw.lower())
             else:
                 single_word_kw.append(kw.lower())

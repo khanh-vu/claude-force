@@ -132,9 +132,7 @@ class ResponseCache:
         self.verify_integrity = verify_integrity
 
         # ✅ HMAC secret for integrity verification
-        self.cache_secret = cache_secret or os.getenv(
-            "CLAUDE_CACHE_SECRET", DEFAULT_CACHE_SECRET
-        )
+        self.cache_secret = cache_secret or os.getenv("CLAUDE_CACHE_SECRET", DEFAULT_CACHE_SECRET)
 
         # ✅ SEC-01: Enforce secure secret in production
         is_production = os.getenv("CLAUDE_ENV") == "production"

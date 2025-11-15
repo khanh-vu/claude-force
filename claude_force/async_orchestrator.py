@@ -386,7 +386,8 @@ class AsyncAgentOrchestrator:
 
         if len(task) > MAX_TOKEN_LIMIT:
             raise ValueError(
-                f"Task too large: {len(task)} chars (max {MAX_TOKEN_LIMIT:,}). " "Please reduce task size."
+                f"Task too large: {len(task)} chars (max {MAX_TOKEN_LIMIT:,}). "
+                "Please reduce task size."
             )
 
         # ✅ Sanitize task to prevent prompt injection
