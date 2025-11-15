@@ -203,16 +203,25 @@ class IdempotentOrderManager:
         side: str,
         order_type: str,
         amount: Decimal,
-        price: Optional[Decimal]
+        price: Optional[Decimal],
+        strategy_id: str = "default",
+        signal_id: str = None
     ) -> str:
-        """Generate deterministic idempotency key from order parameters"""
-        # Include timestamp rounded to nearest second for time-based deduplication
-        timestamp = int(time.time())
+        """
+        Generate deterministic idempotency key from order parameters
 
-        key_data = f"{symbol}:{side}:{order_type}:{amount}:{price}:{timestamp}"
+        CRITICAL: Does NOT include timestamp - must be deterministic across retries
+        Uses strategy_id and signal_id for uniqueness instead of time
+        """
+        # Use signal_id if provided, otherwise generate from parameters
+        if signal_id is None:
+            # For manual orders, use parameter-based ID
+            signal_id = f"{symbol}_{side}_{amount}_{price}"
+
+        key_data = f"{strategy_id}:{signal_id}:{symbol}:{side}:{order_type}:{amount}:{price}"
         key_hash = hashlib.sha256(key_data.encode()).hexdigest()[:16]
 
-        return f"{key_hash}_{timestamp}"
+        return key_hash
 ```
 
 ## Event Sourcing for Trade History
@@ -362,6 +371,9 @@ class OptimisticLockManager:
     Uses version numbers to detect conflicts
     """
 
+    # Whitelist of allowed tables to prevent SQL injection
+    ALLOWED_TABLES = {'orders', 'positions', 'balances', 'trades', 'strategies'}
+
     async def update_with_optimistic_lock(
         self,
         table: str,
@@ -373,7 +385,15 @@ class OptimisticLockManager:
         Update record with optimistic locking
 
         Raises OptimisticLockError if version mismatch (concurrent update)
+        Raises ValueError if table name is not whitelisted
         """
+        # Validate table name to prevent SQL injection
+        if table not in self.ALLOWED_TABLES:
+            raise ValueError(
+                f"Invalid table name: {table}. "
+                f"Allowed tables: {', '.join(self.ALLOWED_TABLES)}"
+            )
+
         # Attempt update with version check
         result = await self.db.execute(
             f"""

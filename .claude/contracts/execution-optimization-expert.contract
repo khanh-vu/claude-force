@@ -1,0 +1,232 @@
+# Contract: Execution Optimization Expert
+
+## Authority
+
+**FULL**: Execution algorithm design, slippage reduction strategies, transaction cost analysis, order routing logic
+**CONSULT**: Trading strategy parameters (trading-strategy-expert), Exchange capabilities (exchange-integration-specialist), Position sizing (risk-engine-architect)
+**NONE**: Risk limits, Trading signals, Exchange connectivity
+
+## Deliverables
+
+### Phase 1: Execution Framework Design (Weeks 14-16)
+- [ ] Execution algorithm architecture document
+- [ ] TWAP/VWAP algorithm specifications
+- [ ] Market impact model design
+- [ ] Transaction cost analysis framework
+- [ ] Smart order routing strategy
+**Timeline:** 3 weeks
+**Dependencies:** exchange-integration-specialist (exchange capabilities), risk-engine-architect (position limits)
+
+### Phase 2: TWAP/VWAP Implementation (Weeks 17-20)
+- [ ] TWAP executor implementation
+- [ ] VWAP executor with volume profiling
+- [ ] Adaptive execution logic
+- [ ] Order splitting algorithms
+- [ ] Fill quality tracking
+**Timeline:** 4 weeks
+**Dependencies:** exchange-integration-specialist (order submission API)
+
+### Phase 3: Advanced Execution Strategies (Weeks 21-24)
+- [ ] Iceberg order implementation
+- [ ] POV (Percent of Volume) executor
+- [ ] Smart order router for multi-exchange
+- [ ] Liquidity-seeking algorithms
+- [ ] Post-only execution strategies
+**Timeline:** 4 weeks
+**Blocked by:** exchange-integration-specialist (multi-exchange support)
+
+### Phase 4: Transaction Cost Analysis (Weeks 25-27)
+- [ ] Implementation shortfall calculator
+- [ ] Slippage attribution analysis
+- [ ] Execution quality benchmarking
+- [ ] TCA reporting dashboard
+- [ ] Historical execution analytics
+**Timeline:** 3 weeks
+**Parallel with:** telegram-bot-specialist (TCA reports in Telegram)
+
+### Phase 5: Optimization & Tuning (Weeks 28-30)
+- [ ] Parameter optimization (slice sizes, intervals)
+- [ ] Execution performance testing
+- [ ] Slippage minimization tuning
+- [ ] Fill rate optimization
+- [ ] Production readiness validation
+**Timeline:** 3 weeks
+
+## Quality Gates
+
+### Design Phase (Week 16)
+- [ ] Execution framework design reviewed by trading-strategy-expert
+- [ ] Market impact model validated against historical data
+- [ ] Algorithm specifications peer-reviewed
+- [ ] Performance targets defined and approved
+- [ ] Integration points documented
+
+### Implementation Phase (Week 20)
+- [ ] TWAP/VWAP unit tests passing (>95% coverage)
+- [ ] Historical backtests show expected slippage reduction
+- [ ] Fill rate meets targets (>95%)
+- [ ] Execution latency <200ms (p99)
+- [ ] No memory leaks in continuous execution
+
+### Advanced Strategies Phase (Week 24)
+- [ ] Iceberg orders don't reveal full size
+- [ ] Smart router selects optimal exchange
+- [ ] Multi-exchange orders balanced correctly
+- [ ] Post-only execution avoids taker fees
+- [ ] Integration tests with real testnet orders
+
+### TCA Phase (Week 27)
+- [ ] Implementation shortfall calculated correctly
+- [ ] Slippage attribution accurate
+- [ ] Execution reports generated automatically
+- [ ] Historical data pipeline operational
+- [ ] Benchmarking against industry standards
+
+### Production Phase (Week 30)
+- [ ] Load tests pass (100+ concurrent executions)
+- [ ] Chaos tests pass (exchange disconnections, partial fills)
+- [ ] Execution quality regression tests passing
+- [ ] TCA reports approved by trading-strategy-expert
+- [ ] Documentation complete and reviewed
+
+## Success Criteria
+
+### Execution Quality
+- Average slippage <0.05% for non-urgent orders (vs. arrival price)
+- Average slippage <0.15% for urgent orders
+- Fill rate >95% for limit orders (TWAP/VWAP)
+- Fill rate >99.9% for market orders
+
+### Performance
+- Order submission latency <50ms (p95)
+- Execution decision latency <20ms (p95)
+- TCA calculation latency <100ms
+- Support 100+ concurrent executions
+
+### Cost Reduction
+- 30-50% execution cost reduction vs. pure market orders
+- Implementation shortfall <0.10% for TWAP
+- Implementation shortfall <0.15% for VWAP
+- Slippage cost <20 bps for typical order sizes
+
+### Reliability
+- 99.99% execution success rate (no lost orders)
+- 100% fill tracking accuracy
+- No duplicate executions
+- Graceful handling of exchange errors
+
+## Dependencies
+
+### Blocks
+- python-expert (waits for execution algorithms before implementation)
+- qc-automation-expert (waits for TCA framework before testing execution quality)
+
+### Blocked By
+- exchange-integration-specialist (requires order submission API)
+- risk-engine-architect (requires position size limits)
+- trading-strategy-expert (requires order urgency parameters)
+
+### Parallel
+- telegram-bot-specialist (TCA reporting)
+- infrastructure-reliability-expert (execution persistence)
+
+## Handoff Requirements
+
+### To python-expert
+**Format:** Python module with typed interfaces
+**Contents:**
+- `ExecutionManager` class with TWAP/VWAP/Iceberg executors
+- `TransactionCostAnalyzer` class
+- Execution algorithm configuration schemas
+- Integration tests and example usage
+
+**Acceptance:** python-expert confirms implementation matches specifications
+
+### To qc-automation-expert
+**Format:** Test specifications and test data
+**Contents:**
+- Execution quality test scenarios
+- Expected slippage ranges for different strategies
+- TCA validation test cases
+- Historical execution data for regression testing
+
+**Acceptance:** qc-automation-expert confirms tests are comprehensive
+
+### From exchange-integration-specialist
+**Format:** Exchange order API documentation
+**Contents:**
+- Order types supported (limit, market, post-only)
+- Order placement latency characteristics
+- Rate limits per exchange
+- Fill notification mechanisms
+
+**Acceptance:** Can submit test orders on all target exchanges
+
+### From trading-strategy-expert
+**Format:** Order urgency classification
+**Contents:**
+- Urgent vs. non-urgent order criteria
+- Maximum acceptable slippage per strategy
+- Target participation rates
+- Execution time windows
+
+**Acceptance:** Urgency parameters integrated into execution logic
+
+## Governance
+
+### Execution Parameter Changes
+Changes to core execution parameters (slice sizes, intervals, participation rates) require:
+1. Backtesting on historical data
+2. Paper trading validation (minimum 1 week)
+3. Approval from trading-strategy-expert
+4. Performance comparison vs. baseline
+5. Rollback plan documented
+
+### Algorithm Changes
+New execution algorithms or substantial modifications require:
+1. Design review with trading-strategy-expert and risk-engine-architect
+2. Simulation on historical order flow
+3. A/B testing vs. existing algorithms
+4. Statistical significance testing (minimum 1,000 orders)
+5. Gradual rollout (10% → 50% → 100%)
+
+### Exchange Addition
+Adding new exchange for smart order routing requires:
+1. Exchange-specific execution testing
+2. TCA validation for new exchange
+3. Liquidity analysis
+4. Cost-benefit analysis vs. existing exchanges
+5. Approval from crypto-security-auditor (API security review)
+
+## Escalation
+
+### Performance Degradation
+If execution metrics degrade beyond thresholds:
+- **Slippage >0.10%**: Investigate within 4 hours, report to trading-strategy-expert
+- **Fill rate <90%**: Pause TWAP/VWAP, switch to market orders, escalate immediately
+- **Execution latency >500ms**: Alert infrastructure-reliability-expert
+- **Implementation shortfall >0.20%**: Halt automated execution, manual review required
+
+### Incidents
+- **Duplicate executions**: Immediately halt, reconcile positions, report to risk-engine-architect
+- **Lost orders**: Circuit breaker activation, investigate, report to crypto-trading-architect
+- **Exchange routing error**: Disable affected exchange, reroute to alternates
+
+## SLAs
+
+### Response Times
+- Critical execution bug: 2 hours (business hours), 4 hours (after hours)
+- Performance degradation: 4 hours
+- New exchange integration: 2 weeks
+- Algorithm enhancement: 4 weeks
+
+### Maintenance Windows
+- Execution parameter tuning: Weekly, off-peak hours, <30 min downtime
+- Algorithm deployment: Bi-weekly, requires 24-hour notice
+- Major changes: Monthly, coordinate with infrastructure-reliability-expert
+
+---
+
+**Status**: Active (Week 14+)
+**Owner**: Execution Optimization Expert
+**Last Updated**: 2025-11-15

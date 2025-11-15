@@ -76,31 +76,54 @@ async def execute_trade(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 ```python
 import pyotp
+import redis.asyncio as redis
 
 class TelegramMFA:
     """Multi-factor authentication for trading commands"""
 
-    def __init__(self, secret: str):
+    def __init__(self, secret: str, redis_client: redis.Redis):
         self.totp = pyotp.TOTP(secret)
-        self.pending_commands = {}
+        self.redis = redis_client
+        self.mfa_ttl = 300  # 5 minutes
 
     async def request_mfa(self, user_id: int, command: str):
-        """Request MFA code for sensitive command"""
-        self.pending_commands[user_id] = command
+        """
+        Request MFA code for sensitive command
+
+        Stores pending command in Redis with 5-minute expiry
+        Survives bot restarts
+        """
+        await self.redis.setex(
+            f"mfa:pending:{user_id}",
+            self.mfa_ttl,
+            command
+        )
 
         return (
             "🔐 **MFA Required**\n\n"
             "This is a sensitive operation.\n"
             "Please enter your 6-digit authenticator code:\n"
-            "`/mfa <code>`"
+            "`/mfa <code>`\n"
+            "(Code expires in 5 minutes)"
         )
 
     async def verify_mfa(self, user_id: int, code: str) -> bool:
-        """Verify MFA code and execute pending command"""
+        """
+        Verify MFA code and execute pending command
+
+        Retrieves pending command from Redis
+        Deletes after successful verification to prevent replay
+        """
         if self.totp.verify(code, valid_window=1):
-            command = self.pending_commands.pop(user_id, None)
+            # Get pending command from Redis
+            command = await self.redis.get(f"mfa:pending:{user_id}")
+
             if command:
-                await self.execute_pending_command(command)
+                # Delete immediately to prevent replay attacks
+                await self.redis.delete(f"mfa:pending:{user_id}")
+
+                # Execute command
+                await self.execute_pending_command(command.decode())
                 return True
         return False
 ```

@@ -162,8 +162,9 @@
     },
     "execution-optimization-expert": {
       "file": "agents/execution-optimization-expert.md",
+      "contract": "contracts/execution-optimization-expert.contract",
       "domains": ["execution-algorithms", "twap", "vwap", "slippage-reduction", "smart-routing"],
-      "priority": 2
+      "priority": 1
     },
     "liquidation-monitor": {
       "file": "agents/liquidation-monitor.md",
@@ -249,19 +250,19 @@
     ],
     "crypto-trading-bot": [
       "crypto-trading-architect",
+      "database-architect",
+      "crypto-security-auditor",
       "risk-engine-architect",
-      "trading-strategy-expert",
       "crypto-data-engineer",
       "exchange-integration-specialist",
+      "trading-strategy-expert",
       "execution-optimization-expert",
-      "infrastructure-reliability-expert",
-      "crypto-security-auditor",
-      "telegram-bot-specialist",
       "liquidation-monitor",
+      "infrastructure-reliability-expert",
+      "telegram-bot-specialist",
       "python-expert",
-      "database-architect",
-      "code-reviewer",
-      "qc-automation-expert"
+      "qc-automation-expert",
+      "code-reviewer"
     ]
   },
   

@@ -153,9 +153,9 @@ class VaRCalculator:
         mean_return = returns.mean()
         std_return = returns.std()
 
-        # Z-score for confidence level
-        z_scores = {0.90: 1.28, 0.95: 1.65, 0.99: 2.33}
-        z_score = z_scores.get(confidence_level, 1.65)
+        # Z-score for confidence level (standard normal distribution)
+        z_scores = {0.90: 1.282, 0.95: 1.645, 0.99: 2.326}
+        z_score = z_scores.get(confidence_level, 1.645)
 
         # Calculate VaR
         var = portfolio_value * z_score * std_return * np.sqrt(holding_period_days)

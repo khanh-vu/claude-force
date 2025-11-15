@@ -493,7 +493,7 @@ templates:
       - "Algorithmic trading strategies"
 
     architecture_highlights:
-      - "Multi-database hybrid architecture (QuestDB + ClickHSome + PostgreSQL)"
+      - "Multi-database hybrid architecture (QuestDB + ClickHouse + PostgreSQL)"
       - "Active-passive HA with <30s failover"
       - "99.99% uptime target"
       - "Pre-trade risk validation (6+ checks)"
