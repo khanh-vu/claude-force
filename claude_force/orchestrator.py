@@ -4,6 +4,7 @@ Agent Orchestrator - Core orchestration engine for Claude multi-agent system
 
 import json
 import os
+import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
@@ -16,6 +17,9 @@ from claude_force.error_helpers import (
     format_tracking_not_enabled_error,
     format_missing_dependency_error,
 )
+
+# ARCH-03: Structured logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
