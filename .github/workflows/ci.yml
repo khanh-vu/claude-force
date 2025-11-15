@@ -31,10 +31,10 @@ jobs:
 
     - name: Run tests
       run: |
-        # Run system structure tests
+        # Run system structure tests with coverage
         pytest test_claude_system.py -v --cov=claude_force --cov-report=xml --cov-report=term --override-ini="addopts="
-        # Run performance tests
-        ANTHROPIC_API_KEY="test-key" pytest tests/test_async_orchestrator.py tests/test_response_cache.py tests/test_performance_integration.py -v --override-ini="addopts="
+        # Run performance tests (no coverage to avoid conflicts)
+        ANTHROPIC_API_KEY="test-key" pytest tests/test_async_orchestrator.py tests/test_response_cache.py tests/test_performance_integration.py -v --override-ini="addopts=" --no-cov
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3

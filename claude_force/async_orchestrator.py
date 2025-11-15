@@ -44,6 +44,25 @@ from .response_cache import ResponseCache
 logger = logging.getLogger(__name__)
 
 
+# ✅ Python 3.8 compatibility helper for asyncio.to_thread
+async def _run_in_thread(func, *args, **kwargs):
+    """
+    Run synchronous function in thread pool (Python 3.8 compatible).
+
+    asyncio.to_thread() was added in Python 3.9, so we use
+    run_in_executor() for Python 3.8 compatibility.
+    """
+    loop = asyncio.get_event_loop()
+    if args or kwargs:
+        # Wrap function with arguments
+        import functools
+
+        partial_func = functools.partial(func, *args, **kwargs)
+        return await loop.run_in_executor(None, partial_func)
+    else:
+        return await loop.run_in_executor(None, func)
+
+
 @dataclass
 class AsyncAgentResult:
     """Result from an async agent execution"""
@@ -180,12 +199,12 @@ class AsyncAgentOrchestrator:
             if not self.config_path.exists():
                 raise FileNotFoundError(f"Config file not found: {self.config_path}")
 
-            # Use asyncio.to_thread for file I/O to avoid blocking
+            # Use thread pool for file I/O to avoid blocking (Python 3.8 compatible)
             def _read_config():
                 with open(self.config_path, "r") as f:
                     return json.load(f)
 
-            self._config = await asyncio.to_thread(_read_config)
+            self._config = await _run_in_thread(_read_config)
 
         return self._config
 
@@ -205,12 +224,12 @@ class AsyncAgentOrchestrator:
         if not agent_file.exists():
             raise FileNotFoundError(f"Agent file not found: {agent_file}")
 
-        # Use asyncio.to_thread for file I/O
+        # Use thread pool for file I/O (Python 3.8 compatible)
         def _read_file():
             with open(agent_file, "r") as f:
                 return f.read()
 
-        return await asyncio.to_thread(_read_file)
+        return await _run_in_thread(_read_file)
 
     def _create_retry_decorator(self):
         """Create retry decorator if tenacity is available."""
@@ -420,8 +439,8 @@ class AsyncAgentOrchestrator:
             # ✅ Inject memory context if available
             if use_memory and self.memory:
                 try:
-                    # Run synchronous memory call in thread pool to avoid blocking
-                    context = await asyncio.to_thread(
+                    # Run synchronous memory call in thread pool (Python 3.8 compatible)
+                    context = await _run_in_thread(
                         self.memory.get_context_for_task, sanitized_task, agent_name
                     )
                     if context:
@@ -491,7 +510,7 @@ class AsyncAgentOrchestrator:
             # ✅ Store in memory
             if self.memory:
                 try:
-                    await asyncio.to_thread(
+                    await _run_in_thread(
                         self.memory.store_session,
                         agent_name=agent_name,
                         task=sanitized_task,
@@ -572,7 +591,7 @@ class AsyncAgentOrchestrator:
             # ✅ Store failed execution in memory
             if self.memory:
                 try:
-                    await asyncio.to_thread(
+                    await _run_in_thread(
                         self.memory.store_session,
                         agent_name=agent_name,
                         task=sanitized_task,
@@ -654,7 +673,7 @@ class AsyncAgentOrchestrator:
         """
         Track performance metrics asynchronously.
 
-        ✅ Uses asyncio.to_thread to avoid blocking event loop
+        ✅ Uses thread pool executor to avoid blocking event loop (Python 3.8 compatible)
         """
         if not self.enable_tracking:
             return
@@ -662,8 +681,8 @@ class AsyncAgentOrchestrator:
         if self._performance_tracker is None:
             self._performance_tracker = PerformanceTracker()
 
-        # Run in executor to avoid blocking event loop
-        await asyncio.to_thread(self._performance_tracker.record_execution, **kwargs)
+        # Run in executor to avoid blocking event loop (Python 3.8 compatible)
+        await _run_in_thread(self._performance_tracker.record_execution, **kwargs)
 
     async def close(self):
         """Close async client and cleanup resources."""
