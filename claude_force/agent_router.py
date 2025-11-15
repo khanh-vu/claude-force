@@ -301,7 +301,10 @@ class AgentRouter:
 
         # Fast path: Set intersection for single-word keywords
         if single_word_kw:
-            task_words = set(task_lower.split())
+            # Strip punctuation from task words to handle "research." matching "research"
+            import string
+
+            task_words = set(word.strip(string.punctuation) for word in task_lower.split())
             keyword_set = set(single_word_kw)
             matches += len(task_words & keyword_set)
 

@@ -127,21 +127,31 @@ class SystemDiagnostics:
                 details="Environment variable found",
             )
         else:
-            # Check .env file
-            env_file = Path.home() / ".claude" / ".env"
-            if env_file.exists():
+            # Check .env file in multiple locations (project first, then home)
+            env_locations = [
+                Path.cwd() / ".env",  # Current project directory
+                Path.home() / ".claude" / ".env",  # Global config
+            ]
+
+            found_env = None
+            for env_file in env_locations:
+                if env_file.exists():
+                    found_env = env_file
+                    break
+
+            if found_env:
                 check = DiagnosticCheck(
                     name="API key configured",
                     status=True,
                     message="Found in .env file",
-                    details=f"Location: {env_file}",
+                    details=f"Location: {found_env}",
                 )
             else:
                 check = DiagnosticCheck(
                     name="API key configured",
                     status=False,
                     message="No API key found",
-                    details="Set ANTHROPIC_API_KEY environment variable or create ~/.claude/.env",
+                    details="Set ANTHROPIC_API_KEY environment variable or create .env file",
                 )
 
         self.checks.append(check)
@@ -149,14 +159,24 @@ class SystemDiagnostics:
 
     def check_config_file(self) -> DiagnosticCheck:
         """Check claude.json config file exists and is valid."""
-        config_path = Path.home() / ".claude" / "claude.json"
+        # Check config in multiple locations (project first, then home)
+        config_locations = [
+            Path.cwd() / ".claude" / "claude.json",  # Current project
+            Path.home() / ".claude" / "claude.json",  # Global config
+        ]
 
-        if not config_path.exists():
+        config_path = None
+        for path in config_locations:
+            if path.exists():
+                config_path = path
+                break
+
+        if not config_path:
             check = DiagnosticCheck(
                 name="Config file",
                 status=False,
                 message="claude.json not found",
-                details=f"Expected location: {config_path}",
+                details=f"Expected: ./.claude/claude.json or ~/.claude/claude.json",
             )
         else:
             try:
