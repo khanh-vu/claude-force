@@ -2,6 +2,25 @@
 Command-Line Interface for Claude-Force
 
 Provides command-line access to the multi-agent orchestration system.
+
+This file contains all CLI commands organized into logical sections:
+- Agent Commands: List, info, run, recommend
+- Workflow Commands: List, run, compose
+- Metrics Commands: Summary, agents, costs, export, analyze
+- Setup & Init Commands: Setup wizard, project initialization, gallery
+- Marketplace Commands: List, search, install, uninstall
+- Import/Export Commands: Agent import/export, bulk operations
+- Contribution Commands: Validate, prepare submissions
+- Main Entry Point: Argument parser setup and routing
+
+TODO (ARCH-01): Split into separate modules for better maintainability:
+  - cli/agent_commands.py
+  - cli/workflow_commands.py
+  - cli/metrics_commands.py
+  - cli/init_commands.py
+  - cli/marketplace_commands.py
+  - cli/utility_commands.py
+  - cli/main.py
 """
 
 import sys
@@ -11,6 +30,13 @@ from pathlib import Path
 from typing import Optional
 
 from .orchestrator import AgentOrchestrator
+
+
+# =============================================================================
+# AGENT COMMANDS
+# =============================================================================
+# Functions: cmd_list_agents, cmd_agent_info, cmd_run_agent,
+#            cmd_recommend, cmd_analyze_task
 
 
 def cmd_list_agents(args):
@@ -52,6 +78,12 @@ def cmd_list_agents(args):
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+# =============================================================================
+# WORKFLOW COMMANDS
+# =============================================================================
+# Functions: cmd_list_workflows, cmd_run_workflow, cmd_compose
 
 
 def cmd_list_workflows(args):
@@ -308,6 +340,12 @@ def cmd_run_workflow(args):
         sys.exit(1)
 
 
+# =============================================================================
+# METRICS COMMANDS
+# =============================================================================
+# Functions: cmd_metrics, cmd_analyze_compare, cmd_analyze_recommend
+
+
 def cmd_metrics(args):
     """Show performance metrics"""
     try:
@@ -397,6 +435,13 @@ def cmd_metrics(args):
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+# =============================================================================
+# SETUP & INIT COMMANDS
+# =============================================================================
+# Functions: cmd_setup, cmd_init, cmd_gallery_browse, cmd_gallery_show,
+#            cmd_gallery_search, cmd_gallery_popular
 
 
 def cmd_setup(args):
@@ -752,6 +797,12 @@ def cmd_init(args):
             print("\nOr use --no-semantic for keyword-based matching")
         sys.exit(1)
     except Exception as e:
+
+# =============================================================================
+# MARKETPLACE
+# =============================================================================
+# Functions: cmd_marketplace_list, cmd_marketplace_search, cmd_marketplace_install, cmd_marketplace_uninstall, cmd_marketplace_info
+
         print(f"❌ Error: {e}", file=sys.stderr)
         import traceback
 
@@ -953,6 +1004,12 @@ def cmd_marketplace_info(args):
             print(f"\nDependencies: {', '.join(plugin.dependencies)}")
 
         print("\n" + "=" * 80)
+
+
+# =============================================================================
+# IMPORT/EXPORT
+# =============================================================================
+# Functions: cmd_import_agent, cmd_export_agent, cmd_import_bulk
 
         if not plugin.installed:
             print(f"\n💡 Install: claude-force marketplace install {plugin.id}")
@@ -1266,6 +1323,12 @@ def cmd_gallery_popular(args):
             print(f"   {template.description}")
             print(f"   ID: {template.template_id}")
 
+
+# =============================================================================
+# RECOMMENDATION & ANALYSIS
+# =============================================================================
+# Functions: cmd_recommend, cmd_analyze_task
+
         print("\n" + "=" * 80)
         print(f"\n💡 Initialize: claude-force init --template <template-id>")
 
@@ -1419,6 +1482,12 @@ def cmd_analyze_task(args):
         print(f'\n💡 Run: claude-force recommend --task "Your task" for detailed recommendations')
 
     except Exception as e:
+
+# =============================================================================
+# CONTRIBUTION
+# =============================================================================
+# Functions: cmd_contribute_validate, cmd_contribute_prepare
+
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
@@ -1523,6 +1592,12 @@ def cmd_contribute_prepare(args):
         print(f"\n💡 Fix the errors and try again, or use --skip-validation to bypass")
         sys.exit(1)
     except Exception as e:
+
+# =============================================================================
+# WORKFLOW COMPOSITION
+# =============================================================================
+# Functions: cmd_compose
+
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
@@ -1736,6 +1811,12 @@ def cmd_analyze_recommend(args):
 
             traceback.print_exc()
         sys.exit(1)
+
+# =============================================================================
+# MAIN ENTRY POINT
+# =============================================================================
+# Functions: main()
+
 
 
 def main():
