@@ -407,6 +407,141 @@ templates:
       - "Agent governance"
       - "System extensibility"
 
+  # Crypto Trading Bot template
+  - id: crypto-trading-bot
+    name: "Cryptocurrency Trading Bot"
+    description: "Production-grade crypto trading bot with risk management, backtesting, and Telegram integration"
+    category: finance-ai
+    difficulty: expert
+    estimated_setup_time: "20-30 minutes"
+
+    agents:
+      - crypto-trading-architect
+      - risk-engine-architect
+      - trading-strategy-expert
+      - crypto-data-engineer
+      - exchange-integration-specialist
+      - execution-optimization-expert
+      - infrastructure-reliability-expert
+      - crypto-security-auditor
+      - telegram-bot-specialist
+      - liquidation-monitor
+      - python-expert
+      - database-architect
+      - code-reviewer
+      - qc-automation-expert
+
+    workflows:
+      - crypto-trading-bot
+
+    skills:
+      - crypto-trading-patterns
+      - telegram-bot-patterns
+      - crypto-backtesting
+      - exchange-api-integration
+      - risk-management-framework
+      - high-availability-patterns
+      - order-execution-patterns
+      - state-management-patterns
+      - secrets-management-production
+
+    keywords:
+      - cryptocurrency
+      - trading-bot
+      - crypto
+      - bitcoin
+      - ethereum
+      - binance
+      - trading
+      - algorithmic-trading
+      - backtesting
+      - telegram
+      - risk-management
+      - ccxt
+      - exchange
+      - arbitrage
+      - market-making
+      - quant
+      - quantitative-finance
+
+    tech_stack:
+      language: ["Python 3.11+"]
+      exchange_integration: ["CCXT", "CCXT Pro"]
+      databases:
+        hot_data: ["QuestDB"]
+        warm_analytics: ["ClickHouse"]
+        transactional: ["PostgreSQL"]
+        caching: ["Redis", "Redis Streams"]
+        archival: ["Parquet", "S3"]
+      telegram: ["python-telegram-bot"]
+      async_framework: ["asyncio", "aiohttp"]
+      secrets_management: ["AWS Secrets Manager", "AWS KMS", "CloudHSM"]
+      monitoring: ["Prometheus", "Grafana", "CloudWatch"]
+      testing: ["pytest", "pytest-asyncio", "pytest-mock"]
+      backtesting: ["pandas", "numpy", "scipy"]
+      deployment: ["Docker", "Docker Compose", "Kubernetes"]
+      high_availability: ["Redis Leader Election", "Active-Passive HA"]
+
+    use_cases:
+      - "Automated cryptocurrency trading"
+      - "Arbitrage trading bots"
+      - "Market making strategies"
+      - "Grid trading systems"
+      - "Statistical arbitrage"
+      - "Funding rate arbitrage"
+      - "Portfolio rebalancing"
+      - "Algorithmic trading strategies"
+
+    architecture_highlights:
+      - "Multi-database hybrid architecture (QuestDB + ClickHouse + PostgreSQL)"
+      - "Active-passive HA with <30s failover"
+      - "99.99% uptime target"
+      - "Pre-trade risk validation (6+ checks)"
+      - "Circuit breakers for exchange failures"
+      - "Position reconciliation on failover"
+      - "Idempotent order management"
+      - "TWAP/VWAP execution algorithms"
+      - "Real-time margin monitoring"
+      - "CloudHSM for cold wallet keys"
+      - "Comprehensive audit logging (7-year retention)"
+
+    security_features:
+      - "AWS Secrets Manager + CloudHSM"
+      - "NO withdrawal permissions on API keys"
+      - "IP whitelisting on all exchanges"
+      - "3-tier wallet architecture (cold/warm/hot)"
+      - "MFA for sensitive Telegram commands"
+      - "User whitelist for bot access"
+      - "Encrypted communication channels"
+      - "Audit logging to S3 WORM storage"
+
+    risk_management:
+      - "Max 2% position size per trade"
+      - "Max 20% concentration in single asset"
+      - "5% daily loss limit triggers circuit breaker"
+      - "20% max drawdown limit"
+      - "Max 3x leverage"
+      - "Margin buffer minimum 30%"
+      - "Correlation exposure monitoring"
+      - "Fat finger detection"
+
+    performance_targets:
+      - "Data freshness: <5 seconds"
+      - "Order execution latency: <200ms"
+      - "WebSocket reconnection: <2 seconds"
+      - "Database query latency: <5ms (QuestDB)"
+      - "Backtest data load: <30 seconds"
+      - "Failover time: <30 seconds"
+
+    timeline:
+      phase_1_infrastructure: "Weeks 1-4 (QuestDB, ClickHouse, Redis, PostgreSQL)"
+      phase_2_core_engine: "Weeks 5-12 (Exchange connectors, order management, WebSocket)"
+      phase_3_risk_system: "Weeks 13-20 (Pre-trade validation, circuit breakers, limits)"
+      phase_4_strategies: "Weeks 21-28 (Arbitrage, grid trading, backtesting)"
+      phase_5_telegram_ui: "Weeks 29-32 (Commands, notifications, MFA)"
+      phase_6_ha_production: "Weeks 33-40 (Leader election, failover, monitoring)"
+      total_duration: "9-12 months to production-ready"
+
 categories:
   - id: web
     name: "Web Development"
@@ -439,3 +574,7 @@ categories:
   - id: claude-code
     name: "Claude Code Systems"
     description: "Multi-agent orchestration systems"
+
+  - id: finance-ai
+    name: "Financial AI & Trading"
+    description: "Cryptocurrency trading bots and quantitative finance systems"

@@ -117,6 +117,66 @@
       "contract": "contracts/data-engineer.contract",
       "domains": ["data-engineering", "etl", "pipelines", "airflow", "spark", "data-warehousing"],
       "priority": 2
+    },
+    "crypto-trading-architect": {
+      "file": "agents/crypto-trading-architect.md",
+      "contract": "contracts/crypto-trading-architect.contract",
+      "domains": ["crypto", "trading", "architecture", "system-design", "multi-database"],
+      "priority": 1
+    },
+    "trading-strategy-expert": {
+      "file": "agents/trading-strategy-expert.md",
+      "contract": "contracts/trading-strategy-expert.contract",
+      "domains": ["trading-strategies", "arbitrage", "backtesting", "quantitative-finance"],
+      "priority": 1
+    },
+    "crypto-data-engineer": {
+      "file": "agents/crypto-data-engineer.md",
+      "contract": "contracts/crypto-data-engineer.contract",
+      "domains": ["crypto-data", "timeseries", "questdb", "clickhouse", "data-pipelines"],
+      "priority": 1
+    },
+    "telegram-bot-specialist": {
+      "file": "agents/telegram-bot-specialist.md",
+      "contract": "contracts/telegram-bot-specialist.contract",
+      "domains": ["telegram", "bot", "notifications", "commands", "user-interface"],
+      "priority": 2
+    },
+    "crypto-security-auditor": {
+      "file": "agents/crypto-security-auditor.md",
+      "contract": "contracts/crypto-security-auditor.contract",
+      "domains": ["crypto-security", "wallet", "api-keys", "secrets-management", "compliance"],
+      "priority": 1
+    },
+    "risk-engine-architect": {
+      "file": "agents/risk-engine-architect.md",
+      "contract": "contracts/risk-engine-architect.contract",
+      "domains": ["risk-management", "pre-trade-validation", "circuit-breakers", "position-limits"],
+      "priority": 1
+    },
+    "exchange-integration-specialist": {
+      "file": "agents/exchange-integration-specialist.md",
+      "contract": "contracts/exchange-integration-specialist.contract",
+      "domains": ["exchange-api", "ccxt", "websocket", "rate-limiting", "order-management"],
+      "priority": 1
+    },
+    "execution-optimization-expert": {
+      "file": "agents/execution-optimization-expert.md",
+      "contract": "contracts/execution-optimization-expert.contract",
+      "domains": ["execution-algorithms", "twap", "vwap", "slippage-reduction", "smart-routing"],
+      "priority": 1
+    },
+    "liquidation-monitor": {
+      "file": "agents/liquidation-monitor.md",
+      "contract": "contracts/liquidation-monitor.contract",
+      "domains": ["margin-monitoring", "liquidation-prevention", "leverage-management", "alerts"],
+      "priority": 1
+    },
+    "infrastructure-reliability-expert": {
+      "file": "agents/infrastructure-reliability-expert.md",
+      "contract": "contracts/infrastructure-reliability-expert.contract",
+      "domains": ["high-availability", "failover", "leader-election", "disaster-recovery"],
+      "priority": 1
     }
   },
   
@@ -187,6 +247,22 @@
       "claude-code-expert",
       "python-expert",
       "document-writer-expert"
+    ],
+    "crypto-trading-bot": [
+      "crypto-trading-architect",
+      "database-architect",
+      "crypto-security-auditor",
+      "risk-engine-architect",
+      "crypto-data-engineer",
+      "exchange-integration-specialist",
+      "trading-strategy-expert",
+      "execution-optimization-expert",
+      "liquidation-monitor",
+      "infrastructure-reliability-expert",
+      "telegram-bot-specialist",
+      "python-expert",
+      "qc-automation-expert",
+      "code-reviewer"
     ]
   },
   
@@ -218,7 +294,16 @@
       "dockerfile",
       "git-workflow",
       "create-agent",
-      "create-skill"
+      "create-skill",
+      "crypto-trading-patterns",
+      "telegram-bot-patterns",
+      "crypto-backtesting",
+      "exchange-api-integration",
+      "risk-management-framework",
+      "high-availability-patterns",
+      "order-execution-patterns",
+      "state-management-patterns",
+      "secrets-management-production"
     ]
   },
   

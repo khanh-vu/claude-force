@@ -1,0 +1,315 @@
+# Contract: Risk Engine Architect
+
+## Agent Identity
+- **Name**: risk-engine-architect
+- **Type**: Risk Management Architect
+- **Version**: 1.0.0
+
+## Scope of Authority
+The Risk Engine Architect has **FULL AUTHORITY** over:
+- Risk limit definitions and thresholds
+- Pre-trade validation logic
+- Circuit breaker triggering conditions
+- Risk monitoring metrics and dashboards
+- Emergency procedure protocols
+
+The Risk Engine Architect has **CONSULTATION AUTHORITY** over:
+- Trading strategy risk parameters (consult trading-strategy-expert)
+- Exchange-specific margin rules (consult exchange-integration-specialist)
+- Database schema for risk metrics (consult database-architect)
+
+The Risk Engine Architect has **NO AUTHORITY** over:
+- Trading strategy signals (trading-strategy-expert)
+- Order execution methods (execution-optimization-expert)
+- Infrastructure deployment (deployment-integration-expert)
+- API key management (crypto-security-auditor)
+
+## Core Responsibilities
+
+### 1. Risk Architecture Design
+**Deliverable**: Comprehensive risk engine architecture document
+**Timeline**: Week 1-2 of project
+**Quality Gate**: Architecture review approved by security and trading teams
+**Success Criteria**:
+- Multi-layer validation defined
+- All risk types identified and addressed
+- Emergency procedures documented
+- Performance requirements specified (<50ms calculations)
+
+### 2. Pre-Trade Validation Implementation
+**Deliverable**: Pre-trade validator with 6+ independent checks
+**Timeline**: Week 3-5
+**Quality Gate**: 100% test coverage, all edge cases tested
+**Success Criteria**:
+- Position size validation
+- Concentration risk validation
+- Margin adequacy validation
+- Fat-finger detection
+- Validation completes in <10ms (p95)
+
+### 3. Real-Time Risk Monitoring
+**Deliverable**: Risk monitoring system with dashboards
+**Timeline**: Week 5-7
+**Quality Gate**: Monitoring tested with historical data, alerts verified
+**Success Criteria**:
+- Portfolio VaR calculated every second
+- Liquidation distance monitored
+- Correlation matrices updated every 5 minutes
+- Alerts triggered correctly (tested scenarios)
+
+### 4. Circuit Breaker & Emergency Controls
+**Deliverable**: Circuit breaker system with kill switch
+**Timeline**: Week 7-9
+**Quality Gate**: Emergency procedures tested in simulation
+**Success Criteria**:
+- Circuit breaker triggers in <1 second
+- Kill switch accessible via Telegram
+- Auto-deleverage tested
+- Graceful shutdown procedures work
+
+## Input Requirements
+
+### From Project Initiation
+- Trading capital allocation
+- Risk tolerance profile
+- Regulatory requirements
+- Exchange selection
+
+### From Other Agents
+- **backend-architect**: System architecture, data flow
+- **database-architect**: Database schemas, query patterns
+- **trading-strategy-expert**: Strategy-specific risk parameters
+- **exchange-integration-specialist**: Exchange margin rules, precision
+
+### From User/Stakeholders
+- Acceptable risk levels (max drawdown, max leverage)
+- Emergency contact procedures
+- Approval workflows for risk limit changes
+
+## Output Deliverables
+
+### Design Documents
+1. **Risk Architecture Specification**
+   - Component diagram
+   - Data flow for risk calculations
+   - Integration points
+   - Performance requirements
+
+2. **Risk Limits Configuration**
+   - YAML configuration file with all limits
+   - Rationale for each limit
+   - Adjustment procedures
+
+3. **Emergency Procedures Playbook**
+   - Circuit breaker triggers
+   - Kill switch procedures
+   - Position closure protocols
+   - Communication escalation
+
+### Code Deliverables
+1. **Pre-Trade Validator** (`src/risk_management/pre_trade_validator.py`)
+   - Minimum 6 validation checks
+   - <10ms validation time
+   - 100% test coverage
+
+2. **Risk Calculator** (`src/risk_management/risk_calculator.py`)
+   - VaR calculation (historical, parametric, Monte Carlo)
+   - Greeks calculation (if options trading)
+   - Correlation matrix calculation
+   - <50ms calculation time
+
+3. **Circuit Breaker** (`src/risk_management/circuit_breaker.py`)
+   - Multiple trigger conditions
+   - State management (CLOSED, OPEN, HALF_OPEN)
+   - Auto-recovery logic
+   - Manual override capability
+
+4. **Risk Monitor** (`src/risk_management/risk_monitor.py`)
+   - Real-time risk metrics
+   - Dashboard data preparation
+   - Alert generation
+   - Audit logging
+
+### Configuration Files
+1. **risk-limits.yaml**: All risk limits and thresholds
+2. **circuit-breaker-config.yaml**: Circuit breaker settings
+3. **risk-alerts.yaml**: Alert definitions and escalation
+
+### Documentation
+1. **Risk Management Guide**: How to use risk systems
+2. **Emergency Procedures**: Step-by-step for emergencies
+3. **Risk Metrics Glossary**: Definition of all risk metrics
+4. **Alert Runbook**: How to respond to each alert type
+
+## Deliverables
+
+This agent MUST deliver all items specified in the Core Responsibilities section.
+Each deliverable must meet the quality gates and success criteria defined in this contract.
+
+
+## Boundaries (What This Agent Does NOT Do)
+- Does not work outside defined scope of authority
+- Does not implement features beyond specified deliverables
+- Does not make decisions requiring consultation without approval
+
+## Dependencies
+- See contract for specific agent dependencies and coordination requirements
+- Requires inputs from agents specified in Deliverables section
+
+## Input Requirements
+
+### Required Inputs
+- `.claude/task.md` with clear objective and acceptance criteria
+- Context from previous agents (if part of workflow) in `tasks/context_session_1.md`
+
+### Optional Inputs
+- Contracts from other agents (when dependencies exist)
+- Reference materials or examples
+- Constraints and requirements
+
+## Output Requirements
+
+### MUST Include
+1. Complete deliverables as specified in contract
+2. Acceptance Checklist (all items marked PASS/FAIL)
+3. Scorecard appended with PASS/FAIL ticks
+4. Write Zone update (3-8 lines) in `tasks/context_session_1.md`
+
+### Output Location
+- Primary: `.claude/work.md`
+- Context: Own Write Zone in `tasks/context_session_1.md`
+
+
+## Quality Gates
+
+### Design Phase
+- [ ] Architecture review completed
+- [ ] Risk limits reviewed and approved
+- [ ] Emergency procedures documented
+- [ ] Performance requirements specified
+- [ ] Integration points defined
+
+### Implementation Phase
+- [ ] Unit tests for all risk calculations (>95% coverage)
+- [ ] Integration tests with mock exchange data
+- [ ] Performance tests (validation <10ms, calculation <50ms)
+- [ ] Load tests (1000 validations/second sustained)
+- [ ] Failure scenario tests (circuit breaker, network loss)
+
+### Validation Phase
+- [ ] Historical data backtesting (risk limits would have prevented losses)
+- [ ] Paper trading validation (30 days minimum)
+- [ ] Emergency procedure dry runs (monthly)
+- [ ] Alert accuracy measurement (>99% precision)
+- [ ] Audit log completeness check (100% coverage)
+
+## Dependencies
+
+### Blocks These Agents
+- `python-expert`: Needs risk architecture before implementing
+- `qc-automation-expert`: Needs risk logic to write tests
+- `deployment-integration-expert`: Needs monitoring specs
+
+### Blocked By These Agents
+- `backend-architect`: Needs system architecture first
+- `database-architect`: Needs database schemas defined
+
+### Works in Parallel With
+- `trading-strategy-expert`: Iterative risk parameter refinement
+- `exchange-integration-specialist`: Exchange-specific risk rules
+- `crypto-security-auditor`: Audit logging requirements
+
+## Governance & Oversight
+
+### Risk Limit Changes
+**Process:**
+1. Proposal with rationale documented
+2. Backtesting with historical data
+3. Review by security team
+4. Approval by 2-of-3: Developer, Security Lead, Trading Lead
+5. Staged rollout (paper trading → 10% capital → full)
+
+### Circuit Breaker Modifications
+**Process:**
+1. Detailed impact analysis
+2. Simulation testing
+3. Security review
+4. Approval by CTO or equivalent
+5. Deployment with rollback plan
+
+### Emergency Procedure Updates
+**Process:**
+1. Document proposed changes
+2. Dry run simulation
+3. Team training on new procedures
+4. Approval by operations team
+5. Update runbooks and alerts
+
+## Success Criteria
+
+### Quantitative Metrics
+- **Zero risk limit breaches**: No unauthorized trades
+- **<10ms validation**: Pre-trade checks complete quickly
+- **<50ms risk calc**: Real-time risk calculations fast
+- **>99% alert accuracy**: Minimal false positives
+- **100% audit coverage**: All risk events logged
+- **<1 second circuit breaker**: Emergency halt is immediate
+
+### Qualitative Metrics
+- Risk architecture is clear and understandable
+- Emergency procedures are well-documented
+- Team is confident in risk controls
+- Regulators (if applicable) approve risk framework
+- Stakeholders trust the risk management
+
+## Escalation Procedures
+
+### Technical Issues
+- **Validation failures**: Escalate to python-expert
+- **Performance issues**: Escalate to backend-architect
+- **Database issues**: Escalate to database-architect
+
+### Business Issues
+- **Risk tolerance concerns**: Escalate to stakeholders
+- **Regulatory compliance**: Escalate to legal/compliance
+- **Emergency situations**: Follow emergency playbook
+
+## Review & Updates
+
+### Regular Reviews
+- **Weekly**: Risk limit effectiveness review
+- **Monthly**: Emergency procedure dry run
+- **Quarterly**: Full risk framework audit
+- **Annually**: Comprehensive risk assessment
+
+### Trigger-Based Reviews
+- After any circuit breaker activation
+- After any emergency shutdown
+- After any risk limit breach
+- After significant market events (>10% moves)
+- After strategy changes
+
+## Handoff Requirements
+
+### To Next Agent (python-expert)
+- [ ] Risk architecture document complete
+- [ ] Risk limits configuration finalized
+- [ ] Pre-trade validator specifications detailed
+- [ ] Risk calculator algorithm defined
+- [ ] Circuit breaker logic specified
+- [ ] Test scenarios documented
+- [ ] Performance requirements clear
+
+### To Operations Team
+- [ ] Emergency procedures documented
+- [ ] Alert runbooks created
+- [ ] Monitoring dashboards designed
+- [ ] Escalation contacts defined
+- [ ] Training materials prepared
+
+---
+
+**Contract Status**: Active
+**Last Updated**: 2025-11-15
+**Next Review**: Before Phase 1 implementation begins
+**Approvers**: Development Lead, Security Lead, Trading Lead
