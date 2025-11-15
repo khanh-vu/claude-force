@@ -314,11 +314,10 @@ class ResponseCache:
 
             except Exception as e:
                 logger.warning("Failed to load cache file", extra={"key": key[:8], "error": str(e)})
-                # ✅ Clean up corrupt file
-                try:
-                    cache_file.unlink()
-                except OSError:
-                    pass
+                # ✅ Use centralized eviction to maintain size accounting
+                self._evict(key)
+                self.stats["misses"] += 1
+                return None
 
         # Cache miss
         self.stats["misses"] += 1

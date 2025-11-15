@@ -523,8 +523,8 @@ class AsyncAgentOrchestrator:
                     # Don't fail execution if caching fails
                     logger.warning("Failed to cache response", extra={"error": str(cache_error)})
 
-            # ✅ Store in memory
-            if self.memory:
+            # ✅ Store in memory (only if use_memory=True)
+            if use_memory and self.memory:
                 try:
                     await _run_in_thread(
                         self.memory.store_session,
@@ -604,8 +604,8 @@ class AsyncAgentOrchestrator:
                     workflow_position=workflow_position,
                 )
 
-            # ✅ Store failed execution in memory
-            if self.memory:
+            # ✅ Store failed execution in memory (only if use_memory=True)
+            if use_memory and self.memory:
                 try:
                     await _run_in_thread(
                         self.memory.store_session,
