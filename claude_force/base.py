@@ -99,9 +99,7 @@ class BaseOrchestrator(ABC):
     """
 
     @abstractmethod
-    def run_agent(
-        self, agent_name: str, task: str, **kwargs
-    ) -> AgentResult:
+    def run_agent(self, agent_name: str, task: str, **kwargs) -> AgentResult:
         """
         Execute a single agent on a task.
 
@@ -122,9 +120,7 @@ class BaseOrchestrator(ABC):
         pass
 
     @abstractmethod
-    def run_workflow(
-        self, workflow_name: str, task: str, **kwargs
-    ) -> List[AgentResult]:
+    def run_workflow(self, workflow_name: str, task: str, **kwargs) -> List[AgentResult]:
         """
         Execute a multi-agent workflow.
 
