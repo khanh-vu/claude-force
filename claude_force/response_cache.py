@@ -79,6 +79,7 @@ class ResponseCache:
         enabled: bool = True,
         cache_secret: Optional[str] = None,
         exclude_agents: Optional[list] = None,
+        verify_integrity: bool = True,
     ):
         """
         Initialize response cache.
@@ -90,6 +91,8 @@ class ResponseCache:
             enabled: Whether caching is enabled
             cache_secret: Secret for HMAC signatures
             exclude_agents: List of agents to exclude from caching
+            verify_integrity: Whether to verify HMAC integrity on reads (default: True)
+                             Set to False in trusted environments for 0.5-1ms speedup per cache hit.
         """
         # ✅ Validate cache directory to prevent path traversal (SECURITY FIX)
         if cache_dir:
@@ -124,6 +127,9 @@ class ResponseCache:
         self.max_size_bytes = max_size_mb * 1024 * 1024
         self.enabled = enabled
         self.exclude_agents = set(exclude_agents or [])
+
+        # ✅ PERF-03: Optional integrity verification (default: True)
+        self.verify_integrity = verify_integrity
 
         # ✅ HMAC secret for integrity verification
         self.cache_secret = cache_secret or os.getenv(
@@ -247,8 +253,8 @@ class ResponseCache:
         if key in self._memory_cache:
             entry = self._memory_cache[key]
 
-            # ✅ Verify integrity
-            if not self._verify_signature(entry):
+            # ✅ PERF-03: Optional integrity verification (0.5-1ms speedup if disabled)
+            if self.verify_integrity and not self._verify_signature(entry):
                 self._evict(key)
                 self.stats["misses"] += 1
                 return None
@@ -306,8 +312,8 @@ class ResponseCache:
                     entry_dict = json.load(f)
                     entry = CacheEntry(**entry_dict)
 
-                # ✅ Verify integrity
-                if not self._verify_signature(entry):
+                # ✅ PERF-03: Optional integrity verification (0.5-1ms speedup if disabled)
+                if self.verify_integrity and not self._verify_signature(entry):
                     self._evict(key)
                     self.stats["misses"] += 1
                     return None
