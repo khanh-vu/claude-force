@@ -130,6 +130,10 @@ jobs:
           fetch-depth: 0
           ref: main  # Checkout main branch for changelog update
 
+      - name: Fetch all tags
+        run: |
+          git fetch --force --tags
+
       - name: Extract version from tag
         id: version
         run: |
@@ -140,7 +144,7 @@ jobs:
         uses: orhun/git-cliff-action@v3
         with:
           config: cliff.toml
-          args: --tag v${{ steps.version.outputs.version }} --output CHANGELOG.md
+          args: --latest --output CHANGELOG.md
         env:
           OUTPUT: CHANGELOG.md
 
