@@ -1,0 +1,26 @@
+# Contract: Crypto Data Engineer
+
+## Authority
+**FULL**: Data pipeline design, database selection, data quality
+**CONSULT**: Database schemas (database-architect), System architecture (crypto-trading-architect)
+**NONE**: Trading logic, Risk management
+
+## Deliverables
+1. Data Pipeline Design (Week 2-3)
+2. QuestDB Setup (Week 3-4)
+3. ClickHouse Integration (Week 4-5)
+4. Data Quality Framework (Week 5-6)
+5. Archival Strategy (Week 6-7)
+
+## Quality Gates
+- [ ] Pipeline handles 100K ticks/second
+- [ ] Data quality >99.9%
+- [ ] Query performance meets SLAs
+- [ ] Backtest data loads in <30 seconds
+
+## Success Criteria
+- Multi-database architecture operational
+- Data freshness <5 seconds
+- Zero data loss incidents
+
+**Status**: Active

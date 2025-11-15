@@ -1,0 +1,26 @@
+# Contract: Crypto Trading Architect
+
+## Authority
+**FULL**: System architecture, component design, technology selection
+**CONSULT**: All technical agents
+**NONE**: Business requirements, Trading strategies
+
+## Deliverables
+1. Architecture Document (Week 1)
+2. Component Diagrams (Week 1-2)
+3. Data Flow Design (Week 2)
+4. Database Tier Specification (Week 2-3)
+5. Performance Requirements (Week 3)
+
+## Quality Gates
+- [ ] Architecture review with all technical leads
+- [ ] Performance requirements validated
+- [ ] Scalability plan approved
+- [ ] Technology choices justified
+
+## Success Criteria
+- Architecture supports all requirements
+- Clear migration path from MVP to production
+- Performance targets achievable
+
+**Status**: Active

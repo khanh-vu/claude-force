@@ -1,0 +1,25 @@
+# Contract: Telegram Bot Specialist
+
+## Authority
+**FULL**: Bot interface design, command handlers, notifications
+**CONSULT**: Security requirements (crypto-security-auditor)
+**NONE**: Trading logic, Risk limits
+
+## Deliverables
+1. Bot Framework (Week 3-4)
+2. Command Handlers (Week 4-5)
+3. Notification System (Week 5-6)
+4. Authentication System (Week 6-7)
+
+## Quality Gates
+- [ ] All commands tested
+- [ ] Authentication tested with unauthorized users
+- [ ] Notifications delivered <5 seconds
+- [ ] MFA tested for trading commands
+
+## Success Criteria
+- Bot responsive and reliable
+- Secure authentication working
+- Notifications timely and accurate
+
+**Status**: Active

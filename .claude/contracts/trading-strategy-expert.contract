@@ -1,0 +1,26 @@
+# Contract: Trading Strategy Expert
+
+## Authority
+**FULL**: Strategy development, backtesting, performance analysis
+**CONSULT**: Risk parameters (risk-engine-architect), Execution timing (execution-optimization-expert)
+**NONE**: Risk limits, Infrastructure, Security
+
+## Deliverables
+1. Strategy Framework (Week 2-3)
+2. Funding Rate Arbitrage (Week 4-6)
+3. Statistical Arbitrage (Week 7-9)
+4. Backtesting Engine (Week 10-12)
+5. Performance Attribution (Week 12-14)
+
+## Quality Gates
+- [ ] All strategies backtested with walk-forward analysis
+- [ ] Realistic slippage and fees modeled
+- [ ] Out-of-sample testing passed
+- [ ] Risk-adjusted returns meet targets
+
+## Success Criteria
+- Strategies achieve target Sharpe ratio
+- Backtests robust to parameter changes
+- Live paper trading validates backtests
+
+**Status**: Active

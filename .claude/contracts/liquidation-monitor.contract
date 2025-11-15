@@ -1,0 +1,25 @@
+# Contract: Liquidation Monitor
+
+## Authority
+**FULL**: Margin health monitoring, liquidation alerts, auto-deleverage triggers
+**CONSULT**: Risk limits (risk-engine-architect), Position sizing (trading-strategy-expert)
+**NONE**: Trading strategy, Infrastructure deployment
+
+## Deliverables
+1. Margin Health Calculator (Week 4-5)
+2. Liquidation Alert System (Week 5-6)
+3. Auto-Deleverage Engine (Week 6-7)
+4. Monitoring Dashboard (Week 7-8)
+
+## Quality Gates
+- [ ] Margin calculations tested against exchange APIs
+- [ ] Alerts tested with historical liquidation scenarios
+- [ ] Auto-deleverage tested in paper trading
+- [ ] <5 second alert latency verified
+
+## Success Criteria
+- Zero unexpected liquidations in production
+- All margin events logged and alerted
+- Auto-deleverage triggers correctly
+
+**Status**: Active

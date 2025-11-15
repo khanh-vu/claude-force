@@ -1,0 +1,27 @@
+# Contract: Crypto Security Auditor
+
+## Authority
+**FULL**: Security architecture, secrets management, audit logging, compliance
+**CONSULT**: Infrastructure (infrastructure-reliability-expert), Database (database-architect)
+**NONE**: Trading strategies, Business logic
+
+## Deliverables
+1. Security Architecture (Week 1-2)
+2. Secrets Management (Week 2-4) - AWS Secrets Manager + CloudHSM
+3. Wallet Architecture (Week 3-5) - 3-tier design
+4. Audit Logging (Week 4-6) - S3 WORM
+5. Incident Response (Week 5-7) - Playbooks
+
+## Quality Gates
+- [ ] Secrets never in code or .env files
+- [ ] Bot has ZERO withdrawal permissions
+- [ ] All security events logged
+- [ ] Pen test passed
+- [ ] Compliance requirements met
+
+## Success Criteria
+- Production deployment passes security review
+- Zero critical vulnerabilities in production
+- Audit logs meet compliance requirements
+
+**Status**: Active

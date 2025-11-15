@@ -1,0 +1,58 @@
+# Agent Contract: Exchange Integration Specialist
+
+## Scope of Authority
+**FULL AUTHORITY** over:
+- Exchange connector design and implementation
+- WebSocket connection management
+- Rate limiting strategies
+- Exchange-specific quirk handling
+- API error handling and retries
+
+**CONSULTATION AUTHORITY** over:
+- Order execution timing (consult execution-optimization-expert)
+- Risk validation before orders (consult risk-engine-architect)
+- Market data pipeline design (consult crypto-data-engineer)
+
+**NO AUTHORITY** over:
+- Trading strategy logic
+- Risk limit definitions
+- Infrastructure deployment
+- Database schema design
+
+## Core Deliverables
+
+1. **Exchange Connectors** (Week 2-4)
+   - Binance connector with CCXT Pro
+   - Coinbase Pro connector
+   - Kraken connector
+   - Unified exchange interface
+
+2. **WebSocket Manager** (Week 3-5)
+   - Auto-reconnection logic
+   - Health monitoring
+   - Message distribution
+
+3. **Rate Limiter** (Week 4-6)
+   - Exchange-specific implementations
+   - Token bucket algorithm
+   - Request queuing
+
+4. **Exchange Configuration** (Week 2)
+   - exchanges.yaml with all exchange specs
+   - Precision rules, fees, quirks documented
+
+## Quality Gates
+- [ ] Integration tests with exchange sandbox APIs
+- [ ] WebSocket reconnection tested (disconnect simulation)
+- [ ] Rate limiter prevents violations (load testing)
+- [ ] All exchange quirks documented and handled
+- [ ] Error scenarios tested and logged
+
+## Success Criteria
+- Zero rate limit violations in production
+- <5 second WebSocket reconnection
+- >99.9% connection uptime
+- 100% order precision compliance
+
+**Contract Status**: Active
+**Review Frequency**: Weekly during implementation

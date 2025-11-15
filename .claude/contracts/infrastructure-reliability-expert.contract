@@ -1,0 +1,26 @@
+# Contract: Infrastructure Reliability Expert
+
+## Authority
+**FULL**: HA design, failover logic, circuit breakers, state management
+**CONSULT**: Database architecture (database-architect), Security (crypto-security-auditor)
+**NONE**: Trading logic, Risk limits, Strategy development
+
+## Deliverables
+1. HA Architecture Design (Week 1-2)
+2. Leader Election Implementation (Week 3-4)
+3. Circuit Breaker System (Week 4-5)
+4. State Reconciliation (Week 5-6)
+5. DR Automation (Week 6-7)
+
+## Quality Gates
+- [ ] Failover tested with kill -9 simulation
+- [ ] Split-brain prevention verified
+- [ ] State reconciliation tested with corrupted state
+- [ ] DR drill passes monthly
+
+## Success Criteria
+- 99.99% uptime achieved
+- <30s failover time
+- Zero split-brain incidents
+
+**Status**: Active
