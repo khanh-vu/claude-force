@@ -100,9 +100,10 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/claude-force
+    # Temporarily disable environment to use API token instead of trusted publishing
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/claude-force
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
