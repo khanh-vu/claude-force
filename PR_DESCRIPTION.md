@@ -13,12 +13,31 @@ Implements comprehensive performance optimization for Claude Force with async ag
 - **ResponseCache**: Intelligent caching with HMAC integrity verification (28,039x speedup)
 - **Comprehensive test suite**: 48 tests covering all functionality (100% pass rate)
 
-### Critical Fixes (from expert reviews)
+### Critical Fixes (14 issues across 5 review rounds)
+
+**Round 1: Expert Reviews (5 issues)**
 1. ✅ Python 3.8+ compatibility (asyncio.wait_for instead of asyncio.timeout)
 2. ✅ Full cache integration with orchestrator
 3. ✅ Thread-safe semaphore initialization
 4. ✅ HMAC security warnings for default secrets
 5. ✅ Prompt injection protection with input sanitization
+
+**Round 2: CI/CD Integration (3 issues)**
+6. ✅ GitHub Actions upgrade (v3→v4)
+7. ✅ Black formatting (23 files)
+8. ✅ Python 3.8 asyncio.to_thread compatibility
+
+**Round 3: Codex P2 - Cache & Pricing (2 issues)**
+9. ✅ Cache size accounting on overwrites
+10. ✅ Model-specific pricing (Opus/Sonnet/Haiku)
+
+**Round 4: Codex P2 - Cache Enforcement (2 issues)**
+11. ✅ TTL expiration size accounting
+12. ✅ Enforced cache size limit with loop eviction
+
+**Round 5: Codex P2 - Memory & Corruption (2 issues)**
+13. ✅ Memory flag enforcement (use_memory check)
+14. ✅ Centralized eviction for corrupt cache
 
 ### Performance Metrics
 - Cache speedup: **28,039x** (target: 40-200x) ✅
@@ -44,9 +63,11 @@ Comprehensive documentation added:
 - Performance analysis and monitoring (3 docs)
 - Implementation planning (3 docs)
 - Expert reviews (3 docs)
+- Codex security reviews (3 rounds)
 - Test results and completion summary (2 docs)
+- Critical issues resolution (complete 5-round summary)
 
-Total: 8,209+ lines of documentation
+Total: 9,000+ lines of documentation across 12 files
 
 ## Deployment
 
@@ -71,4 +92,8 @@ export CLAUDE_CACHE_SECRET="your-strong-random-secret"
 - 99.995% time reduction for cached requests
 - 80%+ cost savings with caching
 - Enhanced security with input validation and HMAC integrity
-- Full Python 3.8+ compatibility
+- Full Python 3.8-3.12 compatibility
+- Accurate cache size accounting (no drift)
+- Model-specific cost tracking (Opus/Sonnet/Haiku)
+- Enforced cache limits with centralized eviction
+- Proper memory flag enforcement
