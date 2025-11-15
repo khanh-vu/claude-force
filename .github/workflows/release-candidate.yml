@@ -1,0 +1,326 @@
+name: Release Candidate
+
+# Trigger on RC, alpha, and beta tags (e.g., v2.1.0-rc.1, v2.1.0-alpha.1, v2.1.0-beta.1)
+on:
+  push:
+    tags:
+      - 'v*.*.*-rc.*'
+      - 'v*.*.*-alpha.*'
+      - 'v*.*.*-beta.*'
+
+permissions:
+  contents: write
+  id-token: write  # For trusted publishing to TestPyPI
+  pull-requests: write
+  issues: write
+
+jobs:
+  # Step 1: Pre-release validation with quality gates
+  validate:
+    name: Pre-release Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'  # Cache pip dependencies
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Check version consistency
+        run: |
+          python3 scripts/check_version_consistency.py
+
+      - name: Run tests
+        run: |
+          pytest test_claude_system.py -v --override-ini="addopts=" --no-cov
+
+      - name: Run security checks
+        run: |
+          pip install bandit safety
+          bandit -r claude_force/ -ll || true
+          safety check || true
+
+      - name: Check code formatting
+        run: |
+          pip install black
+          black --check claude_force/ || true
+
+      - name: Verify package can be built
+        run: |
+          pip install build
+          python -m build
+          rm -rf dist/  # Clean up test build
+
+  # Step 2: Build package
+  build:
+    name: Build Package
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Check package integrity
+        run: |
+          twine check --strict dist/*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+          retention-days: 30  # Keep RC builds longer for testing
+
+  # Step 3: Publish to TestPyPI
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/claude-force
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+          verify-metadata: true
+
+  # Step 4: Generate changelog for RC
+  changelog:
+    name: Generate Changelog
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog with git-cliff
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+          args: --tag v${{ steps.version.outputs.version }} --unreleased --output RC_CHANGELOG.md
+        env:
+          OUTPUT: RC_CHANGELOG.md
+
+      - name: Upload changelog artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-changelog
+          path: RC_CHANGELOG.md
+          retention-days: 30
+
+  # Step 5: Create GitHub Pre-release
+  github-prerelease:
+    name: Create GitHub Pre-release
+    needs: [publish-testpypi, changelog]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Download changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: rc-changelog
+          path: .
+
+      - name: Extract version and type
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          # Determine release type
+          if [[ "$VERSION" == *"-rc."* ]]; then
+            echo "type=Release Candidate" >> $GITHUB_OUTPUT
+            echo "type_short=RC" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-alpha."* ]]; then
+            echo "type=Alpha" >> $GITHUB_OUTPUT
+            echo "type_short=Alpha" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-beta."* ]]; then
+            echo "type=Beta" >> $GITHUB_OUTPUT
+            echo "type_short=Beta" >> $GITHUB_OUTPUT
+          else
+            echo "type=Pre-release" >> $GITHUB_OUTPUT
+            echo "type_short=Pre-release" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create release notes
+        run: |
+          cat > release_notes.md <<'EOF'
+          ## ⚠️ Pre-release Warning
+
+          This is a **${{ steps.version.outputs.type }}** version published to TestPyPI for testing purposes.
+
+          **DO NOT use this in production!**
+
+          ### Installation (Testing Only)
+
+          ```bash
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple claude-force==${{ steps.version.outputs.version }}
+          ```
+
+          ### Testing Period
+
+          Please test this release candidate and report any issues before the production release.
+
+          - 🐛 Report bugs as GitHub issues
+          - 💬 Provide feedback in the discussion
+          - ✅ Verify all features work as expected
+
+          ### Changelog
+
+          EOF
+
+          # Append changelog if it exists
+          if [ -f RC_CHANGELOG.md ]; then
+            cat RC_CHANGELOG.md >> release_notes.md
+          else
+            echo "See commit history for changes" >> release_notes.md
+          fi
+
+      - name: Create GitHub Pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          draft: false
+          prerelease: true  # Always mark as pre-release
+          name: ${{ steps.version.outputs.type_short }} v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Step 6: Post-release tasks
+  post-release:
+    name: Post-release Tasks
+    needs: github-prerelease
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version and type
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          if [[ "$VERSION" == *"-rc."* ]]; then
+            echo "type=Release Candidate" >> $GITHUB_OUTPUT
+            echo "emoji=🧪" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-alpha."* ]]; then
+            echo "type=Alpha" >> $GITHUB_OUTPUT
+            echo "emoji=🔬" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-beta."* ]]; then
+            echo "type=Beta" >> $GITHUB_OUTPUT
+            echo "emoji=🔍" >> $GITHUB_OUTPUT
+          else
+            echo "type=Pre-release" >> $GITHUB_OUTPUT
+            echo "emoji=⚠️" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create testing announcement issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.version.outputs.version }}';
+            const releaseType = '${{ steps.version.outputs.type }}';
+            const emoji = '${{ steps.version.outputs.emoji }}';
+            const tagName = 'v' + version;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${emoji} ${releaseType} v${version} - Testing Needed`,
+              body: `## ${emoji} ${releaseType} Available for Testing\n\n` +
+                    `**claude-force v${version}** has been published to TestPyPI for testing.\n\n` +
+                    `### ⚠️ Important\n\n` +
+                    `This is a **${releaseType.toLowerCase()}** version. **Do not use in production!**\n\n` +
+                    `### Installation (Testing Only)\n\n` +
+                    `\`\`\`bash\n` +
+                    `pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple claude-force==${version}\n` +
+                    `\`\`\`\n\n` +
+                    `### How to Test\n\n` +
+                    `1. Install the ${releaseType.toLowerCase()} version using the command above\n` +
+                    `2. Test the new features and bug fixes\n` +
+                    `3. Report any issues you find\n` +
+                    `4. Provide feedback on the changes\n\n` +
+                    `### Testing Checklist\n\n` +
+                    `- [ ] Installation works correctly\n` +
+                    `- [ ] Core functionality works as expected\n` +
+                    `- [ ] New features work properly\n` +
+                    `- [ ] No regressions in existing features\n` +
+                    `- [ ] Documentation is accurate\n\n` +
+                    `### Links\n\n` +
+                    `- 📦 [TestPyPI Package](https://test.pypi.org/project/claude-force/${version}/)\n` +
+                    `- 📝 [Pre-release Notes](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/${tagName})\n` +
+                    `- 📚 [Documentation](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/README.md)\n\n` +
+                    `### Feedback\n\n` +
+                    `Please comment below with your testing results or open new issues for any bugs found.\n\n` +
+                    `**Once testing is complete and approved, this will be promoted to a production release.**\n\n` +
+                    `Thank you for helping test claude-force! 🙏`,
+              labels: ['release', 'testing', releaseType.toLowerCase().replace(' ', '-')]
+            });
+
+      - name: Notify on successful RC release
+        run: |
+          echo "✅ ${{ steps.version.outputs.type }} v${{ steps.version.outputs.version }} released to TestPyPI!"
+          echo "📦 TestPyPI: https://test.pypi.org/project/claude-force/${{ steps.version.outputs.version }}/"
+          echo "📝 GitHub: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+          echo ""
+          echo "⚠️  This is a test release. Install with:"
+          echo "pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple claude-force==${{ steps.version.outputs.version }}"

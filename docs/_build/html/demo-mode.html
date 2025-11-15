@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Mode &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Demo Mode</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#example-output">Example Output</a><ul>
+<li><a class="reference internal" href="#code-review-agent">Code Review Agent</a></li>
+<li><a class="reference internal" href="#test-writer-agent">Test Writer Agent</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#when-to-use-demo-mode">When to Use Demo Mode</a></li>
+<li><a class="reference internal" href="#limitations">Limitations</a></li>
+<li><a class="reference internal" href="#transitioning-to-production">Transitioning to Production</a></li>
+<li><a class="reference internal" href="#demo-mode-implementation">Demo Mode Implementation</a><ul>
+<li><a class="reference internal" href="#agent-specific-responses">Agent-Specific Responses</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#code-example">Code Example</a></li>
+<li><a class="reference internal" href="#faq">FAQ</a><ul>
+<li><a class="reference internal" href="#q-do-i-need-an-api-key-for-demo-mode">Q: Do I need an API key for demo mode?</a></li>
+<li><a class="reference internal" href="#q-are-the-responses-real-ai-analysis">Q: Are the responses real AI analysis?</a></li>
+<li><a class="reference internal" href="#q-can-i-use-demo-mode-for-testing">Q: Can I use demo mode for testing?</a></li>
+<li><a class="reference internal" href="#q-does-demo-mode-work-with-all-commands">Q: Does demo mode work with all commands?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-switch-from-demo-to-production">Q: How do I switch from demo to production?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Demo Mode</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/demo-mode.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="demo-mode">
+<h1>Demo Mode<a class="headerlink" href="#demo-mode" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Demo mode allows you to explore claude-force <strong>without an API key</strong>. It provides realistic simulated responses that demonstrate the system’s capabilities without making actual API calls or incurring costs.</p>
+</section>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>✅ <strong>No API Key Required</strong> - Try claude-force immediately</p></li>
+<li><p>✅ <strong>Realistic Responses</strong> - Agent-specific mock outputs</p></li>
+<li><p>✅ <strong>Full CLI Support</strong> - All commands work in demo mode</p></li>
+<li><p>✅ <strong>Zero Cost</strong> - No API charges</p></li>
+<li><p>✅ <strong>Instant Feedback</strong> - Fast simulated responses</p></li>
+</ul>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>Simply add the <code class="docutils literal notranslate"><span class="pre">--demo</span></code> flag to any claude-force command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List agents (demo mode)</span>
+claude-force<span class="w"> </span>--demo<span class="w"> </span>list<span class="w"> </span>agents
+
+<span class="c1"># Run a single agent (demo mode)</span>
+claude-force<span class="w"> </span>--demo<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>code-reviewer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Review this code: def foo(): pass&quot;</span>
+
+<span class="c1"># Run a workflow (demo mode)</span>
+claude-force<span class="w"> </span>--demo<span class="w"> </span>run<span class="w"> </span>workflow<span class="w"> </span>full-review<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Review and test this feature&quot;</span>
+
+<span class="c1"># Get agent information (demo mode)</span>
+claude-force<span class="w"> </span>--demo<span class="w"> </span>info<span class="w"> </span>code-reviewer
+</pre></div>
+</div>
+</section>
+<section id="example-output">
+<h2>Example Output<a class="headerlink" href="#example-output" title="Link to this heading"></a></h2>
+<section id="code-review-agent">
+<h3>Code Review Agent<a class="headerlink" href="#code-review-agent" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>claude-force<span class="w"> </span>--demo<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>code-reviewer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Review authentication logic&quot;</span>
+
+🎭<span class="w"> </span>DEMO<span class="w"> </span>MODE<span class="w"> </span>-<span class="w"> </span>Simulated<span class="w"> </span>responses,<span class="w"> </span>no<span class="w"> </span>API<span class="w"> </span>calls
+
+🚀<span class="w"> </span>Running<span class="w"> </span>agent:<span class="w"> </span>code-reviewer
+
+✅<span class="w"> </span>Agent<span class="w"> </span>completed<span class="w"> </span>successfully
+
+<span class="c1"># Code Review Results</span>
+
+<span class="c1">## Overview</span>
+I<span class="err">&#39;</span>ve<span class="w"> </span>analyzed<span class="w"> </span>the<span class="w"> </span>code<span class="w"> </span>and<span class="w"> </span>found<span class="w"> </span>several<span class="w"> </span>areas<span class="w"> </span><span class="k">for</span><span class="w"> </span>improvement.
+
+<span class="c1">## Issues Found</span>
+
+<span class="c1">### 1. Error Handling</span>
+**Severity:**<span class="w"> </span>Medium
+**Location:**<span class="w"> </span>Lines<span class="w"> </span><span class="m">15</span>-23
+
+The<span class="w"> </span>current<span class="w"> </span>error<span class="w"> </span>handling<span class="w"> </span>could<span class="w"> </span>be<span class="w"> </span>more<span class="w"> </span>robust.<span class="w"> </span>Consider:
+-<span class="w"> </span>Adding<span class="w"> </span>specific<span class="w"> </span>exception<span class="w"> </span>types<span class="w"> </span>instead<span class="w"> </span>of<span class="w"> </span>bare<span class="w"> </span><span class="sb">`</span>except<span class="sb">`</span>
+-<span class="w"> </span>Logging<span class="w"> </span>errors<span class="w"> </span><span class="k">for</span><span class="w"> </span>debugging
+-<span class="w"> </span>Providing<span class="w"> </span>user-friendly<span class="w"> </span>error<span class="w"> </span>messages
+
+...
+</pre></div>
+</div>
+</section>
+<section id="test-writer-agent">
+<h3>Test Writer Agent<a class="headerlink" href="#test-writer-agent" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>claude-force<span class="w"> </span>--demo<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>test-writer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Write tests for user service&quot;</span>
+
+🎭<span class="w"> </span>DEMO<span class="w"> </span>MODE<span class="w"> </span>-<span class="w"> </span>Simulated<span class="w"> </span>responses,<span class="w"> </span>no<span class="w"> </span>API<span class="w"> </span>calls
+
+🚀<span class="w"> </span>Running<span class="w"> </span>agent:<span class="w"> </span>test-writer
+
+✅<span class="w"> </span>Agent<span class="w"> </span>completed<span class="w"> </span>successfully
+
+<span class="c1"># Test Suite Generated</span>
+
+<span class="c1">## Test File: test_module.py</span>
+
+<span class="sb">```</span>python
+import<span class="w"> </span>unittest
+from<span class="w"> </span>unittest.mock<span class="w"> </span>import<span class="w"> </span>patch,<span class="w"> </span>Mock
+from<span class="w"> </span>module<span class="w"> </span>import<span class="w"> </span>function_to_test
+
+class<span class="w"> </span>TestModule<span class="o">(</span>unittest.TestCase<span class="o">)</span>:
+<span class="w">    </span><span class="s2">&quot;&quot;&quot;Test suite for module functionality.&quot;&quot;&quot;</span>
+
+<span class="w">    </span>def<span class="w"> </span>setUp<span class="o">(</span>self<span class="o">)</span>:
+<span class="w">        </span><span class="s2">&quot;&quot;&quot;Set up test fixtures.&quot;&quot;&quot;</span>
+<span class="w">        </span>self.test_data<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="s2">&quot;key&quot;</span>:<span class="w"> </span><span class="s2">&quot;value&quot;</span><span class="o">}</span>
+
+<span class="w">    </span>def<span class="w"> </span>test_basic_functionality<span class="o">(</span>self<span class="o">)</span>:
+<span class="w">        </span><span class="s2">&quot;&quot;&quot;Test basic function behavior.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>function_to_test<span class="o">(</span>self.test_data<span class="o">)</span>
+<span class="w">        </span>self.assertEqual<span class="o">(</span>result,<span class="w"> </span>expected_value<span class="o">)</span>
+...
+</pre></div>
+</div>
+</section>
+</section>
+<section id="when-to-use-demo-mode">
+<h2>When to Use Demo Mode<a class="headerlink" href="#when-to-use-demo-mode" title="Link to this heading"></a></h2>
+<p>Demo mode is perfect for:</p>
+<ol class="arabic simple">
+<li><p><strong>Trying Before Buying</strong> - Explore claude-force before getting an API key</p></li>
+<li><p><strong>Demonstrations</strong> - Show the system to others without API costs</p></li>
+<li><p><strong>Testing CLI</strong> - Verify command syntax and options</p></li>
+<li><p><strong>Learning</strong> - Understand agent types and their outputs</p></li>
+<li><p><strong>Development</strong> - Test integration without API calls</p></li>
+</ol>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<p>Demo mode has some limitations:</p>
+<ul class="simple">
+<li><p>❌ Responses are generic templates, not actual AI analysis</p></li>
+<li><p>❌ Cannot process real code or provide actual insights</p></li>
+<li><p>❌ No performance tracking or cost metrics</p></li>
+<li><p>❌ Semantic agent selection is not available</p></li>
+<li><p>❌ Hybrid orchestration features are disabled</p></li>
+</ul>
+</section>
+<section id="transitioning-to-production">
+<h2>Transitioning to Production<a class="headerlink" href="#transitioning-to-production" title="Link to this heading"></a></h2>
+<p>When you’re ready to use real AI analysis:</p>
+<ol class="arabic">
+<li><p><strong>Get an API Key</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Visit: https://console.anthropic.com/account/keys</span>
+<span class="c1"># Create a new API key</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Set Environment Variable</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-api-key-here&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Remove –demo Flag</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Production use (with API key)</span>
+claude-force<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>code-reviewer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Review this code&quot;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="demo-mode-implementation">
+<h2>Demo Mode Implementation<a class="headerlink" href="#demo-mode-implementation" title="Link to this heading"></a></h2>
+<p>Demo mode uses the <code class="docutils literal notranslate"><span class="pre">DemoOrchestrator</span></code> class which:</p>
+<ul class="simple">
+<li><p>Simulates processing time (0.5-1.5 seconds)</p></li>
+<li><p>Generates agent-specific responses based on domains</p></li>
+<li><p>Includes realistic metadata (tokens, duration)</p></li>
+<li><p>Follows the same interface as <code class="docutils literal notranslate"><span class="pre">AgentOrchestrator</span></code></p></li>
+</ul>
+<section id="agent-specific-responses">
+<h3>Agent-Specific Responses<a class="headerlink" href="#agent-specific-responses" title="Link to this heading"></a></h3>
+<p>Each agent type generates appropriate responses:</p>
+<ul class="simple">
+<li><p><strong>Code Reviewers</strong> → Code review reports with issues and recommendations</p></li>
+<li><p><strong>Test Writers</strong> → Complete test suites with unittest examples</p></li>
+<li><p><strong>Documentation Writers</strong> → API documentation with examples</p></li>
+<li><p><strong>Security Auditors</strong> → Security analysis reports with findings</p></li>
+<li><p><strong>API Designers</strong> → API endpoint specifications</p></li>
+</ul>
+</section>
+</section>
+<section id="code-example">
+<h2>Code Example<a class="headerlink" href="#code-example" title="Link to this heading"></a></h2>
+<p>You can also use demo mode programmatically:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.demo_mode</span><span class="w"> </span><span class="kn">import</span> <span class="n">DemoOrchestrator</span>
+
+<span class="c1"># Create demo orchestrator (no API key needed)</span>
+<span class="n">demo</span> <span class="o">=</span> <span class="n">DemoOrchestrator</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+
+<span class="c1"># Run agent in demo mode</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Review this authentication function&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Demo mode: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;demo_mode&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="faq">
+<h2>FAQ<a class="headerlink" href="#faq" title="Link to this heading"></a></h2>
+<section id="q-do-i-need-an-api-key-for-demo-mode">
+<h3>Q: Do I need an API key for demo mode?<a class="headerlink" href="#q-do-i-need-an-api-key-for-demo-mode" title="Link to this heading"></a></h3>
+<p><strong>A:</strong> No! Demo mode works without any API key.</p>
+</section>
+<section id="q-are-the-responses-real-ai-analysis">
+<h3>Q: Are the responses real AI analysis?<a class="headerlink" href="#q-are-the-responses-real-ai-analysis" title="Link to this heading"></a></h3>
+<p><strong>A:</strong> No, demo mode returns simulated template responses. For real AI analysis, use production mode with an API key.</p>
+</section>
+<section id="q-can-i-use-demo-mode-for-testing">
+<h3>Q: Can I use demo mode for testing?<a class="headerlink" href="#q-can-i-use-demo-mode-for-testing" title="Link to this heading"></a></h3>
+<p><strong>A:</strong> Yes! Demo mode is perfect for:</p>
+<ul class="simple">
+<li><p>Testing CLI commands</p></li>
+<li><p>Verifying workflow configurations</p></li>
+<li><p>Learning agent types</p></li>
+<li><p>Demonstrating the system</p></li>
+</ul>
+</section>
+<section id="q-does-demo-mode-work-with-all-commands">
+<h3>Q: Does demo mode work with all commands?<a class="headerlink" href="#q-does-demo-mode-work-with-all-commands" title="Link to this heading"></a></h3>
+<p><strong>A:</strong> Yes, most commands work in demo mode:</p>
+<ul class="simple">
+<li><p>✅ <code class="docutils literal notranslate"><span class="pre">list</span> <span class="pre">agents</span></code> / <code class="docutils literal notranslate"><span class="pre">list</span> <span class="pre">workflows</span></code></p></li>
+<li><p>✅ <code class="docutils literal notranslate"><span class="pre">run</span> <span class="pre">agent</span></code> / <code class="docutils literal notranslate"><span class="pre">run</span> <span class="pre">workflow</span></code></p></li>
+<li><p>✅ <code class="docutils literal notranslate"><span class="pre">info</span> <span class="pre">&lt;agent&gt;</span></code></p></li>
+<li><p>❌ <code class="docutils literal notranslate"><span class="pre">metrics</span></code> (requires real execution data)</p></li>
+<li><p>❌ <code class="docutils literal notranslate"><span class="pre">recommend</span> <span class="pre">--explain</span></code> (requires semantic analysis)</p></li>
+</ul>
+</section>
+<section id="q-how-do-i-switch-from-demo-to-production">
+<h3>Q: How do I switch from demo to production?<a class="headerlink" href="#q-how-do-i-switch-from-demo-to-production" title="Link to this heading"></a></h3>
+<p><strong>A:</strong> Just remove the <code class="docutils literal notranslate"><span class="pre">--demo</span></code> flag and ensure <code class="docutils literal notranslate"><span class="pre">ANTHROPIC_API_KEY</span></code> is set:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Demo</span>
+claude-force<span class="w"> </span>--demo<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>code-reviewer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;...&quot;</span>
+
+<span class="c1"># Production</span>
+claude-force<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>code-reviewer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;...&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="installation.html"><span class="std std-doc">Installation Guide</span></a></p></li>
+<li><p><span class="xref myst">Quick Start</span></p></li>
+<li><p><a class="reference internal" href="api-reference/index.html"><span class="std std-doc">API Reference</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,355 @@
+name: Release Metrics
+
+# Track and report on release automation performance
+on:
+  workflow_run:
+    workflows: ["Release", "Release Candidate", "Promote Release Candidate to Production"]
+    types:
+      - completed
+
+  # Allow manual metrics generation
+  workflow_dispatch:
+    inputs:
+      period:
+        description: 'Period to analyze (days)'
+        required: false
+        default: '30'
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+
+jobs:
+  collect-metrics:
+    name: Collect Release Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Determine analysis period
+        id: period
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            DAYS="${{ github.event.inputs.period }}"
+          else
+            DAYS="30"
+          fi
+          echo "days=${DAYS}" >> $GITHUB_OUTPUT
+
+          # Calculate date range
+          END_DATE=$(date -u +%Y-%m-%d)
+          START_DATE=$(date -u -d "${DAYS} days ago" +%Y-%m-%d 2>/dev/null || date -u -v-${DAYS}d +%Y-%m-%d)
+          echo "start_date=${START_DATE}" >> $GITHUB_OUTPUT
+          echo "end_date=${END_DATE}" >> $GITHUB_OUTPUT
+
+      - name: Collect workflow metrics
+        id: metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const days = ${{ steps.period.outputs.days }};
+            const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+            // Fetch workflow runs
+            const workflows = ['release.yml', 'release-candidate.yml', 'promote-rc.yml'];
+            const metrics = {
+              release: { total: 0, success: 0, failure: 0, durations: [] },
+              rc: { total: 0, success: 0, failure: 0, durations: [] },
+              promotion: { total: 0, success: 0, failure: 0, durations: [] }
+            };
+
+            for (const workflow of workflows) {
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflow,
+                created: `>=${since}`,
+                per_page: 100
+              });
+
+              const category = workflow.includes('candidate') ? 'rc' :
+                               workflow.includes('promote') ? 'promotion' : 'release';
+
+              for (const run of runs.data.workflow_runs) {
+                metrics[category].total++;
+
+                if (run.conclusion === 'success') {
+                  metrics[category].success++;
+                } else if (run.conclusion === 'failure') {
+                  metrics[category].failure++;
+                }
+
+                // Calculate duration in minutes
+                if (run.updated_at && run.created_at) {
+                  const duration = (new Date(run.updated_at) - new Date(run.created_at)) / 1000 / 60;
+                  metrics[category].durations.push(duration);
+                }
+              }
+            }
+
+            // Calculate averages
+            const calculateAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 0;
+
+            metrics.release.avgDuration = calculateAvg(metrics.release.durations);
+            metrics.rc.avgDuration = calculateAvg(metrics.rc.durations);
+            metrics.promotion.avgDuration = calculateAvg(metrics.promotion.durations);
+
+            // Calculate success rates
+            metrics.release.successRate = metrics.release.total > 0 ?
+              ((metrics.release.success / metrics.release.total) * 100).toFixed(1) : 0;
+            metrics.rc.successRate = metrics.rc.total > 0 ?
+              ((metrics.rc.success / metrics.rc.total) * 100).toFixed(1) : 0;
+            metrics.promotion.successRate = metrics.promotion.total > 0 ?
+              ((metrics.promotion.success / metrics.promotion.total) * 100).toFixed(1) : 0;
+
+            // Store metrics
+            core.setOutput('release_total', metrics.release.total);
+            core.setOutput('release_success', metrics.release.success);
+            core.setOutput('release_success_rate', metrics.release.successRate);
+            core.setOutput('release_avg_duration', metrics.release.avgDuration);
+
+            core.setOutput('rc_total', metrics.rc.total);
+            core.setOutput('rc_success', metrics.rc.success);
+            core.setOutput('rc_success_rate', metrics.rc.successRate);
+            core.setOutput('rc_avg_duration', metrics.rc.avgDuration);
+
+            core.setOutput('promotion_total', metrics.promotion.total);
+            core.setOutput('promotion_success', metrics.promotion.success);
+            core.setOutput('promotion_success_rate', metrics.promotion.successRate);
+            core.setOutput('promotion_avg_duration', metrics.promotion.avgDuration);
+
+            return metrics;
+
+      - name: Collect release statistics
+        id: releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const days = ${{ steps.period.outputs.days }};
+            const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+            // Fetch releases
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const recentReleases = releases.data.filter(r =>
+              new Date(r.created_at) >= new Date(since)
+            );
+
+            const stats = {
+              total: recentReleases.length,
+              prerelease: recentReleases.filter(r => r.prerelease).length,
+              production: recentReleases.filter(r => !r.prerelease).length
+            };
+
+            core.setOutput('total_releases', stats.total);
+            core.setOutput('prereleases', stats.prerelease);
+            core.setOutput('production_releases', stats.production);
+
+            return stats;
+
+      - name: Generate metrics report
+        run: |
+          cat > RELEASE_METRICS.md <<'EOF'
+          # Release Automation Metrics Report
+
+          **Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Period**: Last ${{ steps.period.outputs.days }} days (${{ steps.period.outputs.start_date }} to ${{ steps.period.outputs.end_date }})
+
+          ---
+
+          ## 📊 Overview
+
+          ### Release Statistics
+
+          | Metric | Count |
+          |--------|-------|
+          | **Total Releases** | ${{ steps.releases.outputs.total_releases }} |
+          | Production Releases | ${{ steps.releases.outputs.production_releases }} |
+          | Pre-releases (RC/Alpha/Beta) | ${{ steps.releases.outputs.prereleases }} |
+
+          ### Workflow Performance
+
+          | Workflow | Total Runs | Success | Failure | Success Rate | Avg Duration |
+          |----------|------------|---------|---------|--------------|--------------|
+          | **Production Release** | ${{ steps.metrics.outputs.release_total }} | ${{ steps.metrics.outputs.release_success }} | $((${{ steps.metrics.outputs.release_total }} - ${{ steps.metrics.outputs.release_success }})) | ${{ steps.metrics.outputs.release_success_rate }}% | ${{ steps.metrics.outputs.release_avg_duration }} min |
+          | **Release Candidate** | ${{ steps.metrics.outputs.rc_total }} | ${{ steps.metrics.outputs.rc_success }} | $((${{ steps.metrics.outputs.rc_total }} - ${{ steps.metrics.outputs.rc_success }})) | ${{ steps.metrics.outputs.rc_success_rate }}% | ${{ steps.metrics.outputs.rc_avg_duration }} min |
+          | **RC Promotion** | ${{ steps.metrics.outputs.promotion_total }} | ${{ steps.metrics.outputs.promotion_success }} | $((${{ steps.metrics.outputs.promotion_total }} - ${{ steps.metrics.outputs.promotion_success }})) | ${{ steps.metrics.outputs.promotion_success_rate }}% | ${{ steps.metrics.outputs.promotion_avg_duration }} min |
+
+          ---
+
+          ## 🎯 Key Insights
+
+          ### Overall Health
+
+          EOF
+
+          # Calculate overall success rate
+          TOTAL_RUNS=$((${{ steps.metrics.outputs.release_total }} + ${{ steps.metrics.outputs.rc_total }} + ${{ steps.metrics.outputs.promotion_total }}))
+          TOTAL_SUCCESS=$((${{ steps.metrics.outputs.release_success }} + ${{ steps.metrics.outputs.rc_success }} + ${{ steps.metrics.outputs.promotion_success }}))
+
+          if [ $TOTAL_RUNS -gt 0 ]; then
+            OVERALL_SUCCESS_RATE=$(echo "scale=1; ($TOTAL_SUCCESS * 100) / $TOTAL_RUNS" | bc)
+
+            cat >> RELEASE_METRICS.md <<EOF
+          - **Overall Success Rate**: ${OVERALL_SUCCESS_RATE}%
+          - **Total Workflow Runs**: ${TOTAL_RUNS}
+          - **Total Successful Runs**: ${TOTAL_SUCCESS}
+          - **Total Failed Runs**: $((TOTAL_RUNS - TOTAL_SUCCESS))
+
+          EOF
+
+            # Add health status
+            if (( $(echo "$OVERALL_SUCCESS_RATE >= 95" | bc -l) )); then
+              echo "✅ **Status**: Excellent - Automation is highly reliable" >> RELEASE_METRICS.md
+            elif (( $(echo "$OVERALL_SUCCESS_RATE >= 80" | bc -l) )); then
+              echo "⚠️ **Status**: Good - Minor improvements needed" >> RELEASE_METRICS.md
+            else
+              echo "❌ **Status**: Needs Attention - Success rate below target" >> RELEASE_METRICS.md
+            fi
+          else
+            echo "ℹ️ No workflow runs in the analyzed period" >> RELEASE_METRICS.md
+          fi
+
+          cat >> RELEASE_METRICS.md <<'EOF'
+
+          ### Performance Analysis
+
+          EOF
+
+          # Performance insights for production releases
+          if [ "${{ steps.metrics.outputs.release_avg_duration }}" != "0" ]; then
+            DURATION=${{ steps.metrics.outputs.release_avg_duration }}
+            cat >> RELEASE_METRICS.md <<EOF
+          - **Production Release**: Average ${{ steps.metrics.outputs.release_avg_duration }} minutes
+          EOF
+            if (( $(echo "$DURATION <= 10" | bc -l) )); then
+              echo "  - ✅ Excellent performance (< 10 min target)" >> RELEASE_METRICS.md
+            elif (( $(echo "$DURATION <= 15" | bc -l) )); then
+              echo "  - ⚠️ Within acceptable range (< 15 min)" >> RELEASE_METRICS.md
+            else
+              echo "  - ❌ Above target - Consider optimization" >> RELEASE_METRICS.md
+            fi
+          fi
+
+          # Performance insights for RC releases
+          if [ "${{ steps.metrics.outputs.rc_avg_duration }}" != "0" ]; then
+            cat >> RELEASE_METRICS.md <<EOF
+          - **Release Candidate**: Average ${{ steps.metrics.outputs.rc_avg_duration }} minutes
+          EOF
+          fi
+
+          # Performance insights for promotions
+          if [ "${{ steps.metrics.outputs.promotion_avg_duration }}" != "0" ]; then
+            cat >> RELEASE_METRICS.md <<EOF
+          - **RC Promotion**: Average ${{ steps.metrics.outputs.promotion_avg_duration }} minutes
+          EOF
+          fi
+
+          cat >> RELEASE_METRICS.md <<'EOF'
+
+          ### Release Velocity
+
+          EOF
+
+          if [ "${{ steps.releases.outputs.total_releases }}" != "0" ]; then
+            RELEASES_PER_WEEK=$(echo "scale=1; (${{ steps.releases.outputs.total_releases }} * 7) / ${{ steps.period.outputs.days }}" | bc)
+            cat >> RELEASE_METRICS.md <<EOF
+          - **Release Frequency**: ${RELEASES_PER_WEEK} releases per week
+          - **Production vs Pre-release**: ${{ steps.releases.outputs.production_releases }} production / ${{ steps.releases.outputs.prereleases }} pre-release
+          EOF
+
+            if [ "${{ steps.releases.outputs.prereleases }}" != "0" ]; then
+              echo "- ✅ Using pre-release testing before production" >> RELEASE_METRICS.md
+            fi
+          fi
+
+          cat >> RELEASE_METRICS.md <<'EOF'
+
+          ---
+
+          ## 📈 Recommendations
+
+          EOF
+
+          # Generate recommendations based on metrics
+          if [ "${{ steps.metrics.outputs.release_success_rate }}" != "0" ]; then
+            if (( $(echo "${{ steps.metrics.outputs.release_success_rate }} < 90" | bc -l) )); then
+              echo "- ⚠️ **Production release success rate is below 90%** - Review recent failures and add more pre-release testing" >> RELEASE_METRICS.md
+            fi
+          fi
+
+          if [ "${{ steps.releases.outputs.prereleases }}" == "0" ] && [ "${{ steps.releases.outputs.production_releases }}" != "0" ]; then
+            echo "- 💡 **Consider using pre-releases** - No RCs detected. Use release candidates for safer deployments" >> RELEASE_METRICS.md
+          fi
+
+          if [ $TOTAL_RUNS -eq 0 ]; then
+            echo "- ℹ️ **No release activity** - This is normal for new projects or between release cycles" >> RELEASE_METRICS.md
+          fi
+
+          cat >> RELEASE_METRICS.md <<'EOF'
+
+          ---
+
+          ## 🔗 Resources
+
+          - [Release Workflow](.github/workflows/release.yml)
+          - [RC Workflow](.github/workflows/release-candidate.yml)
+          - [Promotion Workflow](.github/workflows/promote-rc.yml)
+          - [Release Automation Plan](RELEASE_AUTOMATION_PLAN.md)
+
+          ---
+
+          *This report is automatically generated by the Release Metrics workflow*
+          EOF
+
+      - name: Update metrics file
+        run: |
+          mkdir -p .github/metrics
+          cp RELEASE_METRICS.md .github/metrics/
+
+          # Add timestamp to historical metrics
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          cp RELEASE_METRICS.md ".github/metrics/metrics_${TIMESTAMP}.md"
+
+      - name: Commit metrics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add RELEASE_METRICS.md .github/metrics/
+
+          if git diff --staged --quiet; then
+            echo "No metrics changes to commit"
+          else
+            git commit -m "chore: update release metrics report"
+            git push origin main || echo "Failed to push metrics (may not be on main branch)"
+          fi
+
+      - name: Display metrics summary
+        run: |
+          echo "📊 Release Metrics Summary"
+          echo "=========================="
+          echo ""
+          echo "Period: ${{ steps.period.outputs.days }} days"
+          echo ""
+          echo "Releases: ${{ steps.releases.outputs.total_releases }} total"
+          echo "  - Production: ${{ steps.releases.outputs.production_releases }}"
+          echo "  - Pre-release: ${{ steps.releases.outputs.prereleases }}"
+          echo ""
+          echo "Production Releases: ${{ steps.metrics.outputs.release_success_rate }}% success rate"
+          echo "Release Candidates: ${{ steps.metrics.outputs.rc_success_rate }}% success rate"
+          echo "RC Promotions: ${{ steps.metrics.outputs.promotion_success_rate }}% success rate"
+          echo ""
+          echo "📝 Full report: RELEASE_METRICS.md"

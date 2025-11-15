@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude-Force Documentation &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Claude-Force Documentation</a><ul>
+<li><a class="reference internal" href="#documentation-structure">Documentation Structure</a></li>
+<li><a class="reference internal" href="#building-documentation">Building Documentation</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#build-html-documentation">Build HTML Documentation</a></li>
+<li><a class="reference internal" href="#live-reload-development">Live Reload (Development)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#documentation-status">Documentation Status</a><ul>
+<li><a class="reference internal" href="#completed">✅ Completed</a></li>
+<li><a class="reference internal" href="#in-progress-todo">⏳ In Progress / TODO</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#documentation-guidelines">Documentation Guidelines</a><ul>
+<li><a class="reference internal" href="#writing-style">Writing Style</a></li>
+<li><a class="reference internal" href="#code-examples">Code Examples</a></li>
+<li><a class="reference internal" href="#api-documentation-format">API Documentation Format</a></li>
+<li><a class="reference internal" href="#markdown-vs-rst">Markdown vs RST</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#publishing">Publishing</a><ul>
+<li><a class="reference internal" href="#readthedocs">ReadTheDocs</a></li>
+<li><a class="reference internal" href="#manual-html-build">Manual HTML Build</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contributing-to-documentation">Contributing to Documentation</a></li>
+<li><a class="reference internal" href="#need-help">Need Help?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Claude-Force Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="claude-force-documentation">
+<h1>Claude-Force Documentation<a class="headerlink" href="#claude-force-documentation" title="Link to this heading"></a></h1>
+<p>This directory contains the complete documentation for claude-force, built with Sphinx.</p>
+<section id="documentation-structure">
+<h2>Documentation Structure<a class="headerlink" href="#documentation-structure" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docs/
+├── index.md                    # Main documentation index
+├── installation.md             # Installation guide
+├── quickstart.md              # Quick start guide (TODO)
+├── conf.py                    # Sphinx configuration
+├── requirements.txt           # Documentation build dependencies
+├── api-reference/             # API documentation
+│   ├── index.md              # API reference index
+│   ├── orchestrator.md       # AgentOrchestrator API
+│   ├── semantic-selector.md  # Semantic selection (TODO)
+│   ├── hybrid-orchestrator.md # Hybrid orchestration (TODO)
+│   ├── performance-tracker.md # Performance tracking (TODO)
+│   ├── marketplace.md        # Marketplace API (TODO)
+│   └── cli.md                # CLI reference (TODO)
+├── guides/                    # In-depth guides
+│   ├── index.md              # Guides index (TODO)
+│   ├── workflows.md          # Workflow guide (TODO)
+│   ├── marketplace.md        # Marketplace guide (TODO)
+│   └── performance.md        # Performance optimization (TODO)
+└── examples/                  # Real-world examples
+    └── index.md              # Examples index (TODO)
+</pre></div>
+</div>
+</section>
+<section id="building-documentation">
+<h2>Building Documentation<a class="headerlink" href="#building-documentation" title="Link to this heading"></a></h2>
+<section id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
+<p>Install documentation dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>docs/requirements.txt
+</pre></div>
+</div>
+</section>
+<section id="build-html-documentation">
+<h3>Build HTML Documentation<a class="headerlink" href="#build-html-documentation" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
+sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>.<span class="w"> </span>_build/html
+</pre></div>
+</div>
+<p>Then open <code class="docutils literal notranslate"><span class="pre">_build/html/index.html</span></code> in your browser.</p>
+</section>
+<section id="live-reload-development">
+<h3>Live Reload (Development)<a class="headerlink" href="#live-reload-development" title="Link to this heading"></a></h3>
+<p>For live rebuilding during documentation development:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>sphinx-autobuild
+<span class="nb">cd</span><span class="w"> </span>docs
+sphinx-autobuild<span class="w"> </span>.<span class="w"> </span>_build/html
+</pre></div>
+</div>
+<p>Then visit http://localhost:8000</p>
+</section>
+</section>
+<section id="documentation-status">
+<h2>Documentation Status<a class="headerlink" href="#documentation-status" title="Link to this heading"></a></h2>
+<section id="completed">
+<h3>✅ Completed<a class="headerlink" href="#completed" title="Link to this heading"></a></h3>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> Main index page (index.md)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> Installation guide (installation.md)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> API Reference index (api-reference/index.md)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> AgentOrchestrator API documentation (api-reference/orchestrator.md)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> Sphinx configuration (conf.py)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" checked="checked" disabled="disabled" type="checkbox"> Build requirements (requirements.txt)</p></li>
+</ul>
+</section>
+<section id="in-progress-todo">
+<h3>⏳ In Progress / TODO<a class="headerlink" href="#in-progress-todo" title="Link to this heading"></a></h3>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Quick Start guide (quickstart.md)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> API documentation for remaining classes:</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> SemanticAgentSelector</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> HybridOrchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> PerformanceTracker</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> WorkflowComposer</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> AgentMarketplace</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> CLI commands reference</p></li>
+</ul>
+</li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Guides:</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Workflow composition</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Performance optimization</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Semantic selection</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Marketplace usage</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Architecture overview</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Contributing guide</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Testing guide</p></li>
+</ul>
+</li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Examples:</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Real-world usage examples</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Integration patterns</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Advanced scenarios</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="documentation-guidelines">
+<h2>Documentation Guidelines<a class="headerlink" href="#documentation-guidelines" title="Link to this heading"></a></h2>
+<section id="writing-style">
+<h3>Writing Style<a class="headerlink" href="#writing-style" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Use clear, concise language</p></li>
+<li><p>Include code examples for all features</p></li>
+<li><p>Provide real-world use cases</p></li>
+<li><p>Link to related documentation</p></li>
+<li><p>Use consistent formatting</p></li>
+</ul>
+</section>
+<section id="code-examples">
+<h3>Code Examples<a class="headerlink" href="#code-examples" title="Link to this heading"></a></h3>
+<p>All code examples should be:</p>
+<ul class="simple">
+<li><p>Complete and runnable</p></li>
+<li><p>Include necessary imports</p></li>
+<li><p>Show expected output</p></li>
+<li><p>Follow best practices</p></li>
+</ul>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="c1"># Initialize</span>
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+<span class="c1"># Run agent</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Review this code&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Output:</span>
+<span class="c1"># Success: True</span>
+<span class="c1"># Output: Code review results...</span>
+</pre></div>
+</div>
+</section>
+<section id="api-documentation-format">
+<h3>API Documentation Format<a class="headerlink" href="#api-documentation-format" title="Link to this heading"></a></h3>
+<p>Each API doc should include:</p>
+<ol class="arabic simple">
+<li><p>Overview and purpose</p></li>
+<li><p>Class/function signature</p></li>
+<li><p>Parameter descriptions</p></li>
+<li><p>Return value description</p></li>
+<li><p>Raises (exceptions)</p></li>
+<li><p>Examples</p></li>
+<li><p>Related documentation links</p></li>
+</ol>
+</section>
+<section id="markdown-vs-rst">
+<h3>Markdown vs RST<a class="headerlink" href="#markdown-vs-rst" title="Link to this heading"></a></h3>
+<p>We use Markdown (.md) for better readability and easier contribution. Sphinx supports Markdown through myst-parser.</p>
+</section>
+</section>
+<section id="publishing">
+<h2>Publishing<a class="headerlink" href="#publishing" title="Link to this heading"></a></h2>
+<section id="readthedocs">
+<h3>ReadTheDocs<a class="headerlink" href="#readthedocs" title="Link to this heading"></a></h3>
+<p>The documentation is configured for ReadTheDocs:</p>
+<ol class="arabic simple">
+<li><p>Connect repository to ReadTheDocs</p></li>
+<li><p>ReadTheDocs automatically builds on each commit</p></li>
+<li><p>Documentation published at: https://claude-force.readthedocs.io</p></li>
+</ol>
+</section>
+<section id="manual-html-build">
+<h3>Manual HTML Build<a class="headerlink" href="#manual-html-build" title="Link to this heading"></a></h3>
+<p>To build and publish HTML manually:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build</span>
+<span class="nb">cd</span><span class="w"> </span>docs
+sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>.<span class="w"> </span>_build/html
+
+<span class="c1"># The _build/html directory can be deployed to:</span>
+<span class="c1"># - GitHub Pages</span>
+<span class="c1"># - Netlify</span>
+<span class="c1"># - Vercel</span>
+<span class="c1"># - Any static hosting</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="contributing-to-documentation">
+<h2>Contributing to Documentation<a class="headerlink" href="#contributing-to-documentation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Write documentation in Markdown (.md)</p></li>
+<li><p>Follow existing structure and style</p></li>
+<li><p>Include code examples</p></li>
+<li><p>Test build locally before committing</p></li>
+<li><p>Submit PR with documentation changes</p></li>
+</ol>
+</section>
+<section id="need-help">
+<h2>Need Help?<a class="headerlink" href="#need-help" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>See Sphinx documentation: https://www.sphinx-doc.org/</p></li>
+<li><p>See MyST Parser docs: https://myst-parser.readthedocs.io/</p></li>
+<li><p>Open an issue: https://github.com/khanh-vu/claude-force/issues</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Status</strong>: P1 Task - In Progress
+<strong>Target</strong>: Complete all API documentation
+<strong>Progress</strong>: ~30% complete (core framework + AgentOrchestrator done)</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
