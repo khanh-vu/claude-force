@@ -1,4 +1,9 @@
-# Agent Contract: Risk Engine Architect
+# Contract: Risk Engine Architect
+
+## Agent Identity
+- **Name**: risk-engine-architect
+- **Type**: Risk Management Architect
+- **Version**: 1.0.0
 
 ## Scope of Authority
 The Risk Engine Architect has **FULL AUTHORITY** over:
@@ -135,6 +140,45 @@ The Risk Engine Architect has **NO AUTHORITY** over:
 2. **Emergency Procedures**: Step-by-step for emergencies
 3. **Risk Metrics Glossary**: Definition of all risk metrics
 4. **Alert Runbook**: How to respond to each alert type
+
+## Deliverables
+
+This agent MUST deliver all items specified in the Core Responsibilities section.
+Each deliverable must meet the quality gates and success criteria defined in this contract.
+
+
+## Boundaries (What This Agent Does NOT Do)
+- Does not work outside defined scope of authority
+- Does not implement features beyond specified deliverables
+- Does not make decisions requiring consultation without approval
+
+## Dependencies
+- See contract for specific agent dependencies and coordination requirements
+- Requires inputs from agents specified in Deliverables section
+
+## Input Requirements
+
+### Required Inputs
+- `.claude/task.md` with clear objective and acceptance criteria
+- Context from previous agents (if part of workflow) in `tasks/context_session_1.md`
+
+### Optional Inputs
+- Contracts from other agents (when dependencies exist)
+- Reference materials or examples
+- Constraints and requirements
+
+## Output Requirements
+
+### MUST Include
+1. Complete deliverables as specified in contract
+2. Acceptance Checklist (all items marked PASS/FAIL)
+3. Scorecard appended with PASS/FAIL ticks
+4. Write Zone update (3-8 lines) in `tasks/context_session_1.md`
+
+### Output Location
+- Primary: `.claude/work.md`
+- Context: Own Write Zone in `tasks/context_session_1.md`
+
 
 ## Quality Gates
 

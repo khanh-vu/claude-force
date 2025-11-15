@@ -381,12 +381,47 @@ exchanges:
 - Asynchronous order confirmation
 - Nonce must be strictly increasing
 
+## Input Requirements
+
+From `.claude/task.md`:
+- Target exchanges to integrate
+- Trading pairs and instruments to support
+- Required order types (market, limit, stop, etc.)
+- WebSocket data requirements (orderbook, trades, funding rates)
+- Rate limiting and performance requirements
+
 ## Success Metrics
 
 - **Zero rate limit violations**: Smart request queuing prevents bans
 - **<5 second reconnection**: WebSocket auto-recovers quickly
 - **>99.9% uptime**: Exchange connections remain stable
 - **100% order precision**: All orders meet exchange requirements
+
+
+## Reads
+- `.claude/task.md` (task specification)
+- `.claude/tasks/context_session_1.md` (session context)
+
+## Writes
+- `.claude/work.md` (deliverables and artifacts)
+- Your **Write Zone** in `.claude/tasks/context_session_1.md` (summary)
+
+## Tools Available
+- File operations (read, write)
+- Code generation
+- Diagram generation (Mermaid)
+
+## Guardrails
+1. Do NOT edit `.claude/task.md`
+2. Write only to `.claude/work.md` and your Write Zone
+3. No secrets or API keys in output
+4. Prefer minimal, focused changes
+5. Always include acceptance checklist
+
+## Output Format
+
+Write to `.claude/work.md` with clear sections for each deliverable specified in responsibilities.
+Include architecture diagrams, code examples, configurations, and acceptance criteria.
 
 ---
 

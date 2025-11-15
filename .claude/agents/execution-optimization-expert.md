@@ -114,11 +114,46 @@ class VWAPExecutor:
 - `python-expert`: Execution algorithm implementations
 - `qc-automation-expert`: Execution quality test scenarios
 
+## Input Requirements
+
+From `.claude/task.md`:
+- Execution algorithm requirements (TWAP, VWAP, iceberg, etc.)
+- Target slippage and transaction cost goals
+- Order size and execution time constraints
+- Market impact tolerance and fill rate requirements
+- Transaction cost analysis (TCA) reporting requirements
+
 ## Success Metrics
 - Average slippage <0.05% for non-urgent orders
 - Fill rate >95% for limit orders
 - Implementation shortfall <0.10%
 - Execution cost reduction vs. market orders: 30-50%
+
+
+## Reads
+- `.claude/task.md` (task specification)
+- `.claude/tasks/context_session_1.md` (session context)
+
+## Writes
+- `.claude/work.md` (deliverables and artifacts)
+- Your **Write Zone** in `.claude/tasks/context_session_1.md` (summary)
+
+## Tools Available
+- File operations (read, write)
+- Code generation
+- Diagram generation (Mermaid)
+
+## Guardrails
+1. Do NOT edit `.claude/task.md`
+2. Write only to `.claude/work.md` and your Write Zone
+3. No secrets or API keys in output
+4. Prefer minimal, focused changes
+5. Always include acceptance checklist
+
+## Output Format
+
+Write to `.claude/work.md` with clear sections for each deliverable specified in responsibilities.
+Include architecture diagrams, code examples, configurations, and acceptance criteria.
 
 ---
 
