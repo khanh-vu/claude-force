@@ -399,6 +399,201 @@ def cmd_metrics(args):
         sys.exit(1)
 
 
+def cmd_setup(args):
+    """Interactive setup wizard for first-time claude-force configuration"""
+    import os
+    import subprocess
+    import getpass
+    from pathlib import Path
+
+    try:
+        print("\n" + "="*70)
+        print("🚀 Claude Force Setup Wizard")
+        print("="*70)
+        print("\nThis wizard will help you get started with Claude Force in 5 steps.\n")
+
+        # Step 1: Check Python version
+        print("[1/5] Checking Python version...")
+        import sys
+        py_version = sys.version_info
+        if py_version < (3, 8):
+            print(f"❌ Error: Python 3.8+ required (found {py_version.major}.{py_version.minor})", file=sys.stderr)
+            sys.exit(1)
+        print(f"✅ Python {py_version.major}.{py_version.minor}.{py_version.micro} detected\n")
+
+        # Step 2: Check/Install dependencies
+        print("[2/5] Checking dependencies...")
+        try:
+            import anthropic
+            print("✅ Dependencies already installed\n")
+        except ImportError:
+            if args.interactive:
+                install = input("Dependencies not found. Install now? (y/n) [y]: ").strip().lower()
+                if install in ('', 'y', 'yes'):
+                    print("Installing dependencies...")
+                    try:
+                        subprocess.run(
+                            [sys.executable, "-m", "pip", "install", "anthropic"],
+                            check=True,
+                            capture_output=True
+                        )
+                        print("✅ Dependencies installed\n")
+                    except subprocess.CalledProcessError as e:
+                        print(f"❌ Error installing dependencies: {e}", file=sys.stderr)
+                        print("   Please run: pip install anthropic", file=sys.stderr)
+                        sys.exit(1)
+                else:
+                    print("⚠️  Skipping dependency installation")
+                    print("   Install manually with: pip install anthropic\n")
+            else:
+                print("⚠️  anthropic package not found")
+                print("   Install with: pip install anthropic\n")
+
+        # Step 3: Configure API key
+        print("[3/5] Configuring API key...")
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+
+        if api_key:
+            print(f"✅ API key found in environment (ANTHROPIC_API_KEY)")
+            masked_key = api_key[:8] + "*" * (len(api_key) - 12) + api_key[-4:] if len(api_key) > 12 else "***"
+            print(f"   Key: {masked_key}\n")
+        else:
+            if args.interactive:
+                print("\n📝 Anthropic API Key Setup")
+                print("   Get your API key from: https://console.anthropic.com/")
+                print()
+
+                while True:
+                    api_key = getpass.getpass("Enter your Anthropic API key (hidden): ").strip()
+                    if api_key:
+                        break
+                    print("❌ API key cannot be empty. Please try again.")
+
+                # Ask where to save
+                print("\nWhere should we save your API key?")
+                print("  1. Environment variable (recommended for this session)")
+                print("  2. .env file in current directory")
+                print("  3. Skip (I'll configure it manually later)")
+
+                choice = input("\nChoice (1-3) [1]: ").strip() or "1"
+
+                if choice == "1":
+                    os.environ["ANTHROPIC_API_KEY"] = api_key
+                    print("✅ API key set for this session")
+                    print("   To make it permanent, add to your shell profile:")
+                    print(f'   export ANTHROPIC_API_KEY="{api_key}"\n')
+
+                elif choice == "2":
+                    env_file = Path.cwd() / ".env"
+                    with open(env_file, "a") as f:
+                        f.write(f"\nANTHROPIC_API_KEY={api_key}\n")
+                    print(f"✅ API key saved to {env_file}")
+                    print("   Load with: source .env (bash) or set -a; source .env; set +a\n")
+                    os.environ["ANTHROPIC_API_KEY"] = api_key  # Also set for this session
+
+                else:
+                    print("⚠️  Skipping API key configuration")
+                    print("   Set manually: export ANTHROPIC_API_KEY=your-key\n")
+            else:
+                print("❌ ANTHROPIC_API_KEY not found in environment", file=sys.stderr)
+                print("   Set with: export ANTHROPIC_API_KEY=your-key", file=sys.stderr)
+                print("   Or run with --interactive flag", file=sys.stderr)
+                sys.exit(1)
+
+        # Step 4: Initialize project (optional)
+        print("[4/5] Project initialization...")
+        if args.interactive:
+            init = input("Initialize a new project now? (y/n) [y]: ").strip().lower()
+            if init in ('', 'y', 'yes'):
+                project_dir = input("Project directory [.]: ").strip() or "."
+                project_dir = Path(project_dir)
+
+                if (project_dir / ".claude").exists():
+                    print(f"⚠️  Project already initialized in {project_dir}")
+                else:
+                    print(f"\n📁 Initializing project in {project_dir}...")
+                    # Call init with interactive mode
+                    class InitArgs:
+                        directory = str(project_dir)
+                        interactive = True
+                        description = None
+                        name = None
+                        template = None
+                        tech = None
+                        no_semantic = False
+                        no_examples = False
+                        force = False
+                        config = None
+                        demo = False
+
+                    cmd_init(InitArgs())
+                print()
+            else:
+                print("⚠️  Skipping project initialization")
+                print("   Initialize later with: claude-force init\n")
+        else:
+            print("⚠️  Skipping project initialization (non-interactive mode)")
+            print("   Initialize with: claude-force init\n")
+
+        # Step 5: Test with demo agent
+        print("[5/5] Testing configuration...")
+        if os.getenv("ANTHROPIC_API_KEY") and args.interactive:
+            test = input("Run a test agent to verify setup? (y/n) [y]: ").strip().lower()
+            if test in ('', 'y', 'yes'):
+                print("\n🧪 Running test agent (demo mode - no API calls)...")
+                try:
+                    from .demo_mode import DemoOrchestrator
+                    orch = DemoOrchestrator()
+                    result = orch.run_agent(
+                        "document-writer-expert",
+                        "Write a welcome message for Claude Force"
+                    )
+
+                    if result.success:
+                        print("✅ Test successful!")
+                        print(f"\n📝 Sample output:\n{result.output[:200]}...")
+                    else:
+                        print("❌ Test failed")
+                        for error in result.errors:
+                            print(f"   Error: {error}", file=sys.stderr)
+                except Exception as e:
+                    print(f"⚠️  Could not run test: {e}")
+                print()
+            else:
+                print("⚠️  Skipping test\n")
+        else:
+            print("⚠️  Skipping test (API key not configured or non-interactive mode)\n")
+
+        # Success!
+        print("="*70)
+        print("✅ Setup Complete!")
+        print("="*70)
+        print("\n🎉 You're ready to use Claude Force!\n")
+
+        print("📚 Next Steps:")
+        print("   1. List available agents:")
+        print("      claude-force list agents")
+        print()
+        print("   2. Get agent recommendations:")
+        print("      claude-force recommend --task 'Your task description'")
+        print()
+        print("   3. Run an agent:")
+        print("      claude-force run agent code-reviewer --task 'Review my code'")
+        print()
+        print("   4. Try demo mode (no API key needed):")
+        print("      claude-force --demo run agent code-reviewer --task 'Review code'")
+        print()
+        print("📖 Documentation: https://github.com/khanh-vu/claude-force")
+        print()
+
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Setup cancelled by user")
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n❌ Setup failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_init(args):
     """Initialize a new claude-force project with intelligent template selection"""
     try:
@@ -1551,6 +1746,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # First-time setup (interactive wizard)
+  claude-force setup
+
   # List all agents
   claude-force list agents
 
@@ -1713,6 +1911,20 @@ For more information: https://github.com/khanh-vu/claude-force
         "--format", choices=["json", "csv"], default="json", help="Export format"
     )
     export_parser.set_defaults(func=cmd_metrics)
+
+    # Setup command (first-time configuration wizard)
+    setup_parser = subparsers.add_parser(
+        "setup", help="Interactive setup wizard for first-time configuration"
+    )
+    setup_parser.add_argument(
+        "--interactive", "-i", action="store_true", default=True,
+        help="Interactive mode (default)"
+    )
+    setup_parser.add_argument(
+        "--non-interactive", action="store_false", dest="interactive",
+        help="Non-interactive mode (requires API key in environment)"
+    )
+    setup_parser.set_defaults(func=cmd_setup)
 
     # Init command
     init_parser = subparsers.add_parser(
