@@ -49,11 +49,7 @@ class ContributionManager:
     - Package for submission
     """
 
-    def __init__(
-        self,
-        agents_dir: Optional[Path] = None,
-        export_dir: Optional[Path] = None
-    ):
+    def __init__(self, agents_dir: Optional[Path] = None, export_dir: Optional[Path] = None):
         """
         Initialize contribution manager.
 
@@ -69,9 +65,7 @@ class ContributionManager:
         self.porting_tool = get_porting_tool(agents_dir=self.agents_dir)
 
     def validate_agent_for_contribution(
-        self,
-        agent_name: str,
-        target_repo: str = "wshobson"
+        self, agent_name: str, target_repo: str = "wshobson"
     ) -> ValidationResult:
         """
         Validate agent is ready for contribution.
@@ -93,10 +87,7 @@ class ContributionManager:
         if not agent_dir.exists():
             errors.append(f"Agent directory not found: {agent_dir}")
             return ValidationResult(
-                valid=False,
-                errors=errors,
-                warnings=warnings,
-                passed_checks=passed
+                valid=False, errors=errors, warnings=warnings, passed_checks=passed
             )
         passed.append("Agent directory exists")
 
@@ -145,10 +136,18 @@ class ContributionManager:
 
         # Check 5: Agent is not a duplicate of builtin
         builtin_agents = [
-            "frontend-architect", "backend-architect", "database-architect",
-            "ai-engineer", "prompt-engineer", "data-engineer",
-            "security-specialist", "devops-engineer", "api-designer",
-            "code-reviewer", "python-expert", "documentation-expert"
+            "frontend-architect",
+            "backend-architect",
+            "database-architect",
+            "ai-engineer",
+            "prompt-engineer",
+            "data-engineer",
+            "security-specialist",
+            "devops-engineer",
+            "api-designer",
+            "code-reviewer",
+            "python-expert",
+            "documentation-expert",
         ]
 
         if agent_name in builtin_agents:
@@ -160,19 +159,14 @@ class ContributionManager:
         # Determine validity
         valid = len(errors) == 0
 
-        return ValidationResult(
-            valid=valid,
-            errors=errors,
-            warnings=warnings,
-            passed_checks=passed
-        )
+        return ValidationResult(valid=valid, errors=errors, warnings=warnings, passed_checks=passed)
 
     def prepare_contribution(
         self,
         agent_name: str,
         target_repo: str = "wshobson",
         include_metadata: bool = True,
-        validate: bool = True
+        validate: bool = True,
     ) -> ContributionPackage:
         """
         Prepare agent for contribution.
@@ -195,8 +189,8 @@ class ContributionManager:
             validation = self.validate_agent_for_contribution(agent_name, target_repo)
             if not validation.valid:
                 raise ValueError(
-                    f"Agent validation failed:\n" +
-                    "\n".join(f"  - {err}" for err in validation.errors)
+                    f"Agent validation failed:\n"
+                    + "\n".join(f"  - {err}" for err in validation.errors)
                 )
 
         # Create export directory
@@ -206,27 +200,18 @@ class ContributionManager:
         # Export agent to target format
         if target_repo == "wshobson":
             agent_file = self.porting_tool.export_to_wshobson(
-                agent_name=agent_name,
-                output_dir=export_path,
-                include_metadata=include_metadata
+                agent_name=agent_name, output_dir=export_path, include_metadata=include_metadata
             )
         else:
             # For claude-force format, just copy
             agent_file = self._export_claude_force_format(agent_name, export_path)
 
         # Generate plugin structure
-        plugin_structure = self._generate_plugin_structure(
-            agent_name,
-            target_repo,
-            export_path
-        )
+        plugin_structure = self._generate_plugin_structure(agent_name, target_repo, export_path)
 
         # Generate PR template
         pr_template_path = self._generate_pr_template(
-            agent_name,
-            target_repo,
-            export_path,
-            validation
+            agent_name, target_repo, export_path, validation
         )
 
         logger.info(f"Prepared contribution for '{agent_name}' at {export_path}")
@@ -236,14 +221,10 @@ class ContributionManager:
             export_path=export_path,
             validation=validation,
             pr_template_path=pr_template_path,
-            plugin_structure=plugin_structure
+            plugin_structure=plugin_structure,
         )
 
-    def _export_claude_force_format(
-        self,
-        agent_name: str,
-        output_dir: Path
-    ) -> Path:
+    def _export_claude_force_format(self, agent_name: str, output_dir: Path) -> Path:
         """Export agent in claude-force format."""
         agent_dir = self.agents_dir / agent_name
         agent_md = agent_dir / "AGENT.md"
@@ -264,10 +245,7 @@ class ContributionManager:
         return output_file
 
     def _generate_plugin_structure(
-        self,
-        agent_name: str,
-        target_repo: str,
-        export_path: Path
+        self, agent_name: str, target_repo: str, export_path: Path
     ) -> Dict:
         """Generate plugin structure for marketplace."""
         if target_repo == "wshobson":
@@ -279,7 +257,7 @@ class ContributionManager:
                 "source": "community",
                 "agents": [agent_name],
                 "skills": [],
-                "workflows": []
+                "workflows": [],
             }
         else:
             structure = {
@@ -291,14 +269,14 @@ class ContributionManager:
                     {
                         "id": agent_name,
                         "name": agent_name.replace("-", " ").title(),
-                        "file": f"{agent_name}.md"
+                        "file": f"{agent_name}.md",
                     }
-                ]
+                ],
             }
 
         # Write plugin.json
         plugin_file = export_path / "plugin.json"
-        with open(plugin_file, 'w') as f:
+        with open(plugin_file, "w") as f:
             json.dump(structure, f, indent=2)
 
         return structure
@@ -308,7 +286,7 @@ class ContributionManager:
         agent_name: str,
         target_repo: str,
         export_path: Path,
-        validation: Optional[ValidationResult] = None
+        validation: Optional[ValidationResult] = None,
     ) -> Path:
         """Generate PR template for contribution."""
         template = f"""# Contribution: {agent_name}
@@ -392,10 +370,7 @@ I have tested this agent with the following tasks:
         return pr_template_path
 
     def get_contribution_instructions(
-        self,
-        agent_name: str,
-        target_repo: str,
-        package: ContributionPackage
+        self, agent_name: str, target_repo: str, package: ContributionPackage
     ) -> str:
         """
         Get step-by-step contribution instructions.
@@ -468,8 +443,7 @@ I have tested this agent with the following tasks:
 
 
 def get_contribution_manager(
-    agents_dir: Optional[Path] = None,
-    export_dir: Optional[Path] = None
+    agents_dir: Optional[Path] = None, export_dir: Optional[Path] = None
 ) -> ContributionManager:
     """
     Get singleton contribution manager instance.

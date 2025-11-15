@@ -25,17 +25,19 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ModelPricing:
     """Model pricing information (per 1M tokens)."""
-    haiku_input: float = 0.25      # $0.25 per 1M input tokens
-    haiku_output: float = 1.25     # $1.25 per 1M output tokens
-    sonnet_input: float = 3.00     # $3.00 per 1M input tokens
-    sonnet_output: float = 15.00   # $15.00 per 1M output tokens
-    opus_input: float = 15.00      # $15.00 per 1M input tokens
-    opus_output: float = 75.00     # $75.00 per 1M output tokens
+
+    haiku_input: float = 0.25  # $0.25 per 1M input tokens
+    haiku_output: float = 1.25  # $1.25 per 1M output tokens
+    sonnet_input: float = 3.00  # $3.00 per 1M input tokens
+    sonnet_output: float = 15.00  # $15.00 per 1M output tokens
+    opus_input: float = 15.00  # $15.00 per 1M input tokens
+    opus_output: float = 75.00  # $75.00 per 1M output tokens
 
 
 @dataclass
 class CostEstimate:
     """Cost estimate for a task."""
+
     model: str
     estimated_input_tokens: int
     estimated_output_tokens: int
@@ -67,7 +69,6 @@ class HybridOrchestrator(AgentOrchestrator):
             "api-documenter",
             "deployment-integration-expert",
         ],
-
         # Sonnet agents (complex reasoning, architecture, code)
         "sonnet": [
             "frontend-architect",
@@ -87,17 +88,16 @@ class HybridOrchestrator(AgentOrchestrator):
             "python-expert",
             "frontend-developer",
         ],
-
         # Opus agents (critical decisions, security)
         # Not pre-assigned - use for critical tasks only
-        "opus": []
+        "opus": [],
     }
 
     # Model names
     MODELS = {
         "haiku": "claude-3-haiku-20240307",
         "sonnet": "claude-3-5-sonnet-20241022",
-        "opus": "claude-opus-4-20250514"
+        "opus": "claude-opus-4-20250514",
     }
 
     def __init__(
@@ -106,7 +106,7 @@ class HybridOrchestrator(AgentOrchestrator):
         anthropic_api_key: Optional[str] = None,
         auto_select_model: bool = True,
         prefer_cheaper: bool = True,
-        cost_threshold: Optional[float] = None
+        cost_threshold: Optional[float] = None,
     ):
         """
         Initialize HybridOrchestrator.
@@ -125,10 +125,7 @@ class HybridOrchestrator(AgentOrchestrator):
         self.pricing = ModelPricing()
 
     def select_model_for_agent(
-        self,
-        agent_name: str,
-        task: str,
-        task_complexity: str = "auto"
+        self, agent_name: str, task: str, task_complexity: str = "auto"
     ) -> str:
         """
         Select optimal model based on agent and task.
@@ -183,19 +180,35 @@ class HybridOrchestrator(AgentOrchestrator):
 
         # Critical indicators (highest priority)
         critical_keywords = [
-            "production", "delete", "drop", "migrate", "remove",
-            "security audit", "vulnerability", "compliance",
-            "deploy to prod", "database migration", "schema change",
-            "authentication", "authorization", "encryption"
+            "production",
+            "delete",
+            "drop",
+            "migrate",
+            "remove",
+            "security audit",
+            "vulnerability",
+            "compliance",
+            "deploy to prod",
+            "database migration",
+            "schema change",
+            "authentication",
+            "authorization",
+            "encryption",
         ]
         if any(kw in task_lower for kw in critical_keywords):
             return "critical"
 
         # Simple indicators
         simple_keywords = [
-            "format", "lint", "document", "generate docs",
-            "create readme", "add comments", "fix typo",
-            "update version", "generate changelog"
+            "format",
+            "lint",
+            "document",
+            "generate docs",
+            "create readme",
+            "add comments",
+            "fix typo",
+            "update version",
+            "generate changelog",
         ]
 
         # Check for simple keywords
@@ -205,9 +218,7 @@ class HybridOrchestrator(AgentOrchestrator):
         is_short = len(task) < 200
 
         # Check for template-based operations
-        template_indicators = [
-            "generate", "create", "add", "format", "update"
-        ]
+        template_indicators = ["generate", "create", "add", "format", "update"]
         is_template = any(task_lower.startswith(kw) for kw in template_indicators)
 
         # Simple if multiple simple indicators
@@ -216,9 +227,18 @@ class HybridOrchestrator(AgentOrchestrator):
 
         # Complex indicators
         complex_keywords = [
-            "design", "architect", "implement", "refactor",
-            "optimize", "review", "analyze", "debug",
-            "integrate", "build", "develop", "create system"
+            "design",
+            "architect",
+            "implement",
+            "refactor",
+            "optimize",
+            "review",
+            "analyze",
+            "debug",
+            "integrate",
+            "build",
+            "develop",
+            "create system",
         ]
 
         # Check for complex keywords
@@ -228,7 +248,7 @@ class HybridOrchestrator(AgentOrchestrator):
         is_long = len(task) > 500
 
         # Check for multi-step indicators
-        has_multiple_steps = task.count('\n') > 3 or task.count('-') > 3
+        has_multiple_steps = task.count("\n") > 3 or task.count("-") > 3
 
         # Complex if multiple complex indicators
         if has_complex_keyword or is_long or has_multiple_steps:
@@ -238,10 +258,7 @@ class HybridOrchestrator(AgentOrchestrator):
         return "complex"
 
     def estimate_cost(
-        self,
-        task: str,
-        agent_name: str,
-        model: Optional[str] = None
+        self, task: str, agent_name: str, model: Optional[str] = None
     ) -> CostEstimate:
         """
         Estimate cost for running a task.
@@ -295,8 +312,8 @@ class HybridOrchestrator(AgentOrchestrator):
                 "input_cost": input_cost,
                 "output_cost": output_cost,
                 "input_tokens": estimated_input,
-                "output_tokens": estimated_output
-            }
+                "output_tokens": estimated_output,
+            },
         )
 
     def run_agent(
@@ -307,7 +324,7 @@ class HybridOrchestrator(AgentOrchestrator):
         max_tokens: int = 4096,
         temperature: float = 1.0,
         auto_select: Optional[bool] = None,
-        estimate_only: bool = False
+        estimate_only: bool = False,
     ) -> AgentResult:
         """
         Run agent with hybrid model selection.
@@ -325,20 +342,14 @@ class HybridOrchestrator(AgentOrchestrator):
             AgentResult with execution details
         """
         # Determine if we should auto-select
-        should_auto_select = (
-            auto_select if auto_select is not None
-            else self.auto_select_model
-        )
+        should_auto_select = auto_select if auto_select is not None else self.auto_select_model
 
         # Auto-select model if enabled and no model specified
         if should_auto_select and model is None:
             complexity = self._analyze_task_complexity(task, agent_name)
             model = self.select_model_for_agent(agent_name, task, complexity)
 
-            logger.info(
-                f"Auto-selected {model} for {agent_name} "
-                f"(complexity: {complexity})"
-            )
+            logger.info(f"Auto-selected {model} for {agent_name} " f"(complexity: {complexity})")
 
         # Estimate cost
         if estimate_only or self.cost_threshold is not None:
@@ -350,16 +361,12 @@ class HybridOrchestrator(AgentOrchestrator):
                     agent_name=agent_name,
                     success=True,
                     output="Cost estimate only",
-                    metadata={
-                        "estimate": estimate.__dict__,
-                        "model": estimate.model
-                    },
-                    errors=[]
+                    metadata={"estimate": estimate.__dict__, "model": estimate.model},
+                    errors=[],
                 )
 
             # Check cost threshold
-            if (self.cost_threshold is not None and
-                estimate.estimated_cost > self.cost_threshold):
+            if self.cost_threshold is not None and estimate.estimated_cost > self.cost_threshold:
                 logger.warning(
                     f"Estimated cost ${estimate.estimated_cost:.4f} "
                     f"exceeds threshold ${self.cost_threshold:.2f}"
@@ -371,7 +378,7 @@ class HybridOrchestrator(AgentOrchestrator):
             task=task,
             model=model,
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
         )
 
     def get_model_stats(self) -> Dict[str, Any]:
@@ -384,12 +391,7 @@ class HybridOrchestrator(AgentOrchestrator):
         if not self.tracker:
             return {"error": "Performance tracking not enabled"}
 
-        stats = {
-            "total_executions": 0,
-            "by_model": {},
-            "total_cost": 0.0,
-            "average_cost": 0.0
-        }
+        stats = {"total_executions": 0, "by_model": {}, "total_cost": 0.0, "average_cost": 0.0}
 
         # Aggregate from performance tracker
         # (Implementation depends on tracker schema)
@@ -402,7 +404,7 @@ def get_hybrid_orchestrator(
     anthropic_api_key: Optional[str] = None,
     auto_select_model: bool = True,
     prefer_cheaper: bool = True,
-    cost_threshold: Optional[float] = None
+    cost_threshold: Optional[float] = None,
 ) -> HybridOrchestrator:
     """
     Get HybridOrchestrator instance.
@@ -422,5 +424,5 @@ def get_hybrid_orchestrator(
         anthropic_api_key=anthropic_api_key,
         auto_select_model=auto_select_model,
         prefer_cheaper=prefer_cheaper,
-        cost_threshold=cost_threshold
+        cost_threshold=cost_threshold,
     )

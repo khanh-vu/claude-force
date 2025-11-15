@@ -20,14 +20,25 @@ from .orchestrator import AgentOrchestrator, AgentResult
 
 # All available exports
 __all__ = [
-    "AgentOrchestrator", "AgentResult", "cli_main",
-    "SemanticAgentSelector", "AgentMatch",
-    "MCPServer", "MCPCapability", "MCPRequest", "MCPResponse",
-    "QuickStartOrchestrator", "ProjectTemplate", "ProjectConfig",
+    "AgentOrchestrator",
+    "AgentResult",
+    "cli_main",
+    "SemanticAgentSelector",
+    "AgentMatch",
+    "MCPServer",
+    "MCPCapability",
+    "MCPRequest",
+    "MCPResponse",
+    "QuickStartOrchestrator",
+    "ProjectTemplate",
+    "ProjectConfig",
     "get_quick_start_orchestrator",
-    "HybridOrchestrator", "ModelPricing", "CostEstimate",
+    "HybridOrchestrator",
+    "ModelPricing",
+    "CostEstimate",
     "get_hybrid_orchestrator",
-    "ProgressiveSkillsManager", "get_skills_manager"
+    "ProgressiveSkillsManager",
+    "get_skills_manager",
 ]
 
 # Lazy imports for non-core functionality
@@ -58,6 +69,7 @@ def __getattr__(name):
         module_name, attr_name = _LAZY_IMPORTS[name]
         try:
             from importlib import import_module
+
             module = import_module(f".{module_name}", package="claude_force")
             attr = getattr(module, attr_name)
             # Cache the imported attribute

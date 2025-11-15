@@ -63,13 +63,13 @@ class ComparisonReport:
                     "model_used": r.model_used,
                     "strengths": r.strengths,
                     "weaknesses": r.weaknesses,
-                    "task_suitability": r.task_suitability
+                    "task_suitability": r.task_suitability,
                 }
                 for r in self.results
             ],
             "winner": self.winner,
             "recommendation": self.recommendation,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
@@ -87,18 +87,9 @@ class CrossRepoAnalytics:
 
     # Model-based cost estimates (per 1M tokens)
     MODEL_COSTS = {
-        "claude-3-5-sonnet-20241022": {
-            "input": 3.00,
-            "output": 15.00
-        },
-        "claude-3-haiku-20240307": {
-            "input": 0.25,
-            "output": 1.25
-        },
-        "claude-3-opus-20240229": {
-            "input": 15.00,
-            "output": 75.00
-        }
+        "claude-3-5-sonnet-20241022": {"input": 3.00, "output": 15.00},
+        "claude-3-haiku-20240307": {"input": 0.25, "output": 1.25},
+        "claude-3-opus-20240229": {"input": 15.00, "output": 75.00},
     }
 
     # Typical agent characteristics (for simulation/estimation)
@@ -109,7 +100,7 @@ class CrossRepoAnalytics:
             "model": "claude-3-5-sonnet-20241022",
             "quality_range": (8.0, 9.5),
             "strengths": ["Comprehensive architecture", "Best practices", "Modern frameworks"],
-            "weaknesses": ["Longer response time", "Higher cost"]
+            "weaknesses": ["Longer response time", "Higher cost"],
         },
         "backend-architect": {
             "typical_duration": 50,
@@ -117,7 +108,7 @@ class CrossRepoAnalytics:
             "model": "claude-3-5-sonnet-20241022",
             "quality_range": (8.5, 9.5),
             "strengths": ["Scalable design", "Security focus", "Performance optimization"],
-            "weaknesses": ["Longer response time", "Higher token usage"]
+            "weaknesses": ["Longer response time", "Higher token usage"],
         },
         "code-reviewer": {
             "typical_duration": 40,
@@ -125,7 +116,7 @@ class CrossRepoAnalytics:
             "model": "claude-3-5-sonnet-20241022",
             "quality_range": (8.0, 9.0),
             "strengths": ["Thorough analysis", "OWASP coverage", "Detailed recommendations"],
-            "weaknesses": ["Higher cost for simple reviews"]
+            "weaknesses": ["Higher cost for simple reviews"],
         },
         # Simulated marketplace agents (faster, cheaper, but simpler)
         "quick-frontend": {
@@ -134,7 +125,7 @@ class CrossRepoAnalytics:
             "model": "claude-3-haiku-20240307",
             "quality_range": (6.5, 7.5),
             "strengths": ["Very fast", "Low cost", "Good for quick checks"],
-            "weaknesses": ["Less detailed", "May miss edge cases"]
+            "weaknesses": ["Less detailed", "May miss edge cases"],
         },
         "quick-backend": {
             "typical_duration": 20,
@@ -142,8 +133,8 @@ class CrossRepoAnalytics:
             "model": "claude-3-haiku-20240307",
             "quality_range": (6.5, 7.5),
             "strengths": ["Fast iteration", "Cost effective", "Basic validation"],
-            "weaknesses": ["Limited depth", "May miss complex issues"]
-        }
+            "weaknesses": ["Limited depth", "May miss complex issues"],
+        },
     }
 
     def __init__(self, metrics_dir: Optional[Path] = None):
@@ -157,10 +148,7 @@ class CrossRepoAnalytics:
         self.metrics_dir.mkdir(parents=True, exist_ok=True)
 
     def compare_agents(
-        self,
-        task: str,
-        agents: List[str],
-        simulate: bool = True
+        self, task: str, agents: List[str], simulate: bool = True
     ) -> ComparisonReport:
         """
         Compare multiple agents on same task.
@@ -195,7 +183,7 @@ class CrossRepoAnalytics:
             agents_compared=len(agents),
             results=results,
             winner=winner,
-            recommendation=recommendation
+            recommendation=recommendation,
         )
 
         # Save report
@@ -203,11 +191,7 @@ class CrossRepoAnalytics:
 
         return report
 
-    def _simulate_agent_performance(
-        self,
-        agent_id: str,
-        task: str
-    ) -> AgentPerformanceMetrics:
+    def _simulate_agent_performance(self, agent_id: str, task: str) -> AgentPerformanceMetrics:
         """
         Simulate agent performance metrics.
 
@@ -217,14 +201,17 @@ class CrossRepoAnalytics:
         import random
 
         # Get agent profile or use default
-        profile = self.AGENT_PROFILES.get(agent_id, {
-            "typical_duration": 30,
-            "typical_tokens": 8000,
-            "model": "claude-3-5-sonnet-20241022",
-            "quality_range": (7.0, 8.5),
-            "strengths": ["General purpose"],
-            "weaknesses": ["No specialization"]
-        })
+        profile = self.AGENT_PROFILES.get(
+            agent_id,
+            {
+                "typical_duration": 30,
+                "typical_tokens": 8000,
+                "model": "claude-3-5-sonnet-20241022",
+                "quality_range": (7.0, 8.5),
+                "strengths": ["General purpose"],
+                "weaknesses": ["No specialization"],
+            },
+        )
 
         # Add some randomness (±20%)
         duration = profile["typical_duration"] * random.uniform(0.8, 1.2)
@@ -239,10 +226,9 @@ class CrossRepoAnalytics:
         input_tokens = int(tokens * 0.7)
         output_tokens = int(tokens * 0.3)
 
-        cost = (
-            (input_tokens / 1_000_000) * cost_info["input"] +
-            (output_tokens / 1_000_000) * cost_info["output"]
-        )
+        cost = (input_tokens / 1_000_000) * cost_info["input"] + (
+            output_tokens / 1_000_000
+        ) * cost_info["output"]
 
         # Determine source (builtin vs marketplace)
         builtin_agents = list(self.AGENT_PROFILES.keys())[:3]  # First 3 are builtin
@@ -269,14 +255,10 @@ class CrossRepoAnalytics:
             model_used=model,
             strengths=profile.get("strengths", []),
             weaknesses=profile.get("weaknesses", []),
-            task_suitability=suitability
+            task_suitability=suitability,
         )
 
-    def _run_agent_and_measure(
-        self,
-        agent_id: str,
-        task: str
-    ) -> AgentPerformanceMetrics:
+    def _run_agent_and_measure(self, agent_id: str, task: str) -> AgentPerformanceMetrics:
         """
         Actually run agent and measure performance.
 
@@ -289,10 +271,7 @@ class CrossRepoAnalytics:
         logger.info(f"Running agent '{agent_id}' in simulation mode for task: {task[:50]}...")
         return self._simulate_agent_performance(agent_id, task)
 
-    def _determine_winner(
-        self,
-        results: List[AgentPerformanceMetrics]
-    ) -> Optional[str]:
+    def _determine_winner(self, results: List[AgentPerformanceMetrics]) -> Optional[str]:
         """
         Determine best agent based on quality-to-cost ratio.
 
@@ -322,10 +301,7 @@ class CrossRepoAnalytics:
         return scored_results[0][0]
 
     def _generate_recommendation(
-        self,
-        task: str,
-        results: List[AgentPerformanceMetrics],
-        winner: Optional[str]
+        self, task: str, results: List[AgentPerformanceMetrics], winner: Optional[str]
     ) -> str:
         """Generate recommendation text."""
         if not results:
@@ -349,7 +325,9 @@ class CrossRepoAnalytics:
         if winner_metrics.cost_usd < 0.01:
             recommendation += "\nBest for: Quick iterations, prototyping, frequent use"
         elif winner_metrics.quality_score >= 8.5:
-            recommendation += "\nBest for: Production code, critical systems, comprehensive analysis"
+            recommendation += (
+                "\nBest for: Production code, critical systems, comprehensive analysis"
+            )
         else:
             recommendation += "\nBest for: General purpose development, balanced needs"
 
@@ -360,16 +338,12 @@ class CrossRepoAnalytics:
         timestamp = report.timestamp.strftime("%Y%m%d_%H%M%S")
         report_file = self.metrics_dir / f"comparison_{timestamp}.json"
 
-        with open(report_file, 'w') as f:
+        with open(report_file, "w") as f:
             json.dump(report.to_dict(), f, indent=2)
 
         logger.info(f"Saved comparison report to {report_file}")
 
-    def get_agent_statistics(
-        self,
-        agent_id: str,
-        days: int = 30
-    ) -> Dict:
+    def get_agent_statistics(self, agent_id: str, days: int = 30) -> Dict:
         """
         Get historical statistics for an agent.
 
@@ -384,7 +358,9 @@ class CrossRepoAnalytics:
         Requires persistent storage backend (database) for time-series data.
         Current implementation returns placeholder data.
         """
-        logger.info(f"Historical metrics for '{agent_id}' (last {days} days) - Feature in development")
+        logger.info(
+            f"Historical metrics for '{agent_id}' (last {days} days) - Feature in development"
+        )
         return {
             "agent_id": agent_id,
             "period_days": days,
@@ -393,13 +369,11 @@ class CrossRepoAnalytics:
             "avg_cost": 0.0,
             "avg_quality": 0.0,
             "status": "feature_in_development",
-            "note": "Historical metrics aggregation requires database backend (planned enhancement)"
+            "note": "Historical metrics aggregation requires database backend (planned enhancement)",
         }
 
     def recommend_agent_for_task(
-        self,
-        task: str,
-        priority: str = "balanced"  # "speed", "cost", "quality", "balanced"
+        self, task: str, priority: str = "balanced"  # "speed", "cost", "quality", "balanced"
     ) -> Dict:
         """
         Recommend best agent based on task and priority.
@@ -417,10 +391,7 @@ class CrossRepoAnalytics:
         matches = router.recommend_agents(task, top_k=3)
 
         if not matches:
-            return {
-                "recommendation": None,
-                "reason": "No suitable agents found"
-            }
+            return {"recommendation": None, "reason": "No suitable agents found"}
 
         # For now, return top match with priority context
         top_match = matches[0]
@@ -429,7 +400,7 @@ class CrossRepoAnalytics:
             "speed": "Consider using Haiku-based agents for faster response",
             "cost": "Haiku-based agents offer best cost efficiency",
             "quality": "Sonnet/Opus-based agents provide highest quality",
-            "balanced": "Balance between speed, cost, and quality"
+            "balanced": "Balance between speed, cost, and quality",
         }
 
         return {
@@ -437,7 +408,7 @@ class CrossRepoAnalytics:
             "agent_name": top_match.agent_name,
             "confidence": top_match.confidence,
             "priority": priority,
-            "guidance": priority_guidance.get(priority, "")
+            "guidance": priority_guidance.get(priority, ""),
         }
 
 

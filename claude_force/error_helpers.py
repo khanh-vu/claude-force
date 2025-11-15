@@ -217,12 +217,12 @@ def print_contextual_help(error_type: str):
         error_type: Type of error that occurred
     """
     help_messages = {
-        'agent_not_found': "\n💡 To list all agents: claude-force list agents",
-        'workflow_not_found': "\n💡 To list all workflows: claude-force list workflows",
-        'api_key': "\n💡 Get your API key: https://console.anthropic.com/account/keys",
-        'config_not_found': "\n💡 Initialize a new project: claude-force init",
-        'tracking_disabled': "\n💡 Enable tracking when creating the orchestrator",
-        'missing_dependency': "\n💡 Install missing packages with pip",
+        "agent_not_found": "\n💡 To list all agents: claude-force list agents",
+        "workflow_not_found": "\n💡 To list all workflows: claude-force list workflows",
+        "api_key": "\n💡 Get your API key: https://console.anthropic.com/account/keys",
+        "config_not_found": "\n💡 Initialize a new project: claude-force init",
+        "tracking_disabled": "\n💡 Enable tracking when creating the orchestrator",
+        "missing_dependency": "\n💡 Install missing packages with pip",
     }
 
     if error_type in help_messages:
@@ -250,22 +250,24 @@ def enhance_error_message(error: Exception, context: Optional[dict] = None) -> s
     elif "not found in configuration" in error_str and "agents" in context:
         # Extract agent name from error message
         import re
+
         match = re.search(r"Agent '(\w+(?:-\w+)*)' not found", error_str)
         if match:
             agent_name = match.group(1)
-            return format_agent_not_found_error(agent_name, context['agents'])
+            return format_agent_not_found_error(agent_name, context["agents"])
 
     elif "Workflow" in error_str and "not found" in error_str and "workflows" in context:
         # Extract workflow name from error message
         import re
+
         match = re.search(r"Workflow '(\w+(?:-\w+)*)' not found", error_str)
         if match:
             workflow_name = match.group(1)
-            return format_workflow_not_found_error(workflow_name, context['workflows'])
+            return format_workflow_not_found_error(workflow_name, context["workflows"])
 
     elif "Configuration file not found" in error_str:
         if "config_path" in context:
-            return format_config_not_found_error(context['config_path'])
+            return format_config_not_found_error(context["config_path"])
 
     elif "Performance tracking not enabled" in error_str:
         return format_tracking_not_enabled_error()
@@ -273,6 +275,7 @@ def enhance_error_message(error: Exception, context: Optional[dict] = None) -> s
     elif "package required" in error_str or "ImportError" in error.__class__.__name__:
         # Extract package name
         import re
+
         match = re.search(r"'?(\w+)'? package required", error_str)
         if match:
             package = match.group(1)

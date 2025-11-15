@@ -35,44 +35,70 @@ class ProgressiveSkillsManager:
     # Skill activation rules based on keywords
     SKILL_KEYWORDS = {
         "test-generation": [
-            "test", "testing", "pytest", "unit test", "integration test",
-            "test case", "test suite", "coverage", "mock", "fixture"
+            "test",
+            "testing",
+            "pytest",
+            "unit test",
+            "integration test",
+            "test case",
+            "test suite",
+            "coverage",
+            "mock",
+            "fixture",
         ],
         "code-review": [
-            "review", "code quality", "security", "best practices",
-            "refactor", "optimize", "analyze code", "code smell"
+            "review",
+            "code quality",
+            "security",
+            "best practices",
+            "refactor",
+            "optimize",
+            "analyze code",
+            "code smell",
         ],
         "api-design": [
-            "api", "rest", "graphql", "endpoint", "route",
-            "openapi", "swagger", "api spec", "request", "response"
+            "api",
+            "rest",
+            "graphql",
+            "endpoint",
+            "route",
+            "openapi",
+            "swagger",
+            "api spec",
+            "request",
+            "response",
         ],
         "dockerfile": [
-            "docker", "container", "dockerfile", "image",
-            "docker-compose", "containerize"
+            "docker",
+            "container",
+            "dockerfile",
+            "image",
+            "docker-compose",
+            "containerize",
         ],
         "git-workflow": [
-            "git", "commit", "pr", "pull request", "branch",
-            "merge", "rebase", "git flow", "version control"
+            "git",
+            "commit",
+            "pr",
+            "pull request",
+            "branch",
+            "merge",
+            "rebase",
+            "git flow",
+            "version control",
         ],
         "create-agent": [
-            "agent", "create agent", "new agent", "agent definition",
-            "agent contract"
+            "agent",
+            "create agent",
+            "new agent",
+            "agent definition",
+            "agent contract",
         ],
-        "create-skill": [
-            "skill", "create skill", "new skill", "skill definition"
-        ],
-        "docx": [
-            "docx", "word", "document", ".docx", "word document"
-        ],
-        "xlsx": [
-            "xlsx", "excel", "spreadsheet", ".xlsx", "excel file"
-        ],
-        "pptx": [
-            "pptx", "powerpoint", "presentation", ".pptx", "slides"
-        ],
-        "pdf": [
-            "pdf", ".pdf", "pdf file"
-        ]
+        "create-skill": ["skill", "create skill", "new skill", "skill definition"],
+        "docx": ["docx", "word", "document", ".docx", "word document"],
+        "xlsx": ["xlsx", "excel", "spreadsheet", ".xlsx", "excel file"],
+        "pptx": ["pptx", "powerpoint", "presentation", ".pptx", "slides"],
+        "pdf": ["pdf", ".pdf", "pdf file"],
     }
 
     # Agent-skill associations (which skills are relevant for which agents)
@@ -95,7 +121,7 @@ class ProgressiveSkillsManager:
         "ai-engineer": ["test-generation", "code-review", "api-design"],
         "prompt-engineer": ["code-review"],
         "claude-code-expert": ["create-agent", "create-skill", "git-workflow"],
-        "data-engineer": ["test-generation", "code-review", "dockerfile"]
+        "data-engineer": ["test-generation", "code-review", "dockerfile"],
     }
 
     def __init__(self, skills_dir: Optional[str] = None):
@@ -129,14 +155,14 @@ class ProgressiveSkillsManager:
                     "id": skill_id,
                     "path": str(skill_path),
                     "keywords": self.SKILL_KEYWORDS.get(skill_id, []),
-                    "exists": True
+                    "exists": True,
                 }
             else:
                 registry[skill_id] = {
                     "id": skill_id,
                     "path": str(skill_path),
                     "keywords": self.SKILL_KEYWORDS.get(skill_id, []),
-                    "exists": False
+                    "exists": False,
                 }
 
         # Also scan skills directory for any additional skills
@@ -160,16 +186,13 @@ class ProgressiveSkillsManager:
                         "id": skill_id,
                         "path": str(skill_path),
                         "keywords": self.SKILL_KEYWORDS.get(skill_id, []),
-                        "exists": True
+                        "exists": True,
                     }
 
         return registry
 
     def analyze_required_skills(
-        self,
-        agent_name: str,
-        task: str,
-        include_agent_skills: bool = True
+        self, agent_name: str, task: str, include_agent_skills: bool = True
     ) -> List[str]:
         """
         Analyze task to determine which skills are needed.
@@ -201,8 +224,7 @@ class ProgressiveSkillsManager:
                     # Check if task might need this skill
                     # (add if task is long/complex or mentions related concepts)
                     if len(task) > 200 or any(
-                        kw in task_lower
-                        for kw in self.SKILL_KEYWORDS.get(skill_id, [])
+                        kw in task_lower for kw in self.SKILL_KEYWORDS.get(skill_id, [])
                     ):
                         required.add(skill_id)
 
@@ -239,10 +261,9 @@ class ProgressiveSkillsManager:
             return ""
 
         # Combine skills with separators
-        combined = "\n\n---\n\n".join([
-            f"# Skill: {skill_id}\n\n{content}"
-            for skill_id, content in content_parts
-        ])
+        combined = "\n\n---\n\n".join(
+            [f"# Skill: {skill_id}\n\n{content}" for skill_id, content in content_parts]
+        )
 
         return combined
 
@@ -283,10 +304,7 @@ class ProgressiveSkillsManager:
         return None
 
     def get_token_savings_estimate(
-        self,
-        loaded_skills: int,
-        total_skills: int = 11,
-        avg_skill_tokens: int = 1500
+        self, loaded_skills: int, total_skills: int = 11, avg_skill_tokens: int = 1500
     ) -> Dict[str, any]:
         """
         Estimate token savings from progressive disclosure.
@@ -313,7 +331,7 @@ class ProgressiveSkillsManager:
             "tokens_saved": tokens_saved,
             "total_tokens_before": total_tokens_before,
             "total_tokens_after": total_tokens_after,
-            "reduction_percentage": round(reduction_pct, 1)
+            "reduction_percentage": round(reduction_pct, 1),
         }
 
     def get_available_skills(self) -> List[str]:
@@ -324,9 +342,7 @@ class ProgressiveSkillsManager:
             List of skill IDs
         """
         return [
-            skill_id
-            for skill_id, info in self.skills_registry.items()
-            if info.get("exists", False)
+            skill_id for skill_id, info in self.skills_registry.items() if info.get("exists", False)
         ]
 
     def clear_cache(self):

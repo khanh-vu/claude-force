@@ -48,53 +48,76 @@ class AgentRouter:
     # Agent expertise mappings for builtin agents
     AGENT_EXPERTISE = {
         "frontend-architect": {
-            "keywords": ["react", "vue", "angular", "ui", "frontend", "components", "state management"],
-            "description": "Frontend architecture and UI design"
+            "keywords": [
+                "react",
+                "vue",
+                "angular",
+                "ui",
+                "frontend",
+                "components",
+                "state management",
+            ],
+            "description": "Frontend architecture and UI design",
         },
         "backend-architect": {
-            "keywords": ["api", "backend", "server", "microservices", "architecture", "scalability"],
-            "description": "Backend architecture and API design"
+            "keywords": [
+                "api",
+                "backend",
+                "server",
+                "microservices",
+                "architecture",
+                "scalability",
+            ],
+            "description": "Backend architecture and API design",
         },
         "database-architect": {
             "keywords": ["database", "sql", "nosql", "schema", "migration", "postgres", "mongodb"],
-            "description": "Database design and optimization"
+            "description": "Database design and optimization",
         },
         "ai-engineer": {
-            "keywords": ["ai", "ml", "machine learning", "model", "training", "tensorflow", "pytorch"],
-            "description": "AI/ML model development"
+            "keywords": [
+                "ai",
+                "ml",
+                "machine learning",
+                "model",
+                "training",
+                "tensorflow",
+                "pytorch",
+            ],
+            "description": "AI/ML model development",
         },
         "prompt-engineer": {
             "keywords": ["llm", "prompt", "chatbot", "gpt", "claude", "openai", "rag"],
-            "description": "LLM prompt engineering and optimization"
+            "description": "LLM prompt engineering and optimization",
         },
         "data-engineer": {
             "keywords": ["etl", "pipeline", "data", "airflow", "spark", "analytics"],
-            "description": "Data engineering and ETL pipelines"
+            "description": "Data engineering and ETL pipelines",
         },
         "code-reviewer": {
             "keywords": ["review", "code quality", "refactor", "best practices", "security"],
-            "description": "Code review and quality assurance"
+            "description": "Code review and quality assurance",
         },
         "security-specialist": {
             "keywords": ["security", "vulnerability", "owasp", "authentication", "encryption"],
-            "description": "Security auditing and best practices"
+            "description": "Security auditing and best practices",
         },
         "devops-architect": {
             "keywords": ["docker", "kubernetes", "ci/cd", "deployment", "infrastructure"],
-            "description": "DevOps and infrastructure"
+            "description": "DevOps and infrastructure",
         },
         "google-cloud-expert": {
             "keywords": ["gcp", "google cloud", "cloud", "gke", "bigquery"],
-            "description": "Google Cloud Platform expertise"
+            "description": "Google Cloud Platform expertise",
         },
         "bug-investigator": {
             "keywords": ["debug", "bug", "error", "troubleshoot", "fix"],
-            "description": "Bug investigation and debugging"
+            "description": "Bug investigation and debugging",
         },
         "python-expert": {
             "keywords": ["python", "async", "packages", "pip", "pytest"],
-            "description": "Python development expertise"
-        }
+            "description": "Python development expertise",
+        },
     }
 
     def __init__(self, include_marketplace: bool = True):
@@ -118,6 +141,7 @@ class AgentRouter:
         if self._marketplace is None and self.include_marketplace:
             try:
                 from .marketplace import get_marketplace_manager
+
                 self._marketplace = get_marketplace_manager()
             except Exception as e:
                 logger.warning(f"Failed to load marketplace: {e}")
@@ -129,7 +153,7 @@ class AgentRouter:
         task: str,
         top_k: int = 5,
         include_marketplace: bool = None,
-        min_confidence: float = 0.0
+        min_confidence: float = 0.0,
     ) -> List[AgentMatch]:
         """
         Recommend agents for a task using semantic matching.
@@ -174,29 +198,25 @@ class AgentRouter:
 
         for agent_id, agent_info in self._builtin_agents.items():
             # Calculate confidence based on keyword matching
-            confidence = self._calculate_confidence(
-                task_lower,
-                agent_info["keywords"]
-            )
+            confidence = self._calculate_confidence(task_lower, agent_info["keywords"])
 
             if confidence > 0:
                 # Determine reason based on matched keywords
-                matched_keywords = [
-                    kw for kw in agent_info["keywords"]
-                    if kw in task_lower
-                ]
+                matched_keywords = [kw for kw in agent_info["keywords"] if kw in task_lower]
                 reason = f"Matches keywords: {', '.join(matched_keywords[:3])}"
 
-                matches.append(AgentMatch(
-                    agent_id=agent_id,
-                    agent_name=agent_id,
-                    confidence=confidence,
-                    source="builtin",
-                    installed=True,
-                    description=agent_info["description"],
-                    expertise=agent_info["keywords"],
-                    reason=reason
-                ))
+                matches.append(
+                    AgentMatch(
+                        agent_id=agent_id,
+                        agent_name=agent_id,
+                        confidence=confidence,
+                        source="builtin",
+                        installed=True,
+                        description=agent_info["description"],
+                        expertise=agent_info["keywords"],
+                        reason=reason,
+                    )
+                )
 
         return matches
 
@@ -223,25 +243,23 @@ class AgentRouter:
                 if plugin.installed:
                     reason += " (already installed)"
 
-                matches.append(AgentMatch(
-                    agent_id=primary_agent,
-                    agent_name=plugin.name,
-                    confidence=confidence,
-                    source="marketplace",
-                    installed=plugin.installed,
-                    plugin_id=plugin.id,
-                    description=plugin.description,
-                    expertise=plugin.keywords,
-                    reason=reason
-                ))
+                matches.append(
+                    AgentMatch(
+                        agent_id=primary_agent,
+                        agent_name=plugin.name,
+                        confidence=confidence,
+                        source="marketplace",
+                        installed=plugin.installed,
+                        plugin_id=plugin.id,
+                        description=plugin.description,
+                        expertise=plugin.keywords,
+                        reason=reason,
+                    )
+                )
 
         return matches
 
-    def _calculate_confidence(
-        self,
-        task: str,
-        keywords: List[str]
-    ) -> float:
+    def _calculate_confidence(self, task: str, keywords: List[str]) -> float:
         """
         Calculate confidence score based on keyword matching.
 
@@ -274,7 +292,7 @@ class AgentRouter:
         searchable = [
             *[k.lower() for k in plugin.keywords],
             plugin.description.lower(),
-            *[a.lower() for a in plugin.agents]
+            *[a.lower() for a in plugin.agents],
         ]
 
         matches = sum(1 for text in searchable if any(word in text for word in task.split()))
@@ -346,13 +364,10 @@ class AgentRouter:
             "categories": categories,
             "recommendations": recommendations,
             "task_length": len(task.split()),
-            "requires_multiple_agents": estimated_agents > 1
+            "requires_multiple_agents": estimated_agents > 1,
         }
 
-    def get_installation_plan(
-        self,
-        agent_matches: List[AgentMatch]
-    ) -> Dict[str, any]:
+    def get_installation_plan(self, agent_matches: List[AgentMatch]) -> Dict[str, any]:
         """
         Create installation plan for marketplace agents.
 
@@ -380,7 +395,7 @@ class AgentRouter:
             "builtin": builtin,
             "total_agents": len(agent_matches),
             "requires_installation": len(to_install) > 0,
-            "ready_to_use": len(builtin) + len(already_installed)
+            "ready_to_use": len(builtin) + len(already_installed),
         }
 
 
