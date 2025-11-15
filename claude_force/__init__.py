@@ -11,7 +11,7 @@ P1 Enhancements:
 - REST API server
 """
 
-__version__ = "2.2.0"
+__version__ = "1.0.0"
 __author__ = "Claude Force Team"
 __license__ = "MIT"
 
