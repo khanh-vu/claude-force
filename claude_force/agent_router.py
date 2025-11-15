@@ -201,8 +201,19 @@ class AgentRouter:
             confidence = self._calculate_confidence(task_lower, agent_info["keywords"])
 
             if confidence > 0:
-                # Determine reason based on matched keywords
-                matched_keywords = [kw for kw in agent_info["keywords"] if kw in task_lower]
+                # ✅ PERF-04: Hybrid keyword matching (fast for single words, correct for phrases)
+                task_words = set(task_lower.split())
+                matched_keywords = []
+
+                for kw in agent_info["keywords"]:
+                    kw_lower = kw.lower()
+                    # Single word: use set lookup (fast)
+                    if " " not in kw and kw_lower in task_words:
+                        matched_keywords.append(kw)
+                    # Multi-word: use substring search (necessary for correctness)
+                    elif " " in kw and kw_lower in task_lower:
+                        matched_keywords.append(kw)
+
                 reason = f"Matches keywords: {', '.join(matched_keywords[:3])}"
 
                 matches.append(
@@ -264,12 +275,42 @@ class AgentRouter:
         Calculate confidence score based on keyword matching.
 
         Returns score between 0.0 and 1.0
+
+        ✅ PERF-04: Hybrid optimization for single/multi-word keywords
         """
         if not keywords:
             return 0.0
 
-        # Count keyword matches
-        matches = sum(1 for kw in keywords if kw in task)
+        task_lower = task.lower()
+
+        # ✅ PERF-04: Hybrid approach for performance + correctness
+        # - Single-word keywords: Fast set intersection O(k + t)
+        # - Multi-word keywords: Substring search O(k × m) for phrases
+
+        # Split keywords into single and multi-word
+        single_word_kw = []
+        multi_word_kw = []
+
+        for kw in keywords:
+            if " " in kw:
+                multi_word_kw.append(kw.lower())
+            else:
+                single_word_kw.append(kw.lower())
+
+        matches = 0
+
+        # Fast path: Set intersection for single-word keywords
+        if single_word_kw:
+            # Strip punctuation from task words to handle "research." matching "research"
+            import string
+
+            task_words = set(word.strip(string.punctuation) for word in task_lower.split())
+            keyword_set = set(single_word_kw)
+            matches += len(task_words & keyword_set)
+
+        # Slow path: Substring search for multi-word keywords (necessary for phrases)
+        if multi_word_kw:
+            matches += sum(1 for kw in multi_word_kw if kw in task_lower)
 
         if matches == 0:
             return 0.0

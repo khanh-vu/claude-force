@@ -22,6 +22,12 @@ from typing import Optional, Dict, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 
+from .constants import (
+    DEFAULT_CACHE_TTL_HOURS,
+    MAX_CACHE_SIZE_MB,
+    DEFAULT_CACHE_SECRET,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,11 +74,12 @@ class ResponseCache:
     def __init__(
         self,
         cache_dir: Optional[Path] = None,
-        ttl_hours: int = 24,
-        max_size_mb: int = 100,
+        ttl_hours: int = DEFAULT_CACHE_TTL_HOURS,
+        max_size_mb: int = MAX_CACHE_SIZE_MB,
         enabled: bool = True,
         cache_secret: Optional[str] = None,
         exclude_agents: Optional[list] = None,
+        verify_integrity: bool = True,
     ):
         """
         Initialize response cache.
@@ -84,6 +91,8 @@ class ResponseCache:
             enabled: Whether caching is enabled
             cache_secret: Secret for HMAC signatures
             exclude_agents: List of agents to exclude from caching
+            verify_integrity: Whether to verify HMAC integrity on reads (default: True)
+                             Set to False in trusted environments for 0.5-1ms speedup per cache hit.
         """
         # ✅ Validate cache directory to prevent path traversal (SECURITY FIX)
         if cache_dir:
@@ -119,13 +128,24 @@ class ResponseCache:
         self.enabled = enabled
         self.exclude_agents = set(exclude_agents or [])
 
-        # ✅ HMAC secret for integrity verification
-        self.cache_secret = cache_secret or os.getenv(
-            "CLAUDE_CACHE_SECRET", "default_secret_change_in_production"
-        )
+        # ✅ PERF-03: Optional integrity verification (default: True)
+        self.verify_integrity = verify_integrity
 
-        # ✅ FIXED: Security warning for default secret
-        if self.cache_secret == "default_secret_change_in_production":
+        # ✅ HMAC secret for integrity verification
+        self.cache_secret = cache_secret or os.getenv("CLAUDE_CACHE_SECRET", DEFAULT_CACHE_SECRET)
+
+        # ✅ SEC-01: Enforce secure secret in production
+        is_production = os.getenv("CLAUDE_ENV") == "production"
+        using_default_secret = self.cache_secret == DEFAULT_CACHE_SECRET
+
+        if is_production and using_default_secret:
+            raise ValueError(
+                "SECURITY ERROR: Cannot use default HMAC secret in production. "
+                "Cache integrity would NOT be protected, allowing attackers to forge cache entries. "
+                "Set CLAUDE_CACHE_SECRET environment variable to a secure random value. "
+                "Generate one with: python -c 'import secrets; print(secrets.token_hex(32))'"
+            )
+        elif using_default_secret:
             logger.warning(
                 "⚠️  SECURITY WARNING: Using default HMAC secret! "
                 "Cache integrity is NOT protected. "
@@ -231,8 +251,8 @@ class ResponseCache:
         if key in self._memory_cache:
             entry = self._memory_cache[key]
 
-            # ✅ Verify integrity
-            if not self._verify_signature(entry):
+            # ✅ PERF-03: Optional integrity verification (0.5-1ms speedup if disabled)
+            if self.verify_integrity and not self._verify_signature(entry):
                 self._evict(key)
                 self.stats["misses"] += 1
                 return None
@@ -290,8 +310,8 @@ class ResponseCache:
                     entry_dict = json.load(f)
                     entry = CacheEntry(**entry_dict)
 
-                # ✅ Verify integrity
-                if not self._verify_signature(entry):
+                # ✅ PERF-03: Optional integrity verification (0.5-1ms speedup if disabled)
+                if self.verify_integrity and not self._verify_signature(entry):
                     self._evict(key)
                     self.stats["misses"] += 1
                     return None

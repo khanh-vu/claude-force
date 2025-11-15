@@ -39,6 +39,12 @@ except ImportError:
 from .performance_tracker import PerformanceTracker, PRICING
 from .agent_memory import AgentMemory
 from .response_cache import ResponseCache
+from .constants import (
+    DEFAULT_TIMEOUT_SECONDS,
+    DEFAULT_CACHE_TTL_HOURS,
+    MAX_CACHE_SIZE_MB,
+    MAX_TOKEN_LIMIT,
+)
 
 # ✅ Structured logging
 logger = logging.getLogger(__name__)
@@ -95,13 +101,13 @@ class AsyncAgentOrchestrator:
         config_path: Optional[Path] = None,
         api_key: Optional[str] = None,
         max_concurrent: int = 10,
-        timeout_seconds: int = 30,
+        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_retries: int = 3,
         enable_tracking: bool = True,
         enable_memory: bool = True,
         enable_cache: bool = True,
-        cache_ttl_hours: int = 24,
-        cache_max_size_mb: int = 100,
+        cache_ttl_hours: int = DEFAULT_CACHE_TTL_HOURS,
+        cache_max_size_mb: int = MAX_CACHE_SIZE_MB,
     ):
         """
         Initialize async orchestrator.
@@ -378,9 +384,10 @@ class AsyncAgentOrchestrator:
                 "Agent names must contain only alphanumeric characters, hyphens, and underscores."
             )
 
-        if len(task) > 100_000:
+        if len(task) > MAX_TOKEN_LIMIT:
             raise ValueError(
-                f"Task too large: {len(task)} chars (max 100,000). " "Please reduce task size."
+                f"Task too large: {len(task)} chars (max {MAX_TOKEN_LIMIT:,}). "
+                "Please reduce task size."
             )
 
         # ✅ Sanitize task to prevent prompt injection

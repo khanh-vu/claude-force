@@ -4,6 +4,7 @@ Agent Orchestrator - Core orchestration engine for Claude multi-agent system
 
 import json
 import os
+import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import asdict
@@ -17,6 +18,9 @@ from claude_force.error_helpers import (
     format_tracking_not_enabled_error,
     format_missing_dependency_error,
 )
+
+# ARCH-03: Structured logging
+logger = logging.getLogger(__name__)
 
 
 class AgentOrchestrator(BaseOrchestrator):
@@ -103,7 +107,7 @@ class AgentOrchestrator(BaseOrchestrator):
 
                 self._tracker = PerformanceTracker()
             except Exception as e:
-                print(f"Warning: Performance tracking disabled: {e}")
+                logger.warning(f"Performance tracking disabled: {e}")
         return self._tracker
 
     @property
@@ -116,7 +120,7 @@ class AgentOrchestrator(BaseOrchestrator):
                 memory_path = self.config_path.parent / "sessions.db"
                 self._memory = AgentMemory(db_path=str(memory_path))
             except Exception as e:
-                print(f"Warning: Agent memory disabled: {e}")
+                logger.warning(f"Agent memory disabled: {e}")
         return self._memory
 
     def _load_config(self) -> Dict:

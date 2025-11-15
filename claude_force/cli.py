@@ -2,15 +2,108 @@
 Command-Line Interface for Claude-Force
 
 Provides command-line access to the multi-agent orchestration system.
+
+This file contains all CLI commands organized into logical sections:
+- Agent Commands: List, info, run, recommend
+- Workflow Commands: List, run, compose
+- Metrics Commands: Summary, agents, costs, export, analyze
+- Setup & Init Commands: Setup wizard, project initialization, gallery
+- Marketplace Commands: List, search, install, uninstall
+- Import/Export Commands: Agent import/export, bulk operations
+- Contribution Commands: Validate, prepare submissions
+- Main Entry Point: Argument parser setup and routing
+
+TODO (ARCH-01): Split into separate modules for better maintainability:
+  - cli/agent_commands.py
+  - cli/workflow_commands.py
+  - cli/metrics_commands.py
+  - cli/init_commands.py
+  - cli/marketplace_commands.py
+  - cli/utility_commands.py
+  - cli/main.py
 """
 
 import sys
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
 from .orchestrator import AgentOrchestrator
+from .constants import (
+    MAX_TASK_SIZE_MB,
+    MAX_TASK_SIZE_BYTES,
+    MAX_TASK_LOG_CHARS,
+    COL_WIDTH_NAME,
+    COL_WIDTH_PRIORITY,
+    COL_WIDTH_AGENT,
+    COL_WIDTH_RUNS,
+    COL_WIDTH_SUCCESS,
+    COL_WIDTH_TIME,
+    COL_WIDTH_COST,
+    percent,
+)
+
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+# SEC-02: Input size limits to prevent DoS attacks
+# (Constants imported from constants.py)
+
+
+def validate_task_input(task: Optional[str] = None, task_file: Optional[str] = None) -> str:
+    """
+    Validate and load task input with size limits.
+
+    Args:
+        task: Direct task string (optional)
+        task_file: Path to task file (optional)
+
+    Returns:
+        Validated task string
+
+    Raises:
+        ValueError: If task or file exceeds size limits
+        FileNotFoundError: If task_file doesn't exist
+    """
+    if task_file:
+        # Check file exists
+        if not os.path.exists(task_file):
+            raise FileNotFoundError(f"Task file not found: {task_file}")
+
+        # Check file size before reading
+        file_size = os.path.getsize(task_file)
+        if file_size > MAX_TASK_SIZE_BYTES:
+            raise ValueError(
+                f"Task file too large: {file_size:,} bytes "
+                f"(maximum: {MAX_TASK_SIZE_BYTES:,} bytes / {MAX_TASK_SIZE_MB}MB). "
+                f"This limit prevents denial-of-service attacks."
+            )
+
+        # Read file content
+        with open(task_file, "r", encoding="utf-8") as f:
+            task = f.read()
+
+    # Validate task string size (even if read from stdin or provided directly)
+    if task:
+        task_size = len(task.encode("utf-8"))
+        if task_size > MAX_TASK_SIZE_BYTES:
+            raise ValueError(
+                f"Task input too large: {task_size:,} bytes "
+                f"(maximum: {MAX_TASK_SIZE_BYTES:,} bytes / {MAX_TASK_SIZE_MB}MB). "
+                f"This limit prevents denial-of-service attacks."
+            )
+
+    return task
+
+
+# =============================================================================
+# AGENT COMMANDS
+# =============================================================================
+# Functions: cmd_list_agents, cmd_agent_info, cmd_run_agent,
+#            cmd_recommend, cmd_analyze_task
 
 
 def cmd_list_agents(args):
@@ -39,9 +132,9 @@ def cmd_list_agents(args):
         if output_format == "json":
             print(json.dumps(agents, indent=2))
         elif not quiet:
-            # Standard verbose output
+            # Standard verbose output with ARCH-05 constants
             print("\n📋 Available Agents\n")
-            print(f"{'Name':<30} {'Priority':<10} {'Domains'}")
+            print(f"{'Name':<{COL_WIDTH_NAME}} {'Priority':<{COL_WIDTH_PRIORITY}} {'Domains'}")
             print("-" * 80)
 
             for agent in agents:
@@ -51,7 +144,9 @@ def cmd_list_agents(args):
                 priority_label = {1: "Critical", 2: "High", 3: "Medium"}.get(
                     agent["priority"], "Low"
                 )
-                print(f"{agent['name']:<30} {priority_label:<10} {domains}")
+                print(
+                    f"{agent['name']:<{COL_WIDTH_NAME}} {priority_label:<{COL_WIDTH_PRIORITY}} {domains}"
+                )
 
             print(f"\nTotal: {len(agents)} agents")
 
@@ -62,6 +157,12 @@ def cmd_list_agents(args):
         else:
             print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+# =============================================================================
+# WORKFLOW COMMANDS
+# =============================================================================
+# Functions: cmd_list_workflows, cmd_run_workflow, cmd_compose
 
 
 def cmd_list_workflows(args):
@@ -160,13 +261,19 @@ def cmd_agent_info(args):
 def cmd_run_agent(args):
     """Run a single agent with optional hybrid model orchestration"""
     try:
-        # Read task from file or stdin if not provided
+        # SEC-02: Read and validate task input with size limits
         task = args.task
+
+        # Read from file with validation
         if args.task_file:
-            with open(args.task_file, "r") as f:
-                task = f.read()
+            task = validate_task_input(task_file=args.task_file)
+        # Read from stdin with validation
         elif not task and not sys.stdin.isatty():
-            task = sys.stdin.read()
+            stdin_content = sys.stdin.read()
+            task = validate_task_input(task=stdin_content)
+        # Validate direct task input
+        elif task:
+            task = validate_task_input(task=task)
 
         if not task:
             print(
@@ -299,11 +406,15 @@ def cmd_run_agent(args):
 def cmd_run_workflow(args):
     """Run a multi-agent workflow"""
     try:
-        # Read task
+        # SEC-02: Read and validate task input with size limits
         task = args.task
+
+        # Read from file with validation
         if args.task_file:
-            with open(args.task_file, "r") as f:
-                task = f.read()
+            task = validate_task_input(task_file=args.task_file)
+        # Validate direct task input
+        elif task:
+            task = validate_task_input(task=task)
 
         if not task:
             print("❌ Error: No task provided. Use --task or --task-file", file=sys.stderr)
@@ -390,6 +501,12 @@ def cmd_run_workflow(args):
         sys.exit(1)
 
 
+# =============================================================================
+# METRICS COMMANDS
+# =============================================================================
+# Functions: cmd_metrics, cmd_analyze_compare, cmd_analyze_recommend
+
+
 def cmd_metrics(args):
     """Show performance metrics"""
     try:
@@ -430,7 +547,9 @@ def cmd_metrics(args):
                 return
 
             print("Per-Agent Statistics:\n")
-            print(f"{'Agent':<30} {'Runs':>6} {'Success':>8} {'Avg Time':>10} {'Cost':>10}")
+            print(
+                f"{'Agent':<{COL_WIDTH_AGENT}} {'Runs':>{COL_WIDTH_RUNS}} {'Success':>{COL_WIDTH_SUCCESS}} {'Avg Time':>{COL_WIDTH_TIME}} {'Cost':>{COL_WIDTH_COST}}"
+            )
             print("-" * 70)
 
             for agent, data in sorted(
@@ -441,7 +560,7 @@ def cmd_metrics(args):
                 cost = f"${data['total_cost']:.4f}"
 
                 print(
-                    f"{agent:<30} {data['executions']:>6} {success_rate:>8} {avg_time:>10} {cost:>10}"
+                    f"{agent:<{COL_WIDTH_AGENT}} {data['executions']:>{COL_WIDTH_RUNS}} {success_rate:>{COL_WIDTH_SUCCESS}} {avg_time:>{COL_WIDTH_TIME}} {cost:>{COL_WIDTH_COST}}"
                 )
 
         # Cost breakdown
@@ -452,18 +571,18 @@ def cmd_metrics(args):
 
             print("By Agent:")
             for agent, cost in list(costs["by_agent"].items())[:10]:
-                pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
+                pct = percent(cost, costs["total"])
                 bar_length = int(pct / 2)  # 0-50 chars
                 bar = "█" * bar_length
 
-                print(f"  {agent:<30} ${cost:>8.4f} {bar} {pct:.1f}%")
+                print(f"  {agent:<{COL_WIDTH_AGENT}} ${cost:>8.4f} {bar} {pct:.1f}%")
 
             if len(costs["by_agent"]) > 10:
                 print(f"  ... and {len(costs['by_agent']) - 10} more agents")
 
             print("\nBy Model:")
             for model, cost in costs["by_model"].items():
-                pct = (cost / costs["total"] * 100) if costs["total"] > 0 else 0
+                pct = percent(cost, costs["total"])
                 print(f"  {model:<40} ${cost:>8.4f} ({pct:.1f}%)")
 
         # Export
@@ -478,6 +597,218 @@ def cmd_metrics(args):
         sys.exit(1)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+# =============================================================================
+# SETUP & INIT COMMANDS
+# =============================================================================
+# Functions: cmd_setup, cmd_init, cmd_gallery_browse, cmd_gallery_show,
+#            cmd_gallery_search, cmd_gallery_popular
+
+
+def cmd_setup(args):
+    """Interactive setup wizard for first-time claude-force configuration"""
+    import os
+    import subprocess
+    import getpass
+    from pathlib import Path
+
+    try:
+        print("\n" + "=" * 70)
+        print("🚀 Claude Force Setup Wizard")
+        print("=" * 70)
+        print("\nThis wizard will help you get started with Claude Force in 5 steps.\n")
+
+        # Step 1: Check Python version
+        print("[1/5] Checking Python version...")
+        import sys
+
+        py_version = sys.version_info
+        if py_version < (3, 8):
+            print(
+                f"❌ Error: Python 3.8+ required (found {py_version.major}.{py_version.minor})",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        print(f"✅ Python {py_version.major}.{py_version.minor}.{py_version.micro} detected\n")
+
+        # Step 2: Check/Install dependencies
+        print("[2/5] Checking dependencies...")
+        try:
+            import anthropic
+
+            print("✅ Dependencies already installed\n")
+        except ImportError:
+            if args.interactive:
+                install = input("Dependencies not found. Install now? (y/n) [y]: ").strip().lower()
+                if install in ("", "y", "yes"):
+                    print("Installing dependencies...")
+                    try:
+                        subprocess.run(
+                            [sys.executable, "-m", "pip", "install", "anthropic"],
+                            check=True,
+                            capture_output=True,
+                        )
+                        print("✅ Dependencies installed\n")
+                    except subprocess.CalledProcessError as e:
+                        print(f"❌ Error installing dependencies: {e}", file=sys.stderr)
+                        print("   Please run: pip install anthropic", file=sys.stderr)
+                        sys.exit(1)
+                else:
+                    print("⚠️  Skipping dependency installation")
+                    print("   Install manually with: pip install anthropic\n")
+            else:
+                print("⚠️  anthropic package not found")
+                print("   Install with: pip install anthropic\n")
+
+        # Step 3: Configure API key
+        print("[3/5] Configuring API key...")
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+
+        if api_key:
+            print(f"✅ API key found in environment (ANTHROPIC_API_KEY)")
+            masked_key = (
+                api_key[:8] + "*" * (len(api_key) - 12) + api_key[-4:]
+                if len(api_key) > 12
+                else "***"
+            )
+            print(f"   Key: {masked_key}\n")
+        else:
+            if args.interactive:
+                print("\n📝 Anthropic API Key Setup")
+                print("   Get your API key from: https://console.anthropic.com/")
+                print()
+
+                while True:
+                    api_key = getpass.getpass("Enter your Anthropic API key (hidden): ").strip()
+                    if api_key:
+                        break
+                    print("❌ API key cannot be empty. Please try again.")
+
+                # Ask where to save
+                print("\nWhere should we save your API key?")
+                print("  1. Environment variable (recommended for this session)")
+                print("  2. .env file in current directory")
+                print("  3. Skip (I'll configure it manually later)")
+
+                choice = input("\nChoice (1-3) [1]: ").strip() or "1"
+
+                if choice == "1":
+                    os.environ["ANTHROPIC_API_KEY"] = api_key
+                    print("✅ API key set for this session")
+                    print("   To make it permanent, add to your shell profile:")
+                    print(f'   export ANTHROPIC_API_KEY="{api_key}"\n')
+
+                elif choice == "2":
+                    env_file = Path.cwd() / ".env"
+                    with open(env_file, "a") as f:
+                        f.write(f"\nANTHROPIC_API_KEY={api_key}\n")
+                    print(f"✅ API key saved to {env_file}")
+                    print("   Load with: source .env (bash) or set -a; source .env; set +a\n")
+                    os.environ["ANTHROPIC_API_KEY"] = api_key  # Also set for this session
+
+                else:
+                    print("⚠️  Skipping API key configuration")
+                    print("   Set manually: export ANTHROPIC_API_KEY=your-key\n")
+            else:
+                print("❌ ANTHROPIC_API_KEY not found in environment", file=sys.stderr)
+                print("   Set with: export ANTHROPIC_API_KEY=your-key", file=sys.stderr)
+                print("   Or run with --interactive flag", file=sys.stderr)
+                sys.exit(1)
+
+        # Step 4: Initialize project (optional)
+        print("[4/5] Project initialization...")
+        if args.interactive:
+            init = input("Initialize a new project now? (y/n) [y]: ").strip().lower()
+            if init in ("", "y", "yes"):
+                project_dir = input("Project directory [.]: ").strip() or "."
+                project_dir = Path(project_dir)
+
+                if (project_dir / ".claude").exists():
+                    print(f"⚠️  Project already initialized in {project_dir}")
+                else:
+                    print(f"\n📁 Initializing project in {project_dir}...")
+
+                    # Call init with interactive mode
+                    class InitArgs:
+                        directory = str(project_dir)
+                        interactive = True
+                        description = None
+                        name = None
+                        template = None
+                        tech = None
+                        no_semantic = False
+                        no_examples = False
+                        force = False
+                        config = None
+                        demo = False
+
+                    cmd_init(InitArgs())
+                print()
+            else:
+                print("⚠️  Skipping project initialization")
+                print("   Initialize later with: claude-force init\n")
+        else:
+            print("⚠️  Skipping project initialization (non-interactive mode)")
+            print("   Initialize with: claude-force init\n")
+
+        # Step 5: Test with demo agent
+        print("[5/5] Testing configuration...")
+        if os.getenv("ANTHROPIC_API_KEY") and args.interactive:
+            test = input("Run a test agent to verify setup? (y/n) [y]: ").strip().lower()
+            if test in ("", "y", "yes"):
+                print("\n🧪 Running test agent (demo mode - no API calls)...")
+                try:
+                    from .demo_mode import DemoOrchestrator
+
+                    orch = DemoOrchestrator()
+                    result = orch.run_agent(
+                        "document-writer-expert", "Write a welcome message for Claude Force"
+                    )
+
+                    if result.success:
+                        print("✅ Test successful!")
+                        print(f"\n📝 Sample output:\n{result.output[:200]}...")
+                    else:
+                        print("❌ Test failed")
+                        for error in result.errors:
+                            print(f"   Error: {error}", file=sys.stderr)
+                except Exception as e:
+                    print(f"⚠️  Could not run test: {e}")
+                print()
+            else:
+                print("⚠️  Skipping test\n")
+        else:
+            print("⚠️  Skipping test (API key not configured or non-interactive mode)\n")
+
+        # Success!
+        print("=" * 70)
+        print("✅ Setup Complete!")
+        print("=" * 70)
+        print("\n🎉 You're ready to use Claude Force!\n")
+
+        print("📚 Next Steps:")
+        print("   1. List available agents:")
+        print("      claude-force list agents")
+        print()
+        print("   2. Get agent recommendations:")
+        print("      claude-force recommend --task 'Your task description'")
+        print()
+        print("   3. Run an agent:")
+        print("      claude-force run agent code-reviewer --task 'Review my code'")
+        print()
+        print("   4. Try demo mode (no API key needed):")
+        print("      claude-force --demo run agent code-reviewer --task 'Review code'")
+        print()
+        print("📖 Documentation: https://github.com/khanh-vu/claude-force")
+        print()
+
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Setup cancelled by user")
+        sys.exit(130)
+    except Exception as e:
+        print(f"\n❌ Setup failed: {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -639,6 +970,12 @@ def cmd_init(args):
             print("\nOr use --no-semantic for keyword-based matching")
         sys.exit(1)
     except Exception as e:
+
+        # =============================================================================
+        # MARKETPLACE
+        # =============================================================================
+        # Functions: cmd_marketplace_list, cmd_marketplace_search, cmd_marketplace_install, cmd_marketplace_uninstall, cmd_marketplace_info
+
         print(f"❌ Error: {e}", file=sys.stderr)
         import traceback
 
@@ -840,6 +1177,11 @@ def cmd_marketplace_info(args):
             print(f"\nDependencies: {', '.join(plugin.dependencies)}")
 
         print("\n" + "=" * 80)
+
+        # =============================================================================
+        # IMPORT/EXPORT
+        # =============================================================================
+        # Functions: cmd_import_agent, cmd_export_agent, cmd_import_bulk
 
         if not plugin.installed:
             print(f"\n💡 Install: claude-force marketplace install {plugin.id}")
@@ -1153,6 +1495,11 @@ def cmd_gallery_popular(args):
             print(f"   {template.description}")
             print(f"   ID: {template.template_id}")
 
+        # =============================================================================
+        # RECOMMENDATION & ANALYSIS
+        # =============================================================================
+        # Functions: cmd_recommend, cmd_analyze_task
+
         print("\n" + "=" * 80)
         print(f"\n💡 Initialize: claude-force init --template <template-id>")
 
@@ -1166,13 +1513,19 @@ def cmd_recommend(args):
     try:
         from .agent_router import get_agent_router
 
-        # Read task from --task, --task-file, or stdin
+        # SEC-02: Read and validate task input with size limits
         task = args.task
+
+        # Read from file with validation
         if args.task_file:
-            with open(args.task_file, "r") as f:
-                task = f.read()
+            task = validate_task_input(task_file=args.task_file)
+        # Read from stdin with validation
         elif not task and not sys.stdin.isatty():
-            task = sys.stdin.read()
+            stdin_content = sys.stdin.read()
+            task = validate_task_input(task=stdin_content)
+        # Validate direct task input
+        elif task:
+            task = validate_task_input(task=task)
 
         if not task:
             print("❌ Error: Task description required", file=sys.stderr)
@@ -1306,6 +1659,12 @@ def cmd_analyze_task(args):
         print(f'\n💡 Run: claude-force recommend --task "Your task" for detailed recommendations')
 
     except Exception as e:
+
+        # =============================================================================
+        # CONTRIBUTION
+        # =============================================================================
+        # Functions: cmd_contribute_validate, cmd_contribute_prepare
+
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
@@ -1410,6 +1769,12 @@ def cmd_contribute_prepare(args):
         print(f"\n💡 Fix the errors and try again, or use --skip-validation to bypass")
         sys.exit(1)
     except Exception as e:
+
+        # =============================================================================
+        # WORKFLOW COMPOSITION
+        # =============================================================================
+        # Functions: cmd_compose
+
         print(f"❌ Error: {e}", file=sys.stderr)
         if args.verbose:
             import traceback
@@ -1625,6 +1990,62 @@ def cmd_analyze_recommend(args):
         sys.exit(1)
 
 
+# =============================================================================
+# DIAGNOSTIC COMMANDS
+# =============================================================================
+# Functions: cmd_diagnose (UX-04)
+
+
+def cmd_diagnose(args):
+    """Run system diagnostics to troubleshoot issues (UX-04)."""
+    try:
+        from .diagnostics import run_diagnostics
+
+        # Run diagnostics
+        all_passed, report = run_diagnostics(verbose=args.verbose)
+
+        # Output JSON if requested
+        if args.json:
+            from .diagnostics import SystemDiagnostics
+
+            diagnostics = SystemDiagnostics()
+            diagnostics.run_all_checks()
+
+            result = {
+                "summary": diagnostics.get_summary(),
+                "checks": [
+                    {
+                        "name": check.name,
+                        "status": "passed" if check.status else "failed",
+                        "message": check.message,
+                        "details": check.details,
+                    }
+                    for check in diagnostics.checks
+                ],
+            }
+            print(json.dumps(result, indent=2))
+        else:
+            # Print report
+            print(report)
+
+        # Exit with appropriate code
+        sys.exit(0 if all_passed else 1)
+
+    except Exception as e:
+        print(f"❌ Error running diagnostics: {e}", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            import traceback
+
+            traceback.print_exc()
+        sys.exit(1)
+
+
+# =============================================================================
+# MAIN ENTRY POINT
+# =============================================================================
+# Functions: main()
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -1633,6 +2054,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # First-time setup (interactive wizard)
+  claude-force setup
+
   # List all agents
   claude-force list agents
 
@@ -1831,6 +2255,21 @@ For more information: https://github.com/khanh-vu/claude-force
         "--format", choices=["json", "csv"], default="json", help="Export format"
     )
     export_parser.set_defaults(func=cmd_metrics)
+
+    # Setup command (first-time configuration wizard)
+    setup_parser = subparsers.add_parser(
+        "setup", help="Interactive setup wizard for first-time configuration"
+    )
+    setup_parser.add_argument(
+        "--interactive", "-i", action="store_true", default=True, help="Interactive mode (default)"
+    )
+    setup_parser.add_argument(
+        "--non-interactive",
+        action="store_false",
+        dest="interactive",
+        help="Non-interactive mode (requires API key in environment)",
+    )
+    setup_parser.set_defaults(func=cmd_setup)
 
     # Init command
     init_parser = subparsers.add_parser(
@@ -2035,6 +2474,16 @@ For more information: https://github.com/khanh-vu/claude-force
     )
     prepare_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     prepare_parser.set_defaults(func=cmd_contribute_prepare)
+
+    # Diagnose command (UX-04: System diagnostics)
+    diagnose_parser = subparsers.add_parser(
+        "diagnose", help="Run system diagnostics to troubleshoot issues"
+    )
+    diagnose_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Show detailed diagnostic information"
+    )
+    diagnose_parser.add_argument("--json", action="store_true", help="Output diagnostics as JSON")
+    diagnose_parser.set_defaults(func=cmd_diagnose)
 
     # Workflow Composer commands
     compose_parser = subparsers.add_parser(
