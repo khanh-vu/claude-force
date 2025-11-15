@@ -464,30 +464,67 @@ git push origin main --tags
 
 #### Release Candidate
 
-For testing new features before official release:
+Release candidates allow testing new features on TestPyPI before production release.
+
+**Creating a Release Candidate:**
 
 ```bash
-# 1. Go to GitHub Actions
-# 2. Select "Release Candidate" workflow
-# 3. Click "Run workflow"
-# 4. Enter:
-#    - version_type: rc, beta, or alpha
-#    - base_version: e.g., 1.0.0
+# 1. Bump to RC version (updates all files + creates tag)
+bump2version patch  # This creates the base version first
+# Then manually create RC tag
+git tag v2.3.0-rc.1
+git push origin v2.3.0-rc.1
 
-# This will:
-# - Create version tag (e.g., v1.0.0-rc.1)
-# - Publish to TestPyPI
-# - Create pre-release on GitHub
+# Or create RC tag directly if version files are ready
+git tag v2.3.0-rc.1
+git push origin v2.3.0-rc.1
+```
 
-# 5. Test the RC:
+**What Happens Automatically:**
+- ✅ All quality gates run (tests, security, formatting)
+- ✅ Package published to TestPyPI
+- ✅ GitHub pre-release created
+- ✅ Testing announcement issue created
+- ✅ RC artifacts retained for 30 days
+
+**Testing the RC:**
+
+```bash
+# Install from TestPyPI
 pip install --index-url https://test.pypi.org/simple/ \
   --extra-index-url https://pypi.org/simple \
-  claude-force==1.0.0-rc.1
+  claude-force==2.3.0-rc.1
 
-# 6. If tests pass, promote to release:
-git tag v1.0.0
-git push origin v1.0.0
+# Test thoroughly:
+# - Run all features
+# - Check for regressions
+# - Verify documentation
+# - Report issues
 ```
+
+**Promoting RC to Production:**
+
+Once testing is complete and approved:
+
+```bash
+# Option 1: Use GitHub Actions (Recommended)
+# 1. Go to Actions → "Promote Release Candidate to Production"
+# 2. Click "Run workflow"
+# 3. Enter RC version: 2.3.0-rc.1
+# 4. Leave production version empty (auto-generates 2.3.0)
+# 5. Click "Run workflow"
+
+# Option 2: Manual promotion
+# This will be replaced by the automated workflow above
+```
+
+The promotion workflow automatically:
+- ✅ Validates RC exists on TestPyPI
+- ✅ Updates version files
+- ✅ Creates production tag
+- ✅ Triggers production release workflow
+- ✅ Closes RC testing issue
+- ✅ Publishes to PyPI
 
 #### Hotfix Release
 

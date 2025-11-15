@@ -1,0 +1,273 @@
+name: Promote Release Candidate to Production
+
+# Manually triggered workflow to promote an RC to production
+on:
+  workflow_dispatch:
+    inputs:
+      rc_version:
+        description: 'RC version to promote (e.g., 2.1.0-rc.1)'
+        required: true
+        type: string
+      production_version:
+        description: 'Production version (leave empty to auto-generate from RC, e.g., 2.1.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  validate-rc:
+    name: Validate Release Candidate
+    runs-on: ubuntu-latest
+    outputs:
+      rc_version: ${{ steps.validate.outputs.rc_version }}
+      prod_version: ${{ steps.validate.outputs.prod_version }}
+      rc_tag: ${{ steps.validate.outputs.rc_tag }}
+      prod_tag: ${{ steps.validate.outputs.prod_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate RC version and determine production version
+        id: validate
+        run: |
+          RC_VERSION="${{ github.event.inputs.rc_version }}"
+          PROD_VERSION="${{ github.event.inputs.production_version }}"
+
+          # Remove 'v' prefix if present
+          RC_VERSION=${RC_VERSION#v}
+
+          # Validate RC version format
+          if [[ ! "$RC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(rc|alpha|beta)\.[0-9]+$ ]]; then
+            echo "❌ Invalid RC version format: $RC_VERSION"
+            echo "Expected format: X.Y.Z-rc.N (or alpha/beta)"
+            exit 1
+          fi
+
+          # Determine production version
+          if [ -z "$PROD_VERSION" ]; then
+            # Auto-generate: remove pre-release suffix
+            PROD_VERSION=$(echo "$RC_VERSION" | sed -E 's/-(rc|alpha|beta)\.[0-9]+$//')
+            echo "📝 Auto-generated production version: $PROD_VERSION"
+          else
+            # Remove 'v' prefix if present
+            PROD_VERSION=${PROD_VERSION#v}
+
+            # Validate production version format
+            if [[ ! "$PROD_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "❌ Invalid production version format: $PROD_VERSION"
+              echo "Expected format: X.Y.Z"
+              exit 1
+            fi
+          fi
+
+          # Check if RC tag exists
+          RC_TAG="v${RC_VERSION}"
+          if ! git rev-parse "$RC_TAG" >/dev/null 2>&1; then
+            echo "❌ RC tag not found: $RC_TAG"
+            echo "Available RC tags:"
+            git tag -l 'v*-rc.*' 'v*-alpha.*' 'v*-beta.*' | tail -5
+            exit 1
+          fi
+
+          # Check if production tag already exists
+          PROD_TAG="v${PROD_VERSION}"
+          if git rev-parse "$PROD_TAG" >/dev/null 2>&1; then
+            echo "❌ Production tag already exists: $PROD_TAG"
+            exit 1
+          fi
+
+          # Output variables
+          echo "rc_version=${RC_VERSION}" >> $GITHUB_OUTPUT
+          echo "prod_version=${PROD_VERSION}" >> $GITHUB_OUTPUT
+          echo "rc_tag=${RC_TAG}" >> $GITHUB_OUTPUT
+          echo "prod_tag=${PROD_TAG}" >> $GITHUB_OUTPUT
+
+          echo "✅ Validation successful"
+          echo "   RC version: $RC_VERSION ($RC_TAG)"
+          echo "   Production version: $PROD_VERSION ($PROD_TAG)"
+
+  verify-testpypi:
+    name: Verify TestPyPI Package
+    needs: validate-rc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify package on TestPyPI
+        run: |
+          RC_VERSION="${{ needs.validate-rc.outputs.rc_version }}"
+
+          echo "🔍 Checking if claude-force $RC_VERSION exists on TestPyPI..."
+
+          # Try to get package info from TestPyPI
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://test.pypi.org/pypi/claude-force/$RC_VERSION/json")
+
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Package found on TestPyPI"
+            curl -s "https://test.pypi.org/pypi/claude-force/$RC_VERSION/json" | python3 -c "import sys, json; data=json.load(sys.stdin); print(f\"Package: {data['info']['name']} v{data['info']['version']}\"); print(f\"Upload time: {data['urls'][0]['upload_time'] if data['urls'] else 'N/A'}\")"
+          else
+            echo "⚠️  Package not found on TestPyPI (HTTP $STATUS)"
+            echo "This RC may not have been published to TestPyPI."
+            echo "Promotion will continue, but verify the release was tested."
+          fi
+
+  update-version-files:
+    name: Update Version Files
+    needs: [validate-rc, verify-testpypi]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install bump2version
+        run: |
+          pip install bump2version
+
+      - name: Update version in all files
+        run: |
+          PROD_VERSION="${{ needs.validate-rc.outputs.prod_version }}"
+
+          # Update pyproject.toml
+          sed -i "s/^version = .*/version = \"$PROD_VERSION\"/" pyproject.toml
+
+          # Update setup.py
+          sed -i "s/version=.*/version=\"$PROD_VERSION\",/" setup.py
+
+          # Update __init__.py
+          sed -i "s/__version__ = .*/__version__ = \"$PROD_VERSION\"/" claude_force/__init__.py
+
+          # Update README.md
+          sed -i "s/claude-force==.*/claude-force==$PROD_VERSION\`/" README.md || true
+
+          echo "✅ Updated version to $PROD_VERSION in all files"
+
+      - name: Verify version consistency
+        run: |
+          python3 scripts/check_version_consistency.py
+
+      - name: Commit version changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add pyproject.toml setup.py claude_force/__init__.py README.md
+          git commit -m "chore: bump version to ${{ needs.validate-rc.outputs.prod_version }}"
+          git push origin main
+
+  create-production-tag:
+    name: Create Production Tag
+    needs: [validate-rc, update-version-files]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Create and push production tag
+        run: |
+          PROD_TAG="${{ needs.validate-rc.outputs.prod_tag }}"
+          RC_TAG="${{ needs.validate-rc.outputs.rc_tag }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create annotated tag
+          git tag -a "$PROD_TAG" -m "Release $PROD_TAG (promoted from $RC_TAG)"
+
+          # Push tag (this will trigger the release workflow)
+          git push origin "$PROD_TAG"
+
+          echo "✅ Created and pushed production tag: $PROD_TAG"
+          echo "🚀 Release workflow will now be triggered automatically"
+
+  close-rc-issue:
+    name: Close RC Testing Issue
+    needs: [validate-rc, create-production-tag]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find and close RC testing issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const rcVersion = '${{ needs.validate-rc.outputs.rc_version }}';
+            const prodVersion = '${{ needs.validate-rc.outputs.prod_version }}';
+
+            // Search for the RC testing issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'testing',
+            });
+
+            // Find the issue for this RC
+            const rcIssue = issues.data.find(issue =>
+              issue.title.includes(rcVersion)
+            );
+
+            if (rcIssue) {
+              // Comment on the issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: rcIssue.number,
+                body: `✅ **Promoted to Production**\n\n` +
+                      `This release candidate has been promoted to production as **v${prodVersion}**.\n\n` +
+                      `The production release workflow is now running. Once complete, the package will be available on PyPI.\n\n` +
+                      `Thank you for testing! 🎉`
+              });
+
+              // Close the issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: rcIssue.number,
+                state: 'closed',
+                labels: [...(rcIssue.labels.map(l => l.name)), 'promoted']
+              });
+
+              console.log(`✅ Closed RC testing issue #${rcIssue.number}`);
+            } else {
+              console.log('ℹ️  No RC testing issue found to close');
+            }
+
+  notify-promotion:
+    name: Notify Promotion Success
+    needs: [validate-rc, create-production-tag]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Display promotion summary
+        run: |
+          echo "🎉 Release Candidate Promotion Complete!"
+          echo ""
+          echo "✅ Promoted: ${{ needs.validate-rc.outputs.rc_tag }} → ${{ needs.validate-rc.outputs.prod_tag }}"
+          echo ""
+          echo "📝 Next Steps:"
+          echo "1. Monitor the Release workflow: https://github.com/${{ github.repository }}/actions/workflows/release.yml"
+          echo "2. Verify PyPI publication: https://pypi.org/project/claude-force/${{ needs.validate-rc.outputs.prod_version }}/"
+          echo "3. Check GitHub Release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate-rc.outputs.prod_tag }}"
+          echo ""
+          echo "The production release workflow has been triggered automatically."
