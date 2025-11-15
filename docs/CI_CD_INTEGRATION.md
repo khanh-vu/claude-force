@@ -45,6 +45,19 @@ Claude-Force follows standard Unix conventions:
 - **Exit code 0**: Success
 - **Exit code 1**: Failure (agent failed, command error, etc.)
 
+**Important:** When using `--format json`, ALL output (including errors) goes to **stdout** for parseability. Exit codes distinguish success from failure, not the output stream.
+
+This means you can reliably capture JSON with redirection:
+
+```bash
+# This works - errors are JSON too!
+claude-force run agent test --task "Run tests" --format json > result.json
+echo $?  # Exit code: 0=success, 1=failure
+
+# Parse the result
+cat result.json | jq '.success'  # true or false
+```
+
 Check exit codes in your CI/CD scripts:
 
 ```bash

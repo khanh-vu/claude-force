@@ -58,7 +58,7 @@ def cmd_list_agents(args):
     except Exception as e:
         if getattr(args, "format", "text") == "json":
             error_data = {"success": False, "error": str(e)}
-            print(json.dumps(error_data), file=sys.stderr)
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
         else:
             print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -113,7 +113,7 @@ def cmd_list_workflows(args):
     except Exception as e:
         if getattr(args, "format", "text") == "json":
             error_data = {"success": False, "error": str(e)}
-            print(json.dumps(error_data), file=sys.stderr)
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
         else:
             print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -290,7 +290,7 @@ def cmd_run_agent(args):
     except Exception as e:
         if output_format == "json":
             error_data = {"success": False, "error": str(e)}
-            print(json.dumps(error_data), file=sys.stderr)
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
         else:
             print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -384,7 +384,7 @@ def cmd_run_workflow(args):
     except Exception as e:
         if getattr(args, "format", "text") == "json":
             error_data = {"success": False, "error": str(e)}
-            print(json.dumps(error_data), file=sys.stderr)
+            print(json.dumps(error_data))  # JSON errors to stdout for parseability
         else:
             print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
