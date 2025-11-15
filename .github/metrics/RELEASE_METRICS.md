@@ -19,7 +19,7 @@
 
 | Workflow | Total Runs | Success | Failure | Success Rate | Avg Duration |
 |----------|------------|---------|---------|--------------|--------------|
-| **Production Release** | 15 | 0 | $((15 - 0)) | 0.0% | 3.77 min |
+| **Production Release** | 16 | 1 | $((16 - 1)) | 6.3% | 3.65 min |
 | **Release Candidate** | 1 | 0 | $((1 - 0)) | 0.0% | 12.48 min |
 | **RC Promotion** | 0 | 0 | $((0 - 0)) | 0% | 0 min |
 
@@ -29,16 +29,16 @@
 
 ### Overall Health
 
-- **Overall Success Rate**: 0%
-- **Total Workflow Runs**: 16
-- **Total Successful Runs**: 0
+- **Overall Success Rate**: 5.8%
+- **Total Workflow Runs**: 17
+- **Total Successful Runs**: 1
 - **Total Failed Runs**: 16
 
 ❌ **Status**: Needs Attention - Success rate below target
 
 ### Performance Analysis
 
-- **Production Release**: Average 3.77 minutes
+- **Production Release**: Average 3.65 minutes
   - ✅ Excellent performance (< 10 min target)
 - **Release Candidate**: Average 12.48 minutes
 
