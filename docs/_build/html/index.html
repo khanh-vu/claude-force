@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude-Force Documentation &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Claude-Force Documentation</a><ul>
+<li><a class="reference internal" href="#quick-links">Quick Links</a></li>
+<li><a class="reference internal" href="#what-is-claude-force">What is Claude-Force?</a></li>
+<li><a class="reference internal" href="#key-features">Key Features</a><ul>
+<li><a class="reference internal" href="#semantic-agent-recommendation">🧠 Semantic Agent Recommendation</a></li>
+<li><a class="reference internal" href="#hybrid-model-orchestration">⚡ Hybrid Model Orchestration</a></li>
+<li><a class="reference internal" href="#performance-analytics">📊 Performance Analytics</a></li>
+<li><a class="reference internal" href="#project-initialization">🎨 Project Initialization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#from-pypi-recommended">From PyPI (Recommended)</a></li>
+<li><a class="reference internal" href="#from-source">From Source</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quick-example">Quick Example</a></li>
+<li><a class="reference internal" href="#architecture">Architecture</a></li>
+<li><a class="reference internal" href="#documentation-sections">Documentation Sections</a><ul>
+<li><a class="reference internal" href="#for-users">For Users</a></li>
+<li><a class="reference internal" href="#for-developers">For Developers</a></li>
+<li><a class="reference internal" href="#advanced-topics">Advanced Topics</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#system-requirements">System Requirements</a><ul>
+<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#support">Support</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Claude-Force Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="claude-force-documentation">
+<h1>Claude-Force Documentation<a class="headerlink" href="#claude-force-documentation" title="Link to this heading"></a></h1>
+<p><strong>Production-Ready Multi-Agent Orchestration System for Claude</strong></p>
+<p>Welcome to the comprehensive documentation for claude-force, a powerful framework for orchestrating multiple Claude AI agents to solve complex software engineering tasks.</p>
+<section id="quick-links">
+<h2>Quick Links<a class="headerlink" href="#quick-links" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="installation.html"><span class="std std-doc">Installation Guide</span></a></strong> - Get started in 30 seconds</p></li>
+<li><p><strong><a class="reference internal" href="#quickstart.md"><span class="xref myst">Quick Start</span></a></strong> - Build your first multi-agent workflow</p></li>
+<li><p><strong><a class="reference internal" href="api-reference/index.html"><span class="std std-doc">API Reference</span></a></strong> - Complete API documentation</p></li>
+<li><p><strong><a class="reference internal" href="#guides/index.md"><span class="xref myst">Guides</span></a></strong> - In-depth tutorials and best practices</p></li>
+<li><p><strong><a class="reference internal" href="#examples/index.md"><span class="xref myst">Examples</span></a></strong> - Real-world usage examples</p></li>
+</ul>
+</section>
+<section id="what-is-claude-force">
+<h2>What is Claude-Force?<a class="headerlink" href="#what-is-claude-force" title="Link to this heading"></a></h2>
+<p>Claude-Force is a Python framework that enables you to:</p>
+<ul class="simple">
+<li><p><strong>Orchestrate Multiple AI Agents</strong>: Coordinate specialized Claude agents for different tasks</p></li>
+<li><p><strong>Semantic Agent Selection</strong>: Automatically recommend the best agent for your task using embeddings</p></li>
+<li><p><strong>Hybrid Model Orchestration</strong>: Optimize costs by automatically selecting Haiku/Sonnet/Opus based on task complexity</p></li>
+<li><p><strong>Performance Tracking</strong>: Monitor execution time, token usage, and costs</p></li>
+<li><p><strong>Workflow Composition</strong>: Create custom multi-agent workflows</p></li>
+<li><p><strong>Marketplace Integration</strong>: Install and share community agents</p></li>
+</ul>
+</section>
+<section id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h2>
+<section id="semantic-agent-recommendation">
+<h3>🧠 Semantic Agent Recommendation<a class="headerlink" href="#semantic-agent-recommendation" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>claude-force<span class="w"> </span>recommend<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Review authentication code for security&quot;</span>
+<span class="c1"># → Recommends: security-specialist (confidence: 0.92)</span>
+</pre></div>
+</div>
+</section>
+<section id="hybrid-model-orchestration">
+<h3>⚡ Hybrid Model Orchestration<a class="headerlink" href="#hybrid-model-orchestration" title="Link to this heading"></a></h3>
+<p>Automatically selects the optimal Claude model based on task complexity:</p>
+<ul class="simple">
+<li><p><strong>Haiku</strong> for simple tasks (typo fixes, formatting)</p></li>
+<li><p><strong>Sonnet</strong> for moderate tasks (code reviews, refactoring)</p></li>
+<li><p><strong>Opus</strong> for complex tasks (architecture design, security audits)</p></li>
+</ul>
+</section>
+<section id="performance-analytics">
+<h3>📊 Performance Analytics<a class="headerlink" href="#performance-analytics" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>claude-force<span class="w"> </span>analyze<span class="w"> </span>performance
+<span class="c1"># Shows: execution times, token usage, costs, success rates</span>
+</pre></div>
+</div>
+</section>
+<section id="project-initialization">
+<h3>🎨 Project Initialization<a class="headerlink" href="#project-initialization" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>claude-force<span class="w"> </span>init<span class="w"> </span>./my-project<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Build a chat application&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;chat-app&quot;</span>
+<span class="c1"># Creates optimized .claude/ configuration</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<section id="from-pypi-recommended">
+<h3>From PyPI (Recommended)<a class="headerlink" href="#from-pypi-recommended" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>claude-force
+claude-force<span class="w"> </span>--help
+</pre></div>
+</div>
+</section>
+<section id="from-source">
+<h3>From Source<a class="headerlink" href="#from-source" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/khanh-vu/claude-force.git
+<span class="nb">cd</span><span class="w"> </span>claude-force
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+</section>
+<section id="quick-example">
+<h2>Quick Example<a class="headerlink" href="#quick-example" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="c1"># Initialize orchestrator</span>
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">,</span>
+    <span class="n">enable_tracking</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Run single agent</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Review this authentication function for security issues&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+
+<span class="c1"># Run multi-agent workflow</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_workflow</span><span class="p">(</span>
+    <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;full-stack-feature&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Implement user authentication with JWT&quot;</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h2>
+<p>Claude-Force consists of several key components:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="api-reference/orchestrator.html"><span class="std std-doc">AgentOrchestrator</span></a></strong>: Core execution engine</p></li>
+<li><p><strong><a class="reference internal" href="#api-reference/semantic-selector.md"><span class="xref myst">SemanticAgentSelector</span></a></strong>: AI-powered agent recommendation</p></li>
+<li><p><strong><a class="reference internal" href="#api-reference/hybrid-orchestrator.md"><span class="xref myst">HybridOrchestrator</span></a></strong>: Model selection and cost optimization</p></li>
+<li><p><strong><a class="reference internal" href="#api-reference/performance-tracker.md"><span class="xref myst">PerformanceTracker</span></a></strong>: Metrics collection and analytics</p></li>
+<li><p><strong><a class="reference internal" href="#api-reference/workflow-composer.md"><span class="xref myst">WorkflowComposer</span></a></strong>: Custom workflow creation</p></li>
+<li><p><strong><a class="reference internal" href="#api-reference/marketplace.md"><span class="xref myst">AgentMarketplace</span></a></strong>: Community agent sharing</p></li>
+</ul>
+</section>
+<section id="documentation-sections">
+<h2>Documentation Sections<a class="headerlink" href="#documentation-sections" title="Link to this heading"></a></h2>
+<section id="for-users">
+<h3>For Users<a class="headerlink" href="#for-users" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="installation.html"><span class="std std-doc">Installation</span></a></strong>: System requirements and installation methods</p></li>
+<li><p><strong><a class="reference internal" href="#quickstart.md"><span class="xref myst">Quick Start</span></a></strong>: Get started in minutes</p></li>
+<li><p><strong><a class="reference internal" href="#api-reference/cli.md"><span class="xref myst">CLI Reference</span></a></strong>: All command-line commands</p></li>
+<li><p><strong><a class="reference internal" href="#guides/index.md"><span class="xref myst">Guides</span></a></strong>: Tutorials and best practices</p></li>
+</ul>
+</section>
+<section id="for-developers">
+<h3>For Developers<a class="headerlink" href="#for-developers" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="api-reference/index.html"><span class="std std-doc">API Reference</span></a></strong>: Complete Python API documentation</p></li>
+<li><p><strong><a class="reference internal" href="#guides/architecture.md"><span class="xref myst">Architecture</span></a></strong>: System design and internals</p></li>
+<li><p><strong><a class="reference internal" href="#guides/contributing.md"><span class="xref myst">Contributing</span></a></strong>: How to contribute to claude-force</p></li>
+<li><p><strong><a class="reference internal" href="#guides/testing.md"><span class="xref myst">Testing</span></a></strong>: Running and writing tests</p></li>
+</ul>
+</section>
+<section id="advanced-topics">
+<h3>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#guides/semantic-selection.md"><span class="xref myst">Semantic Selection</span></a></strong>: How agent recommendation works</p></li>
+<li><p><strong><a class="reference internal" href="#guides/performance.md"><span class="xref myst">Performance Optimization</span></a></strong>: Cost and latency optimization</p></li>
+<li><p><strong><a class="reference internal" href="#guides/workflows.md"><span class="xref myst">Custom Workflows</span></a></strong>: Building multi-agent workflows</p></li>
+<li><p><strong><a class="reference internal" href="#guides/marketplace.md"><span class="xref myst">Marketplace</span></a></strong>: Publishing and installing agents</p></li>
+</ul>
+</section>
+</section>
+<section id="system-requirements">
+<h2>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python 3.8 or higher (3.10+ recommended)</p></li>
+<li><p>Anthropic API key (<a class="reference external" href="https://console.anthropic.com/">Get one here</a>)</p></li>
+<li><p>100MB disk space</p></li>
+</ul>
+<section id="optional-dependencies">
+<h3>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sentence-transformers</span></code>: For semantic agent selection (recommended)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code>: For vector operations (required if using semantic selection)</p></li>
+</ul>
+</section>
+</section>
+<section id="support">
+<h2>Support<a class="headerlink" href="#support" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>GitHub Issues</strong>: <a class="reference external" href="https://github.com/khanh-vu/claude-force/issues">https://github.com/khanh-vu/claude-force/issues</a></p></li>
+<li><p><strong>Documentation</strong>: <a class="reference external" href="https://claude-force.readthedocs.io">https://claude-force.readthedocs.io</a></p></li>
+<li><p><strong>Source Code</strong>: <a class="reference external" href="https://github.com/khanh-vu/claude-force">https://github.com/khanh-vu/claude-force</a></p></li>
+</ul>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>MIT License - see <a class="reference external" href="https://github.com/khanh-vu/claude-force/blob/main/LICENSE">LICENSE</a> file for details.</p>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>New Users</strong>: Start with the <a class="reference internal" href="#quickstart.md"><span class="xref myst">Quick Start Guide</span></a></p></li>
+<li><p><strong>Developers</strong>: Check out the <a class="reference internal" href="api-reference/index.html"><span class="std std-doc">API Reference</span></a></p></li>
+<li><p><strong>Advanced Users</strong>: Explore <a class="reference internal" href="#guides/index.md"><span class="xref myst">Guides</span></a> for in-depth topics</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Version</strong>: 2.1.0
+<strong>Last Updated</strong>: 2025-11-14
+<strong>Status</strong>: Production Ready</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

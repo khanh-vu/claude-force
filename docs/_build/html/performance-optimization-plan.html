@@ -1,0 +1,2014 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Force Performance Optimization Implementation Plan &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Claude Force Performance Optimization Implementation Plan</a><ul>
+<li><a class="reference internal" href="#executive-summary">Executive Summary</a><ul>
+<li><a class="reference internal" href="#primary-goals">Primary Goals</a></li>
+<li><a class="reference internal" href="#implementation-phases">Implementation Phases</a></li>
+<li><a class="reference internal" href="#expected-roi">Expected ROI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#phase-1-foundation-optimizations">Phase 1: Foundation Optimizations</a><ul>
+<li><a class="reference internal" href="#async-api-client-implementation">1.1 Async API Client Implementation</a><ul>
+<li><a class="reference internal" href="#objective">Objective</a></li>
+<li><a class="reference internal" href="#current-state">Current State</a></li>
+<li><a class="reference internal" href="#target-state">Target State</a></li>
+<li><a class="reference internal" href="#implementation-steps">Implementation Steps</a></li>
+<li><a class="reference internal" href="#testing-requirements">Testing Requirements</a></li>
+<li><a class="reference internal" href="#success-criteria">Success Criteria</a></li>
+<li><a class="reference internal" href="#effort-estimate">Effort Estimate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#response-caching-system">1.2 Response Caching System</a><ul>
+<li><a class="reference internal" href="#id1">Objective</a></li>
+<li><a class="reference internal" href="#id2">Current State</a></li>
+<li><a class="reference internal" href="#id3">Target State</a></li>
+<li><a class="reference internal" href="#id4">Implementation Steps</a></li>
+<li><a class="reference internal" href="#id5">Testing Requirements</a></li>
+<li><a class="reference internal" href="#id6">Success Criteria</a></li>
+<li><a class="reference internal" href="#id7">Effort Estimate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-documentation">1.3 Configuration &amp; Documentation</a><ul>
+<li><a class="reference internal" href="#update-configuration-schema">Update Configuration Schema</a></li>
+<li><a class="reference internal" href="#update-documentation">Update Documentation</a></li>
+<li><a class="reference internal" href="#id8">Effort Estimate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#phase-2-advanced-optimizations">Phase 2: Advanced Optimizations</a><ul>
+<li><a class="reference internal" href="#parallel-workflow-execution-dag-based">2.1 Parallel Workflow Execution (DAG-based)</a><ul>
+<li><a class="reference internal" href="#id9">Objective</a></li>
+<li><a class="reference internal" href="#id10">Current State</a></li>
+<li><a class="reference internal" href="#id11">Target State</a></li>
+<li><a class="reference internal" href="#id12">Implementation Steps</a></li>
+<li><a class="reference internal" href="#id13">Testing Requirements</a></li>
+<li><a class="reference internal" href="#id14">Success Criteria</a></li>
+<li><a class="reference internal" href="#id15">Effort Estimate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#metrics-aggregation">2.2 Metrics Aggregation</a><ul>
+<li><a class="reference internal" href="#id16">Effort Estimate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#query-result-caching">2.3 Query Result Caching</a><ul>
+<li><a class="reference internal" href="#id17">Effort Estimate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#phase-3-polish-enhancement">Phase 3: Polish &amp; Enhancement</a><ul>
+<li><a class="reference internal" href="#enhanced-performance-monitoring">3.1 Enhanced Performance Monitoring</a><ul>
+<li><a class="reference internal" href="#id18">Effort Estimate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#circuit-breakers">3.2 Circuit Breakers</a><ul>
+<li><a class="reference internal" href="#id19">Effort Estimate</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-caching-strategies">3.3 Advanced Caching Strategies</a><ul>
+<li><a class="reference internal" href="#id20">Effort Estimate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#testing-strategy">Testing Strategy</a><ul>
+<li><a class="reference internal" href="#unit-tests">Unit Tests</a></li>
+<li><a class="reference internal" href="#integration-tests">Integration Tests</a></li>
+<li><a class="reference internal" href="#performance-tests">Performance Tests</a></li>
+<li><a class="reference internal" href="#regression-tests">Regression Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#migration-backward-compatibility">Migration &amp; Backward Compatibility</a><ul>
+<li><a class="reference internal" href="#backward-compatibility-strategy">Backward Compatibility Strategy</a></li>
+<li><a class="reference internal" href="#migration-path">Migration Path</a></li>
+<li><a class="reference internal" href="#configuration-migration">Configuration Migration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#risk-assessment">Risk Assessment</a><ul>
+<li><a class="reference internal" href="#high-risk-areas">High-Risk Areas</a><ul>
+<li><a class="reference internal" href="#async-implementation-complexity">1. Async Implementation Complexity</a></li>
+<li><a class="reference internal" href="#cache-correctness">2. Cache Correctness</a></li>
+<li><a class="reference internal" href="#dag-complexity">3. DAG Complexity</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#medium-risk-areas">Medium-Risk Areas</a><ul>
+<li><a class="reference internal" href="#performance-regression">4. Performance Regression</a></li>
+<li><a class="reference internal" href="#increased-memory-usage">5. Increased Memory Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#success-metrics">Success Metrics</a><ul>
+<li><a class="reference internal" href="#performance-metrics">Performance Metrics</a></li>
+<li><a class="reference internal" href="#quality-metrics">Quality Metrics</a></li>
+<li><a class="reference internal" href="#adoption-metrics">Adoption Metrics</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-timeline">Implementation Timeline</a><ul>
+<li><a class="reference internal" href="#month-1-phase-1-foundation">Month 1: Phase 1 - Foundation</a></li>
+<li><a class="reference internal" href="#month-2-phase-2-advanced-optimization">Month 2: Phase 2 - Advanced Optimization</a></li>
+<li><a class="reference internal" href="#month-3-phase-3-polish-release">Month 3: Phase 3 - Polish &amp; Release</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a><ul>
+<li><a class="reference internal" href="#immediate-actions">Immediate Actions</a></li>
+<li><a class="reference internal" href="#decision-points">Decision Points</a></li>
+<li><a class="reference internal" href="#success-gates">Success Gates</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#appendix">Appendix</a><ul>
+<li><a class="reference internal" href="#a-code-review-checklist">A. Code Review Checklist</a></li>
+<li><a class="reference internal" href="#b-performance-testing-script">B. Performance Testing Script</a></li>
+<li><a class="reference internal" href="#c-rollback-plan">C. Rollback Plan</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Claude Force Performance Optimization Implementation Plan</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/performance-optimization-plan.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="claude-force-performance-optimization-implementation-plan">
+<h1>Claude Force Performance Optimization Implementation Plan<a class="headerlink" href="#claude-force-performance-optimization-implementation-plan" title="Link to this heading"></a></h1>
+<p><strong>Version:</strong> 1.0
+<strong>Date:</strong> 2025-11-14
+<strong>Status:</strong> Draft - Pending Approval
+<strong>Target Release:</strong> v2.3.0</p>
+<hr class="docutils" />
+<section id="executive-summary">
+<h2>Executive Summary<a class="headerlink" href="#executive-summary" title="Link to this heading"></a></h2>
+<p>This document outlines a comprehensive plan to optimize Claude Force performance based on the findings in the <a class="reference internal" href="performance-analysis.html"><span class="std std-doc">Performance Analysis Report</span></a>. The implementation is divided into three phases over 3 months, targeting:</p>
+<section id="primary-goals">
+<h3>Primary Goals<a class="headerlink" href="#primary-goals" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Current</p></th>
+<th class="head"><p>Target</p></th>
+<th class="head"><p>Improvement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Workflow Execution Time</p></td>
+<td><p>12-30s (3 agents)</p></td>
+<td><p>4-10s</p></td>
+<td><p><strong>50-80% faster</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cost Per Execution</p></td>
+<td><p>Baseline</p></td>
+<td><p>30-50% less</p></td>
+<td><p><strong>Cost reduction</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>Throughput</p></td>
+<td><p>1 task/time</p></td>
+<td><p>2-5 tasks/time</p></td>
+<td><p><strong>2-5x increase</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cache Hit Rate</p></td>
+<td><p>0%</p></td>
+<td><p>20-70%</p></td>
+<td><p><strong>New capability</strong></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="implementation-phases">
+<h3>Implementation Phases<a class="headerlink" href="#implementation-phases" title="Link to this heading"></a></h3>
+<p><strong>Phase 1 (Month 1): Foundation</strong> ✅ High Impact</p>
+<ul class="simple">
+<li><p>Async API client implementation</p></li>
+<li><p>Response caching system</p></li>
+<li><p>Backward compatibility layer</p></li>
+</ul>
+<p><strong>Phase 2 (Month 2): Advanced Optimization</strong> ⭐ Medium Impact</p>
+<ul class="simple">
+<li><p>Parallel workflow execution (DAG-based)</p></li>
+<li><p>Metrics aggregation</p></li>
+<li><p>Query result caching</p></li>
+</ul>
+<p><strong>Phase 3 (Month 3): Polish &amp; Enhancement</strong> 📊 Low Impact</p>
+<ul class="simple">
+<li><p>Performance monitoring enhancements</p></li>
+<li><p>Circuit breakers</p></li>
+<li><p>Advanced caching strategies</p></li>
+</ul>
+</section>
+<section id="expected-roi">
+<h3>Expected ROI<a class="headerlink" href="#expected-roi" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Investment: ~40-60 development hours
+Benefits:
+  - 50-80% faster workflow execution → Better UX
+  - 30-50% cost reduction → $500-2000/month savings (depending on usage)
+  - 2-5x throughput → Support for concurrent users
+  - Production-ready scalability → Enterprise readiness
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#phase-1-foundation-optimizations"><span class="xref myst">Phase 1: Foundation Optimizations</span></a></p></li>
+<li><p><a class="reference internal" href="#phase-2-advanced-optimizations"><span class="xref myst">Phase 2: Advanced Optimizations</span></a></p></li>
+<li><p><a class="reference internal" href="#phase-3-polish--enhancement"><span class="xref myst">Phase 3: Polish &amp; Enhancement</span></a></p></li>
+<li><p><a class="reference internal" href="#testing-strategy"><span class="xref myst">Testing Strategy</span></a></p></li>
+<li><p><a class="reference internal" href="#migration--backward-compatibility"><span class="xref myst">Migration &amp; Backward Compatibility</span></a></p></li>
+<li><p><a class="reference internal" href="#risk-assessment"><span class="xref myst">Risk Assessment</span></a></p></li>
+<li><p><a class="reference internal" href="#success-metrics"><span class="xref myst">Success Metrics</span></a></p></li>
+<li><p><a class="reference internal" href="#implementation-timeline"><span class="xref myst">Implementation Timeline</span></a></p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="phase-1-foundation-optimizations">
+<h2>Phase 1: Foundation Optimizations<a class="headerlink" href="#phase-1-foundation-optimizations" title="Link to this heading"></a></h2>
+<p><strong>Duration:</strong> 3-4 weeks
+<strong>Priority:</strong> 🔴 CRITICAL
+<strong>Expected Impact:</strong> 50-80% performance improvement</p>
+<section id="async-api-client-implementation">
+<h3>1.1 Async API Client Implementation<a class="headerlink" href="#async-api-client-implementation" title="Link to this heading"></a></h3>
+<section id="objective">
+<h4>Objective<a class="headerlink" href="#objective" title="Link to this heading"></a></h4>
+<p>Replace synchronous Claude API calls with async implementation to enable non-blocking operations and concurrent execution.</p>
+</section>
+<section id="current-state">
+<h4>Current State<a class="headerlink" href="#current-state" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># orchestrator.py (synchronous)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="target-state">
+<h4>Target State<a class="headerlink" href="#target-state" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># orchestrator.py (async)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+        <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span>
+</pre></div>
+</div>
+</section>
+<section id="implementation-steps">
+<h4>Implementation Steps<a class="headerlink" href="#implementation-steps" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Install async dependencies</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Update requirements.txt</span>
+anthropic&gt;<span class="o">=</span><span class="m">0</span>.40.0<span class="w">  </span><span class="c1"># Already supports async</span>
+aiofiles&gt;<span class="o">=</span><span class="m">23</span>.0.0<span class="w">   </span><span class="c1"># Async file I/O</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Create async orchestrator module</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/async_orchestrator.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Async version of AgentOrchestrator for non-blocking operations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">aiofiles</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">anthropic</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAnthropic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.agent_memory</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentMemory</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">AsyncAgentOrchestrator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async orchestrator for non-blocking agent execution.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">config_path</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span> <span class="o">/</span> <span class="s2">&quot;claude.json&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ANTHROPIC_API_KEY&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Lazy initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncAnthropic</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PerformanceTracker</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agent_memory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AgentMemory</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">async_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncAnthropic</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazy-load async client.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span> <span class="o">=</span> <span class="n">AsyncAnthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_client</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration asynchronously.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">aiofiles</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_agent_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load agent definition asynchronously.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_config</span><span class="p">()</span>
+        <span class="n">agent_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;agents&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">agent_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">agent_config</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agent &#39;</span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+
+        <span class="n">agent_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">agent_config</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">aiofiles</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">agent_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute agent asynchronously.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Load agent definition</span>
+            <span class="n">agent_definition</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_agent_definition</span><span class="p">(</span><span class="n">agent_name</span><span class="p">)</span>
+
+            <span class="c1"># Build prompt</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">agent_definition</span><span class="si">}</span><span class="se">\n\n</span><span class="s2"># Task</span><span class="se">\n</span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Call API asynchronously</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span> <span class="ow">or</span> <span class="s2">&quot;claude-3-5-haiku-20241022&quot;</span><span class="p">,</span>
+                <span class="n">max_tokens</span><span class="o">=</span><span class="n">max_tokens</span><span class="p">,</span>
+                <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span>
+                <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Extract result</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+            <span class="c1"># Track performance</span>
+            <span class="n">execution_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_track_performance</span><span class="p">(</span>
+                <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">execution_time_ms</span><span class="o">=</span><span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">input_tokens</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                <span class="n">output_tokens</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">execution_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_track_performance</span><span class="p">(</span>
+                <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">execution_time_ms</span><span class="o">=</span><span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">error_type</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_multiple</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>  <span class="c1"># List of (agent_name, task)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute multiple agents concurrently.&quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_track_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Track performance metrics (sync operation).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">()</span>
+        <span class="c1"># Sync operation - acceptable for metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_performance_tracker</span><span class="o">.</span><span class="n">track_execution</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 3: Add backward compatibility wrapper</strong></p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">claude_force/orchestrator.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AgentOrchestrator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Synchronous orchestrator with async support.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="c1"># Existing sync initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Synchronous execution (backward compatible).&quot;&quot;&quot;</span>
+        <span class="c1"># Existing synchronous implementation</span>
+        <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronous execution (new feature).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">(</span>
+                <span class="n">config_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_multiple_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute multiple agents concurrently.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">(</span>
+                <span class="n">config_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_orchestrator</span><span class="o">.</span><span class="n">execute_multiple</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 4: Update CLI for async support</strong></p>
+<p>Add async commands to <code class="docutils literal notranslate"><span class="pre">claude_force/cli.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;agent_name&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;task&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--async&#39;</span><span class="p">,</span> <span class="s1">&#39;use_async&#39;</span><span class="p">,</span> <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Use async execution&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">use_async</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute an agent with a task.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">use_async</span><span class="p">:</span>
+        <span class="c1"># Run async version</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent_async</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Run sync version (backward compatible)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-requirements">
+<h4>Testing Requirements<a class="headerlink" href="#testing-requirements" title="Link to this heading"></a></h4>
+<p><strong>Unit Tests:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/test_async_orchestrator.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_async_execute_agent</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test async agent execution.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;What are decorators?&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_concurrent_execution</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test concurrent agent execution.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">()</span>
+
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain lists&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain dicts&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Explain sets&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_multiple</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
+
+    <span class="c1"># Should be faster than sequential execution</span>
+    <span class="c1"># (concurrent should be ~similar to single execution time)</span>
+    <span class="c1"># Not 3x the time of a single execution</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Concurrent execution: </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Integration Tests:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/integration/test_async_workflows.py</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_workflow_async_speedup</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Verify async workflow is faster than sync.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Task 1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Task 2&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Task 3&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Sync execution</span>
+    <span class="n">sync_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">agent</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+    <span class="n">sync_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">sync_start</span>
+
+    <span class="c1"># Async execution</span>
+    <span class="n">async_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_multiple_async</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+    <span class="n">async_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">async_start</span>
+
+    <span class="c1"># Async should be significantly faster</span>
+    <span class="n">speedup</span> <span class="o">=</span> <span class="n">sync_time</span> <span class="o">/</span> <span class="n">async_time</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Speedup: </span><span class="si">{</span><span class="n">speedup</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">speedup</span> <span class="o">&gt;</span> <span class="mf">2.0</span>  <span class="c1"># At least 2x faster for 3 tasks</span>
+</pre></div>
+</div>
+</section>
+<section id="success-criteria">
+<h4>Success Criteria<a class="headerlink" href="#success-criteria" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>✅ All existing tests pass (backward compatibility)</p></li>
+<li><p>✅ Async execution works for single agents</p></li>
+<li><p>✅ Concurrent execution works for multiple agents</p></li>
+<li><p>✅ 2-3x speedup for 3 concurrent tasks</p></li>
+<li><p>✅ Performance metrics still tracked correctly</p></li>
+<li><p>✅ CLI supports both sync and async modes</p></li>
+</ul>
+</section>
+<section id="effort-estimate">
+<h4>Effort Estimate<a class="headerlink" href="#effort-estimate" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 8-12 hours</p></li>
+<li><p><strong>Testing:</strong> 4-6 hours</p></li>
+<li><p><strong>Documentation:</strong> 2-3 hours</p></li>
+<li><p><strong>Total:</strong> 14-21 hours</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="response-caching-system">
+<h3>1.2 Response Caching System<a class="headerlink" href="#response-caching-system" title="Link to this heading"></a></h3>
+<section id="id1">
+<h4>Objective<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<p>Implement intelligent caching of Claude API responses to reduce costs and latency for repeated queries.</p>
+</section>
+<section id="id2">
+<h4>Current State<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<p>Every identical prompt triggers a new API call, even if asked recently.</p>
+</section>
+<section id="id3">
+<h4>Target State<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<p>Intelligent caching with configurable TTL and cache invalidation.</p>
+</section>
+<section id="id4">
+<h4>Implementation Steps<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Create cache module</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/response_cache.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Response caching system for Claude API calls.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CacheEntry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cached response entry.&quot;&quot;&quot;</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">response</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">output_tokens</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">estimated_cost</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">hit_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResponseCache</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Intelligent response cache for Claude API calls.</span>
+
+<span class="sd">    Features:</span>
+<span class="sd">    - TTL-based expiration</span>
+<span class="sd">    - LRU eviction</span>
+<span class="sd">    - Size limits</span>
+<span class="sd">    - Cache statistics</span>
+<span class="sd">    - Exclusion lists (non-deterministic agents)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ttl_hours</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span>
+        <span class="n">max_size_mb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span> <span class="o">=</span> <span class="n">ttl_hours</span> <span class="o">*</span> <span class="mi">3600</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_size_bytes</span> <span class="o">=</span> <span class="n">max_size_mb</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+
+        <span class="c1"># In-memory cache for fast access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">CacheEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_cache_index</span><span class="p">()</span>
+
+        <span class="c1"># Statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;misses&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;evictions&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;size_bytes&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate cache key.&quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">16</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve cached response.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_key</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+        <span class="c1"># Check memory cache</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+            <span class="c1"># Check TTL</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span>
+            <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span><span class="p">:</span>
+                <span class="c1"># Expired</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_evict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># Cache hit</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">hit_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">response</span><span class="p">,</span>
+                <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+                <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">,</span>
+                <span class="s1">&#39;cached&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;cache_age_seconds&#39;</span><span class="p">:</span> <span class="n">age</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Check disk cache</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="c1"># Check TTL</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+            <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ttl_seconds</span><span class="p">:</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># Load from disk</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">entry_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="n">CacheEntry</span><span class="p">(</span><span class="o">**</span><span class="n">entry_dict</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+
+            <span class="n">entry</span><span class="o">.</span><span class="n">hit_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">response</span><span class="p">,</span>
+                <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+                <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">,</span>
+                <span class="s1">&#39;cached&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;cache_age_seconds&#39;</span><span class="p">:</span> <span class="n">age</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Cache miss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">output_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">estimated_cost</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache a response.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_key</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">CacheEntry</span><span class="p">(</span>
+            <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+            <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+            <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+            <span class="n">input_tokens</span><span class="o">=</span><span class="n">input_tokens</span><span class="p">,</span>
+            <span class="n">output_tokens</span><span class="o">=</span><span class="n">output_tokens</span><span class="p">,</span>
+            <span class="n">estimated_cost</span><span class="o">=</span><span class="n">estimated_cost</span><span class="p">,</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Store in memory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+
+        <span class="c1"># Store on disk</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">entry</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="c1"># Update size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+
+        <span class="c1"># Check size limit and evict if needed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size_bytes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_evict_lru</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_evict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evict specific cache entry.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="k">if</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+            <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;evictions&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_evict_lru</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evict least recently used entries.&quot;&quot;&quot;</span>
+        <span class="c1"># Sort by timestamp and hit_count</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hit_count</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Evict oldest 10%</span>
+        <span class="n">num_to_evict</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">[:</span><span class="n">num_to_evict</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_evict</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear entire cache.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cache_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.json&quot;</span><span class="p">):</span>
+            <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cache statistics.&quot;&quot;&quot;</span>
+        <span class="n">total_requests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span>
+        <span class="n">hit_rate</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">total_requests</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="k">if</span> <span class="n">total_requests</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span><span class="p">,</span>
+            <span class="s1">&#39;hits&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;misses&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;hit_rate&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hit_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;evictions&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;evictions&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;size_mb&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span>
+            <span class="s1">&#39;entries&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_cache_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load cache index from disk.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cache_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.json&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">entry_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="n">entry</span> <span class="o">=</span> <span class="n">CacheEntry</span><span class="p">(</span><span class="o">**</span><span class="n">entry_dict</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_memory_cache</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_bytes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># Corrupted cache file, remove it</span>
+                <span class="n">cache_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Integrate cache with orchestrator</strong></p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">claude_force/orchestrator.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AgentOrchestrator</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="c1"># Existing initialization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_response_cache</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">response_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResponseCache</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazy-load response cache.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cache_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_response_cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">(</span>
+                <span class="n">enabled</span><span class="o">=</span><span class="n">cache_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="n">ttl_hours</span><span class="o">=</span><span class="n">cache_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ttl_hours&#39;</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
+                <span class="n">max_size_mb</span><span class="o">=</span><span class="n">cache_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_size_mb&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response_cache</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute agent with caching support.&quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_model</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+
+        <span class="c1"># Check if agent should be excluded from caching</span>
+        <span class="n">exclude_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;exclude_agents&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">use_cache</span> <span class="o">=</span> <span class="n">agent_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_list</span>
+
+        <span class="c1"># Try cache first</span>
+        <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
+            <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">agent_name</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cached</span><span class="p">:</span>
+                <span class="c1"># Cache hit!</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_track_cached_execution</span><span class="p">(</span>
+                    <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+                    <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                    <span class="n">cached_result</span><span class="o">=</span><span class="n">cached</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">cached</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Cache miss - execute normally</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Existing execution logic</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+
+            <span class="c1"># Cache the response</span>
+            <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">response_cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                    <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+                    <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                    <span class="n">model</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                    <span class="n">input_tokens</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                    <span class="n">output_tokens</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+                    <span class="n">estimated_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_estimate_cost</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Track performance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_track_execution</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Existing error handling</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_track_cached_execution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cached_result</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Track cache hit in metrics.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">performance_tracker</span><span class="o">.</span><span class="n">track_execution</span><span class="p">(</span>
+            <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+            <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+            <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">execution_time_ms</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Minimal time for cache hit</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">cached_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="s1">&#39;cached&#39;</span><span class="p">),</span>
+            <span class="n">input_tokens</span><span class="o">=</span><span class="n">cached_result</span><span class="p">[</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">],</span>
+            <span class="n">output_tokens</span><span class="o">=</span><span class="n">cached_result</span><span class="p">[</span><span class="s1">&#39;output_tokens&#39;</span><span class="p">],</span>
+            <span class="n">estimated_cost</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># No cost for cache hit</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cached&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;cache_age&#39;</span><span class="p">:</span> <span class="n">cached_result</span><span class="p">[</span><span class="s1">&#39;cache_age_seconds&#39;</span><span class="p">]}</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 3: Add configuration</strong></p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">.claude/claude.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;cache&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ttl_hours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_size_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;exclude_agents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="s2">&quot;random-generator&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="s2">&quot;creative-writer&quot;</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Step 4: Add CLI commands for cache management</strong></p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">claude_force/cli.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cache</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage response cache.&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+<span class="nd">@cache</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Show cache statistics.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">response_cache</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;Cache Statistics&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Enabled: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hits: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Misses: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;misses&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hit Rate: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hit_rate&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evictions: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;evictions&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;size_mb&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entries: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;entries&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nd">@cache</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">confirmation_option</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="s1">&#39;Are you sure you want to clear the cache?&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear response cache.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+    <span class="n">orchestrator</span><span class="o">.</span><span class="n">response_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;✅ Cache cleared&quot;</span><span class="p">)</span>
+
+<span class="n">cli</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4>Testing Requirements<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<p><strong>Unit Tests:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/test_response_cache.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_hit</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test cache hit returns cached response.&quot;&quot;&quot;</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">()</span>
+
+    <span class="c1"># First call - cache miss</span>
+    <span class="n">result1</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Test task&quot;</span><span class="p">,</span> <span class="s2">&quot;haiku&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result1</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="c1"># Set cache</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+        <span class="s2">&quot;python-expert&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Test task&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;haiku&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Test response&quot;</span><span class="p">,</span>
+        <span class="mi">100</span><span class="p">,</span>
+        <span class="mi">50</span><span class="p">,</span>
+        <span class="mf">0.001</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Second call - cache hit</span>
+    <span class="n">result2</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;Test task&quot;</span><span class="p">,</span> <span class="s2">&quot;haiku&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">result2</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Test response&quot;</span>
+    <span class="k">assert</span> <span class="n">result2</span><span class="p">[</span><span class="s1">&#39;cached&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cache_ttl_expiration</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test cache entries expire after TTL.&quot;&quot;&quot;</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">ResponseCache</span><span class="p">(</span><span class="n">ttl_hours</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>  <span class="c1"># Very short TTL</span>
+
+    <span class="n">cache</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="c1"># Immediate retrieval - should hit</span>
+    <span class="n">result1</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="c1"># Wait for expiration</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># 5 seconds &gt; 0.001 hours</span>
+
+    <span class="c1"># Should miss</span>
+    <span class="n">result2</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result2</span> <span class="ow">is</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p><strong>Integration Tests:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/integration/test_cache_integration.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_orchestrator_caching</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test orchestrator uses cache correctly.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="n">task</span> <span class="o">=</span> <span class="s2">&quot;Explain Python decorators&quot;</span>
+
+    <span class="c1"># First execution - no cache</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result1</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+    <span class="n">time1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start1</span>
+
+    <span class="c1"># Second execution - should use cache</span>
+    <span class="n">start2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result2</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+    <span class="n">time2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start2</span>
+
+    <span class="c1"># Results should be identical</span>
+    <span class="k">assert</span> <span class="n">result1</span> <span class="o">==</span> <span class="n">result2</span>
+
+    <span class="c1"># Second should be much faster (&lt;100ms)</span>
+    <span class="k">assert</span> <span class="n">time2</span> <span class="o">&lt;</span> <span class="mf">0.1</span>  <span class="c1"># Less than 100ms</span>
+
+    <span class="c1"># Check cache stats</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">response_cache</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h4>Success Criteria<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>✅ Cache correctly stores and retrieves responses</p></li>
+<li><p>✅ TTL expiration works as expected</p></li>
+<li><p>✅ Cache hit provides &lt;100ms response time</p></li>
+<li><p>✅ Excluded agents bypass cache</p></li>
+<li><p>✅ Cache stats tracked accurately</p></li>
+<li><p>✅ LRU eviction prevents unlimited growth</p></li>
+</ul>
+</section>
+<section id="id7">
+<h4>Effort Estimate<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 10-14 hours</p></li>
+<li><p><strong>Testing:</strong> 5-7 hours</p></li>
+<li><p><strong>Documentation:</strong> 2-3 hours</p></li>
+<li><p><strong>Total:</strong> 17-24 hours</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="configuration-documentation">
+<h3>1.3 Configuration &amp; Documentation<a class="headerlink" href="#configuration-documentation" title="Link to this heading"></a></h3>
+<section id="update-configuration-schema">
+<h4>Update Configuration Schema<a class="headerlink" href="#update-configuration-schema" title="Link to this heading"></a></h4>
+<p>Add to <code class="docutils literal notranslate"><span class="pre">.claude/claude.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;performance&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;async_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_concurrent_agents&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;cache&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;ttl_hours&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_size_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;exclude_agents&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="update-documentation">
+<h4>Update Documentation<a class="headerlink" href="#update-documentation" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">README.md</span></code> with new async capabilities</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">docs/async-usage-guide.md</span></code></p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">docs/caching-guide.md</span></code></p></li>
+<li><p>Update API documentation</p></li>
+</ol>
+</section>
+<section id="id8">
+<h4>Effort Estimate<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Documentation:</strong> 4-6 hours</p></li>
+</ul>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-2-advanced-optimizations">
+<h2>Phase 2: Advanced Optimizations<a class="headerlink" href="#phase-2-advanced-optimizations" title="Link to this heading"></a></h2>
+<p><strong>Duration:</strong> 3-4 weeks
+<strong>Priority:</strong> 🟡 MEDIUM-HIGH
+<strong>Expected Impact:</strong> 2-5x throughput improvement</p>
+<section id="parallel-workflow-execution-dag-based">
+<h3>2.1 Parallel Workflow Execution (DAG-based)<a class="headerlink" href="#parallel-workflow-execution-dag-based" title="Link to this heading"></a></h3>
+<section id="id9">
+<h4>Objective<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<p>Enable parallel execution of independent workflow steps using Directed Acyclic Graph (DAG) scheduling.</p>
+</section>
+<section id="id10">
+<h4>Current State<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sequential execution</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">workflow_steps</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">execute_agent</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h4>Target State<a class="headerlink" href="#id11" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parallel execution with dependency management</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_workflow_dag</span><span class="p">(</span><span class="n">workflow</span><span class="p">):</span>
+    <span class="n">dag</span> <span class="o">=</span> <span class="n">build_dependency_graph</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">dag</span><span class="p">:</span>
+        <span class="c1"># Execute all ready steps in parallel</span>
+        <span class="n">ready</span> <span class="o">=</span> <span class="n">get_steps_with_no_dependencies</span><span class="p">(</span><span class="n">dag</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">execute_step</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ready</span><span class="p">])</span>
+        <span class="n">update_dag</span><span class="p">(</span><span class="n">dag</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h4>Implementation Steps<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<p><strong>Step 1: Add dependency tracking to workflows</strong></p>
+<p>Update workflow definitions in <code class="docutils literal notranslate"><span class="pre">.claude/claude.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;workflows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;code-quality-check&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Code Quality Check&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Comprehensive code quality analysis&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linter&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;agent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;linter&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Run Python linter&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;dependencies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;type-checker&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;agent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;type-checker&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Run type checking&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;dependencies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;security-scan&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;agent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;security-scanner&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Scan for security issues&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;dependencies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;final-review&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;agent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Final code review based on findings&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;dependencies&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;linter&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;type-checker&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;security-scan&quot;</span><span class="p">]</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Create DAG executor</strong></p>
+<p>Create <code class="docutils literal notranslate"><span class="pre">claude_force/workflow_dag.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">DAG-based workflow executor for parallel execution.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WorkflowStep</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Workflow step definition.&quot;&quot;&quot;</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">agent</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">dependencies</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">completed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">WorkflowDAG</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DAG-based workflow executor.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orchestrator</span><span class="p">:</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">orchestrator</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_dag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workflow_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">WorkflowStep</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build DAG from workflow configuration.&quot;&quot;&quot;</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">step_config</span> <span class="ow">in</span> <span class="n">workflow_config</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">]:</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">WorkflowStep</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="n">step_config</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="n">agent</span><span class="o">=</span><span class="n">step_config</span><span class="p">[</span><span class="s1">&#39;agent&#39;</span><span class="p">],</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">step_config</span><span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">],</span>
+                <span class="n">dependencies</span><span class="o">=</span><span class="n">step_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dependencies&#39;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="p">)</span>
+            <span class="n">steps</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">step</span>
+
+        <span class="c1"># Validate no cycles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_acyclic</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">steps</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_acyclic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">WorkflowStep</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate DAG has no cycles.&quot;&quot;&quot;</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">has_cycle</span><span class="p">(</span><span class="n">step_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">visited</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">rec_stack</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">step_id</span><span class="p">)</span>
+            <span class="n">rec_stack</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">step_id</span><span class="p">)</span>
+
+            <span class="n">step</span> <span class="o">=</span> <span class="n">steps</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">step_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">step</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">dependencies</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">dep</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">has_cycle</span><span class="p">(</span><span class="n">dep</span><span class="p">,</span> <span class="n">visited</span><span class="p">,</span> <span class="n">rec_stack</span><span class="p">):</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">rec_stack</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="n">rec_stack</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">step_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">rec_stack</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">step_id</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">has_cycle</span><span class="p">(</span><span class="n">step_id</span><span class="p">,</span> <span class="n">visited</span><span class="p">,</span> <span class="n">rec_stack</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Workflow contains cycle involving step: </span><span class="si">{</span><span class="n">step_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ready_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">WorkflowStep</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">WorkflowStep</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get steps with all dependencies satisfied.&quot;&quot;&quot;</span>
+        <span class="n">ready</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">completed</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Check if all dependencies are completed</span>
+            <span class="n">deps_completed</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="n">steps</span><span class="p">[</span><span class="n">dep_id</span><span class="p">]</span><span class="o">.</span><span class="n">completed</span>
+                <span class="k">for</span> <span class="n">dep_id</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">dependencies</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">deps_completed</span><span class="p">:</span>
+                <span class="n">ready</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ready</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workflow_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute workflow with parallel execution where possible.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_dag</span><span class="p">(</span><span class="n">workflow_config</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">execution_order</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executing workflow: </span><span class="si">{</span><span class="n">workflow_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total steps: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="n">step</span><span class="o">.</span><span class="n">completed</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="c1"># Get steps ready to execute</span>
+            <span class="n">ready</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ready_steps</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ready</span><span class="p">:</span>
+                <span class="c1"># No steps ready but workflow not complete - error</span>
+                <span class="n">incomplete</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">steps</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">completed</span><span class="p">]</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Workflow deadlock. Incomplete steps: </span><span class="si">{</span><span class="n">incomplete</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ready</span><span class="p">)</span><span class="si">}</span><span class="s2"> step(s) in parallel: </span><span class="si">{</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">ready</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Execute ready steps in parallel</span>
+            <span class="n">step_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">step_results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">agent</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">ready</span>
+            <span class="p">])</span>
+            <span class="n">step_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">step_start</span>
+
+            <span class="c1"># Update results</span>
+            <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ready</span><span class="p">,</span> <span class="n">step_results</span><span class="p">):</span>
+                <span class="n">step</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">result</span>
+                <span class="n">step</span><span class="o">.</span><span class="n">completed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                <span class="n">execution_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Completed in </span><span class="si">{</span><span class="n">step_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+
+        <span class="n">total_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">results</span><span class="p">,</span>
+            <span class="s1">&#39;execution_order&#39;</span><span class="p">:</span> <span class="n">execution_order</span><span class="p">,</span>
+            <span class="s1">&#39;total_time_seconds&#39;</span><span class="p">:</span> <span class="n">total_time</span><span class="p">,</span>
+            <span class="s1">&#39;workflow_name&#39;</span><span class="p">:</span> <span class="n">workflow_config</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Step 3: Integrate with orchestrator</strong></p>
+<p>Update <code class="docutils literal notranslate"><span class="pre">claude_force/orchestrator.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AgentOrchestrator</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_workflow_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workflow_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute workflow with parallel execution.&quot;&quot;&quot;</span>
+        <span class="n">workflow_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;workflows&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">workflow_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">workflow_config</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Workflow &#39;</span><span class="si">{</span><span class="n">workflow_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.workflow_dag</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkflowDAG</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.async_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncAgentOrchestrator</span>
+
+        <span class="n">async_orchestrator</span> <span class="o">=</span> <span class="n">AsyncAgentOrchestrator</span><span class="p">(</span>
+            <span class="n">config_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span>
+        <span class="p">)</span>
+
+        <span class="n">dag</span> <span class="o">=</span> <span class="n">WorkflowDAG</span><span class="p">(</span><span class="n">async_orchestrator</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">dag</span><span class="o">.</span><span class="n">execute_workflow</span><span class="p">(</span><span class="n">workflow_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 4: Update CLI</strong></p>
+<p>Add workflow execution command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;workflow_name&#39;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;--parallel/--sequential&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Use parallel execution&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_workflow</span><span class="p">(</span><span class="n">workflow_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a workflow.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_workflow_async</span><span class="p">(</span><span class="n">workflow_name</span><span class="p">))</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Workflow completed in </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;total_time_seconds&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Execution order: </span><span class="si">{</span><span class="s1">&#39; → &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;execution_order&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Sequential execution (existing)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_workflow</span><span class="p">(</span><span class="n">workflow_name</span><span class="p">)</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s2">&quot;✅ Workflow completed&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id13">
+<h4>Testing Requirements<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/test_workflow_dag.py</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_parallel_workflow_execution</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test parallel workflow is faster than sequential.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="c1"># Workflow with 3 independent steps + 1 dependent</span>
+    <span class="n">workflow</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Test Workflow&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;steps&#39;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;step1&#39;</span><span class="p">,</span> <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python-expert&#39;</span><span class="p">,</span> <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Task 1&#39;</span><span class="p">,</span> <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+            <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;step2&#39;</span><span class="p">,</span> <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python-expert&#39;</span><span class="p">,</span> <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Task 2&#39;</span><span class="p">,</span> <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+            <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;step3&#39;</span><span class="p">,</span> <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python-expert&#39;</span><span class="p">,</span> <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Task 3&#39;</span><span class="p">,</span> <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+            <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;step4&#39;</span><span class="p">,</span> <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;code-reviewer&#39;</span><span class="p">,</span> <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Review all&#39;</span><span class="p">,</span> <span class="s1">&#39;dependencies&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;step1&#39;</span><span class="p">,</span> <span class="s1">&#39;step2&#39;</span><span class="p">,</span> <span class="s1">&#39;step3&#39;</span><span class="p">]}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_workflow_async</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+    <span class="n">parallel_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+    <span class="c1"># Should complete in ~2x single step time (not 4x)</span>
+    <span class="c1"># Because first 3 steps run in parallel</span>
+    <span class="k">assert</span> <span class="n">parallel_time</span> <span class="o">&lt;</span> <span class="mi">10</span>  <span class="c1"># Assuming single step is ~3s</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">4</span>
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h4>Success Criteria<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>✅ DAG correctly identifies dependencies</p></li>
+<li><p>✅ Independent steps execute in parallel</p></li>
+<li><p>✅ Dependent steps wait for prerequisites</p></li>
+<li><p>✅ 2-3x speedup for workflows with parallelizable steps</p></li>
+<li><p>✅ No deadlocks or race conditions</p></li>
+</ul>
+</section>
+<section id="id15">
+<h4>Effort Estimate<a class="headerlink" href="#id15" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 12-16 hours</p></li>
+<li><p><strong>Testing:</strong> 6-8 hours</p></li>
+<li><p><strong>Documentation:</strong> 3-4 hours</p></li>
+<li><p><strong>Total:</strong> 21-28 hours</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="metrics-aggregation">
+<h3>2.2 Metrics Aggregation<a class="headerlink" href="#metrics-aggregation" title="Link to this heading"></a></h3>
+<p><strong>Implementation:</strong> See <a class="reference internal" href="performance-analysis.html#4-implement-metrics-aggregation-"><span class="std std-ref">Performance Analysis</span></a></p>
+<section id="id16">
+<h4>Effort Estimate<a class="headerlink" href="#id16" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 6-8 hours</p></li>
+<li><p><strong>Testing:</strong> 3-4 hours</p></li>
+<li><p><strong>Total:</strong> 9-12 hours</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="query-result-caching">
+<h3>2.3 Query Result Caching<a class="headerlink" href="#query-result-caching" title="Link to this heading"></a></h3>
+<p><strong>Implementation:</strong> Add LRU cache to AgentMemory queries</p>
+<section id="id17">
+<h4>Effort Estimate<a class="headerlink" href="#id17" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 4-6 hours</p></li>
+<li><p><strong>Testing:</strong> 2-3 hours</p></li>
+<li><p><strong>Total:</strong> 6-9 hours</p></li>
+</ul>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-3-polish-enhancement">
+<h2>Phase 3: Polish &amp; Enhancement<a class="headerlink" href="#phase-3-polish-enhancement" title="Link to this heading"></a></h2>
+<p><strong>Duration:</strong> 2-3 weeks
+<strong>Priority:</strong> 🟢 LOW-MEDIUM
+<strong>Expected Impact:</strong> Improved reliability and monitoring</p>
+<section id="enhanced-performance-monitoring">
+<h3>3.1 Enhanced Performance Monitoring<a class="headerlink" href="#enhanced-performance-monitoring" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Real-time performance dashboard</p></li>
+<li><p>Advanced analytics</p></li>
+<li><p>Anomaly detection</p></li>
+</ul>
+<section id="id18">
+<h4>Effort Estimate<a class="headerlink" href="#id18" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 8-12 hours</p></li>
+</ul>
+</section>
+</section>
+<section id="circuit-breakers">
+<h3>3.2 Circuit Breakers<a class="headerlink" href="#circuit-breakers" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fail-fast on API errors</p></li>
+<li><p>Automatic retry with exponential backoff</p></li>
+<li><p>Health checks</p></li>
+</ul>
+<section id="id19">
+<h4>Effort Estimate<a class="headerlink" href="#id19" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 6-8 hours</p></li>
+</ul>
+</section>
+</section>
+<section id="advanced-caching-strategies">
+<h3>3.3 Advanced Caching Strategies<a class="headerlink" href="#advanced-caching-strategies" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Semantic caching (similar queries)</p></li>
+<li><p>Partial response caching</p></li>
+<li><p>Distributed cache support (Redis)</p></li>
+</ul>
+<section id="id20">
+<h4>Effort Estimate<a class="headerlink" href="#id20" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Development:</strong> 10-14 hours</p></li>
+</ul>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="testing-strategy">
+<h2>Testing Strategy<a class="headerlink" href="#testing-strategy" title="Link to this heading"></a></h2>
+<section id="unit-tests">
+<h3>Unit Tests<a class="headerlink" href="#unit-tests" title="Link to this heading"></a></h3>
+<p><strong>Coverage Target:</strong> &gt;90%</p>
+<p><strong>Key Areas:</strong></p>
+<ul class="simple">
+<li><p>Async orchestrator</p></li>
+<li><p>Response cache (hit/miss/eviction)</p></li>
+<li><p>DAG builder (cycle detection)</p></li>
+<li><p>Workflow executor</p></li>
+</ul>
+</section>
+<section id="integration-tests">
+<h3>Integration Tests<a class="headerlink" href="#integration-tests" title="Link to this heading"></a></h3>
+<p><strong>Test Scenarios:</strong></p>
+<ol class="arabic simple">
+<li><p>Full async workflow execution</p></li>
+<li><p>Cache integration with real API</p></li>
+<li><p>Parallel execution stress test</p></li>
+<li><p>Performance regression tests</p></li>
+</ol>
+</section>
+<section id="performance-tests">
+<h3>Performance Tests<a class="headerlink" href="#performance-tests" title="Link to this heading"></a></h3>
+<p><strong>Benchmarks to Run:</strong></p>
+<ol class="arabic simple">
+<li><p>Async vs sync comparison</p></li>
+<li><p>Cache hit rate measurement</p></li>
+<li><p>Parallel speedup verification</p></li>
+<li><p>Resource usage profiling</p></li>
+</ol>
+</section>
+<section id="regression-tests">
+<h3>Regression Tests<a class="headerlink" href="#regression-tests" title="Link to this heading"></a></h3>
+<p><strong>Automated Checks:</strong></p>
+<ul class="simple">
+<li><p>Performance baselines</p></li>
+<li><p>API compatibility</p></li>
+<li><p>Backward compatibility</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="migration-backward-compatibility">
+<h2>Migration &amp; Backward Compatibility<a class="headerlink" href="#migration-backward-compatibility" title="Link to this heading"></a></h2>
+<section id="backward-compatibility-strategy">
+<h3>Backward Compatibility Strategy<a class="headerlink" href="#backward-compatibility-strategy" title="Link to this heading"></a></h3>
+<p><strong>100% Backward Compatible</strong></p>
+<p>All new features are opt-in:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Old code continues to work unchanged</span>
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">)</span>
+
+<span class="c1"># New async API is optional</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent_async</span><span class="p">(</span><span class="s2">&quot;python-expert&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="migration-path">
+<h3>Migration Path<a class="headerlink" href="#migration-path" title="Link to this heading"></a></h3>
+<p><strong>Phase 1: Soft Launch</strong></p>
+<ul class="simple">
+<li><p>New features available but not default</p></li>
+<li><p>Documentation and examples provided</p></li>
+<li><p>Monitoring of adoption</p></li>
+</ul>
+<p><strong>Phase 2: Encourage Adoption</strong></p>
+<ul class="simple">
+<li><p>Performance benefits highlighted</p></li>
+<li><p>CLI defaults to async (with –sync option)</p></li>
+<li><p>Cache enabled by default</p></li>
+</ul>
+<p><strong>Phase 3: Full Adoption</strong></p>
+<ul class="simple">
+<li><p>Deprecation warnings for sync-only usage</p></li>
+<li><p>Async becomes default in v3.0</p></li>
+</ul>
+</section>
+<section id="configuration-migration">
+<h3>Configuration Migration<a class="headerlink" href="#configuration-migration" title="Link to this heading"></a></h3>
+<p><strong>Auto-migration on first run:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">migrate_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Auto-migrate config to new schema.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;cache&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;cache&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;ttl_hours&#39;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+            <span class="s1">&#39;max_size_mb&#39;</span><span class="p">:</span> <span class="mi">100</span>
+        <span class="p">}</span>
+
+    <span class="k">if</span> <span class="s1">&#39;performance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;performance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;async_enabled&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;max_concurrent_agents&#39;</span><span class="p">:</span> <span class="mi">10</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">config</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="risk-assessment">
+<h2>Risk Assessment<a class="headerlink" href="#risk-assessment" title="Link to this heading"></a></h2>
+<section id="high-risk-areas">
+<h3>High-Risk Areas<a class="headerlink" href="#high-risk-areas" title="Link to this heading"></a></h3>
+<section id="async-implementation-complexity">
+<h4>1. Async Implementation Complexity<a class="headerlink" href="#async-implementation-complexity" title="Link to this heading"></a></h4>
+<p><strong>Risk:</strong> Async/await introduces complexity, potential for deadlocks</p>
+<p><strong>Mitigation:</strong></p>
+<ul class="simple">
+<li><p>Comprehensive testing with asyncio test framework</p></li>
+<li><p>Timeout mechanisms on all async operations</p></li>
+<li><p>Backward compatible sync API maintained</p></li>
+<li><p>Code review by async-experienced developers</p></li>
+</ul>
+<p><strong>Contingency:</strong> Rollback to sync if critical issues found</p>
+</section>
+<section id="cache-correctness">
+<h4>2. Cache Correctness<a class="headerlink" href="#cache-correctness" title="Link to this heading"></a></h4>
+<p><strong>Risk:</strong> Stale cache responses, incorrect behavior</p>
+<p><strong>Mitigation:</strong></p>
+<ul class="simple">
+<li><p>Conservative TTL defaults (24 hours)</p></li>
+<li><p>Exclude non-deterministic agents by default</p></li>
+<li><p>Cache invalidation on config changes</p></li>
+<li><p>Clear cache command readily available</p></li>
+<li><p>Extensive testing of cache behavior</p></li>
+</ul>
+<p><strong>Contingency:</strong> Disable cache by default if issues arise</p>
+</section>
+<section id="dag-complexity">
+<h4>3. DAG Complexity<a class="headerlink" href="#dag-complexity" title="Link to this heading"></a></h4>
+<p><strong>Risk:</strong> Workflow execution errors, deadlocks</p>
+<p><strong>Mitigation:</strong></p>
+<ul class="simple">
+<li><p>Cycle detection in DAG validation</p></li>
+<li><p>Timeout on workflow execution</p></li>
+<li><p>Detailed logging of execution order</p></li>
+<li><p>Fallback to sequential execution on errors</p></li>
+</ul>
+<p><strong>Contingency:</strong> Sequential execution remains available</p>
+</section>
+</section>
+<section id="medium-risk-areas">
+<h3>Medium-Risk Areas<a class="headerlink" href="#medium-risk-areas" title="Link to this heading"></a></h3>
+<section id="performance-regression">
+<h4>4. Performance Regression<a class="headerlink" href="#performance-regression" title="Link to this heading"></a></h4>
+<p><strong>Risk:</strong> Optimization actually slows things down</p>
+<p><strong>Mitigation:</strong></p>
+<ul class="simple">
+<li><p>Comprehensive benchmarking before/after</p></li>
+<li><p>Automated performance regression tests</p></li>
+<li><p>A/B testing in staging environment</p></li>
+</ul>
+<p><strong>Contingency:</strong> Feature flags to disable optimizations</p>
+</section>
+<section id="increased-memory-usage">
+<h4>5. Increased Memory Usage<a class="headerlink" href="#increased-memory-usage" title="Link to this heading"></a></h4>
+<p><strong>Risk:</strong> Caching and async may increase memory</p>
+<p><strong>Mitigation:</strong></p>
+<ul class="simple">
+<li><p>Cache size limits enforced</p></li>
+<li><p>LRU eviction implemented</p></li>
+<li><p>Memory profiling during development</p></li>
+<li><p>Monitoring in production</p></li>
+</ul>
+<p><strong>Contingency:</strong> Configurable cache limits, can be disabled</p>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="success-metrics">
+<h2>Success Metrics<a class="headerlink" href="#success-metrics" title="Link to this heading"></a></h2>
+<section id="performance-metrics">
+<h3>Performance Metrics<a class="headerlink" href="#performance-metrics" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Current</p></th>
+<th class="head"><p>Target</p></th>
+<th class="head"><p>Measurement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Workflow Time (3 agents)</p></td>
+<td><p>12-30s</p></td>
+<td><p>4-10s</p></td>
+<td><p>Benchmarks</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cache Hit Rate</p></td>
+<td><p>0%</p></td>
+<td><p>20-70%</p></td>
+<td><p>Cache stats</p></td>
+</tr>
+<tr class="row-even"><td><p>Cost Per Execution</p></td>
+<td><p>Baseline</p></td>
+<td><p>-30-50%</p></td>
+<td><p>Analytics</p></td>
+</tr>
+<tr class="row-odd"><td><p>Throughput</p></td>
+<td><p>1x</p></td>
+<td><p>2-5x</p></td>
+<td><p>Load tests</p></td>
+</tr>
+<tr class="row-even"><td><p>P95 Latency</p></td>
+<td><p>10s</p></td>
+<td><p>5s</p></td>
+<td><p>Metrics</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="quality-metrics">
+<h3>Quality Metrics<a class="headerlink" href="#quality-metrics" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Target</p></th>
+<th class="head"><p>Measurement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Test Coverage</p></td>
+<td><p>&gt;90%</p></td>
+<td><p>pytest-cov</p></td>
+</tr>
+<tr class="row-odd"><td><p>Success Rate</p></td>
+<td><p>&gt;95%</p></td>
+<td><p>Analytics</p></td>
+</tr>
+<tr class="row-even"><td><p>Backward Compatibility</p></td>
+<td><p>100%</p></td>
+<td><p>Integration tests</p></td>
+</tr>
+<tr class="row-odd"><td><p>Documentation Coverage</p></td>
+<td><p>100%</p></td>
+<td><p>Manual review</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="adoption-metrics">
+<h3>Adoption Metrics<a class="headerlink" href="#adoption-metrics" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Target (3 months)</p></th>
+<th class="head"><p>Measurement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Async API Usage</p></td>
+<td><p>&gt;50%</p></td>
+<td><p>Telemetry</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cache Enabled</p></td>
+<td><p>&gt;80%</p></td>
+<td><p>Config analysis</p></td>
+</tr>
+<tr class="row-even"><td><p>Parallel Workflows</p></td>
+<td><p>&gt;30%</p></td>
+<td><p>Usage stats</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="implementation-timeline">
+<h2>Implementation Timeline<a class="headerlink" href="#implementation-timeline" title="Link to this heading"></a></h2>
+<section id="month-1-phase-1-foundation">
+<h3>Month 1: Phase 1 - Foundation<a class="headerlink" href="#month-1-phase-1-foundation" title="Link to this heading"></a></h3>
+<p><strong>Week 1-2: Async Implementation</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create AsyncAgentOrchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add async methods to AgentOrchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Update CLI with async support</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Write unit tests</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Write integration tests</p></li>
+</ul>
+<p><strong>Week 3-4: Response Caching</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create ResponseCache module</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Integrate with orchestrator</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add cache CLI commands</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test cache correctness</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Performance benchmarks</p></li>
+</ul>
+<p><strong>Deliverables:</strong></p>
+<ul class="simple">
+<li><p>✅ Async API working</p></li>
+<li><p>✅ Response caching functional</p></li>
+<li><p>✅ 90%+ test coverage</p></li>
+<li><p>✅ Documentation updated</p></li>
+</ul>
+</section>
+<section id="month-2-phase-2-advanced-optimization">
+<h3>Month 2: Phase 2 - Advanced Optimization<a class="headerlink" href="#month-2-phase-2-advanced-optimization" title="Link to this heading"></a></h3>
+<p><strong>Week 1-2: Parallel Workflows</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Create WorkflowDAG module</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Update workflow schema</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Implement DAG executor</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add workflow CLI commands</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Test parallel execution</p></li>
+</ul>
+<p><strong>Week 3: Metrics &amp; Caching</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Implement metrics aggregation</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Add query result caching</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Performance testing</p></li>
+</ul>
+<p><strong>Week 4: Integration &amp; Testing</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> End-to-end integration tests</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Performance regression tests</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Load testing</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Bug fixes</p></li>
+</ul>
+<p><strong>Deliverables:</strong></p>
+<ul class="simple">
+<li><p>✅ Parallel workflows working</p></li>
+<li><p>✅ 2-5x speedup demonstrated</p></li>
+<li><p>✅ All tests passing</p></li>
+</ul>
+</section>
+<section id="month-3-phase-3-polish-release">
+<h3>Month 3: Phase 3 - Polish &amp; Release<a class="headerlink" href="#month-3-phase-3-polish-release" title="Link to this heading"></a></h3>
+<p><strong>Week 1-2: Enhancements</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Enhanced monitoring</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Circuit breakers</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Advanced caching</p></li>
+</ul>
+<p><strong>Week 3: Documentation &amp; Examples</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Usage guides</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> API documentation</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Example workflows</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Migration guide</p></li>
+</ul>
+<p><strong>Week 4: Release Preparation</strong></p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Final testing</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Performance validation</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Release notes</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Version 2.3.0 release</p></li>
+</ul>
+<p><strong>Deliverables:</strong></p>
+<ul class="simple">
+<li><p>✅ Production-ready release</p></li>
+<li><p>✅ Complete documentation</p></li>
+<li><p>✅ Performance targets met</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<section id="immediate-actions">
+<h3>Immediate Actions<a class="headerlink" href="#immediate-actions" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Review &amp; Approve Plan</strong> - Stakeholder review (1 week)</p></li>
+<li><p><strong>Set Up Development Environment</strong> - Create feature branch</p></li>
+<li><p><strong>Begin Phase 1</strong> - Start async implementation</p></li>
+</ol>
+</section>
+<section id="decision-points">
+<h3>Decision Points<a class="headerlink" href="#decision-points" title="Link to this heading"></a></h3>
+<p><strong>Week 2:</strong> Review async implementation, decide to proceed with caching</p>
+<p><strong>Week 6:</strong> Review Phase 1 results, decide to proceed with Phase 2</p>
+<p><strong>Week 10:</strong> Review overall progress, decide on Phase 3 scope</p>
+</section>
+<section id="success-gates">
+<h3>Success Gates<a class="headerlink" href="#success-gates" title="Link to this heading"></a></h3>
+<p>Each phase requires:</p>
+<ul class="simple">
+<li><p>✅ All tests passing</p></li>
+<li><p>✅ Performance targets met</p></li>
+<li><p>✅ Documentation complete</p></li>
+<li><p>✅ Code review approved</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="appendix">
+<h2>Appendix<a class="headerlink" href="#appendix" title="Link to this heading"></a></h2>
+<section id="a-code-review-checklist">
+<h3>A. Code Review Checklist<a class="headerlink" href="#a-code-review-checklist" title="Link to this heading"></a></h3>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Async operations have timeouts</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Error handling for all async code</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Cache eviction prevents memory leaks</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> DAG validation prevents cycles</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Backward compatibility maintained</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Tests cover edge cases</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Documentation updated</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Performance benchmarks run</p></li>
+</ul>
+</section>
+<section id="b-performance-testing-script">
+<h3>B. Performance Testing Script<a class="headerlink" href="#b-performance-testing-script" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1"># performance_validation.sh</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Running performance validation...&quot;</span>
+
+<span class="c1"># Baseline (sync)</span>
+python<span class="w"> </span>benchmark_sync.py<span class="w"> </span>&gt;<span class="w"> </span>baseline.txt
+
+<span class="c1"># With async</span>
+python<span class="w"> </span>benchmark_async.py<span class="w"> </span>&gt;<span class="w"> </span>async.txt
+
+<span class="c1"># With caching</span>
+python<span class="w"> </span>benchmark_with_cache.py<span class="w"> </span>&gt;<span class="w"> </span>cache.txt
+
+<span class="c1"># With parallel workflows</span>
+python<span class="w"> </span>benchmark_parallel_workflows.py<span class="w"> </span>&gt;<span class="w"> </span>parallel.txt
+
+<span class="c1"># Compare results</span>
+python<span class="w"> </span>compare_results.py<span class="w"> </span>baseline.txt<span class="w"> </span>async.txt<span class="w"> </span>cache.txt<span class="w"> </span>parallel.txt
+</pre></div>
+</div>
+</section>
+<section id="c-rollback-plan">
+<h3>C. Rollback Plan<a class="headerlink" href="#c-rollback-plan" title="Link to this heading"></a></h3>
+<p>If critical issues found:</p>
+<ol class="arabic simple">
+<li><p><strong>Immediate:</strong> Disable feature via config flag</p></li>
+<li><p><strong>Short-term:</strong> Revert to previous version</p></li>
+<li><p><strong>Long-term:</strong> Fix issues and re-release</p></li>
+</ol>
+<p>Feature flags for easy rollback:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;features&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;async_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cache_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;parallel_workflows_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p><strong>Document Version:</strong> 1.0
+<strong>Last Updated:</strong> 2025-11-14
+<strong>Next Review:</strong> After Phase 1 completion
+<strong>Owner:</strong> Performance Engineering Team</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

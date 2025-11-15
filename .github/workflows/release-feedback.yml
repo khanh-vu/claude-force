@@ -1,0 +1,207 @@
+name: Release Feedback Collection
+
+# Periodic feedback collection for release automation
+on:
+  # Run monthly on the 1st at 9:00 AM UTC
+  schedule:
+    - cron: '0 9 1 * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  collect-feedback:
+    name: Create Feedback Issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get current month/year
+        id: date
+        run: |
+          MONTH=$(date +%B)
+          YEAR=$(date +%Y)
+          MONTH_NUM=$(date +%m)
+          echo "month=${MONTH}" >> $GITHUB_OUTPUT
+          echo "year=${YEAR}" >> $GITHUB_OUTPUT
+          echo "month_num=${MONTH_NUM}" >> $GITHUB_OUTPUT
+
+      - name: Check for existing feedback issue
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const month = '${{ steps.date.outputs.month }}';
+            const year = '${{ steps.date.outputs.year }}';
+            const title = `📊 Release Automation Feedback - ${month} ${year}`;
+
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'feedback,release-automation',
+              per_page: 100
+            });
+
+            const existing = issues.data.find(issue => issue.title === title);
+
+            if (existing) {
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_number', existing.number);
+              console.log(`Feedback issue already exists: #${existing.number}`);
+            } else {
+              core.setOutput('exists', 'false');
+              console.log('No existing feedback issue found');
+            }
+
+            return existing ? existing.number : null;
+
+      - name: Gather recent release stats
+        id: stats
+        if: steps.check.outputs.exists == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get releases from last 30 days
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 50
+            });
+
+            const recentReleases = releases.data.filter(r =>
+              new Date(r.created_at) >= thirtyDaysAgo
+            );
+
+            const production = recentReleases.filter(r => !r.prerelease).length;
+            const prerelease = recentReleases.filter(r => r.prerelease).length;
+
+            core.setOutput('total', recentReleases.length);
+            core.setOutput('production', production);
+            core.setOutput('prerelease', prerelease);
+
+            // Get latest release version
+            if (recentReleases.length > 0) {
+              core.setOutput('latest', recentReleases[0].tag_name);
+            } else {
+              core.setOutput('latest', 'N/A');
+            }
+
+            return {
+              total: recentReleases.length,
+              production: production,
+              prerelease: prerelease
+            };
+
+      - name: Create feedback issue
+        if: steps.check.outputs.exists == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const month = '${{ steps.date.outputs.month }}';
+            const year = '${{ steps.date.outputs.year }}';
+            const total = '${{ steps.stats.outputs.total }}';
+            const production = '${{ steps.stats.outputs.production }}';
+            const prerelease = '${{ steps.stats.outputs.prerelease }}';
+            const latest = '${{ steps.stats.outputs.latest }}';
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 Release Automation Feedback - ${month} ${year}`,
+              body: `## Monthly Release Automation Feedback
+
+            This is an automated monthly check-in to gather feedback on our release automation system.
+
+            ### 📈 Recent Activity (Last 30 Days)
+
+            - **Total Releases**: ${total}
+            - **Production Releases**: ${production}
+            - **Pre-releases**: ${prerelease}
+            - **Latest Release**: ${latest}
+
+            ### 🎯 What We're Looking For
+
+            Please share your thoughts on any of the following:
+
+            #### 1. Release Process
+            - [ ] How satisfied are you with the current release process? (1-5 ⭐)
+            - [ ] Are releases faster than before automation?
+            - [ ] Are there any pain points in creating releases?
+
+            #### 2. Release Candidates
+            - [ ] Is the RC workflow helpful for testing?
+            - [ ] Is TestPyPI testing working well?
+            - [ ] Is the promotion process smooth?
+
+            #### 3. Documentation
+            - [ ] Is the release documentation clear and helpful?
+            - [ ] Are there missing or confusing parts?
+            - [ ] Is the automated documentation deployment working?
+
+            #### 4. Quality & Reliability
+            - [ ] Have you experienced any workflow failures?
+            - [ ] Are the quality gates catching issues effectively?
+            - [ ] Is the automated changelog accurate?
+
+            #### 5. Suggestions
+            - [ ] What improvements would you like to see?
+            - [ ] Are there manual steps that should be automated?
+            - [ ] Any features you'd like added?
+
+            ### 💬 How to Provide Feedback
+
+            Simply comment below with your thoughts! You can:
+            - Answer specific questions above
+            - Share general observations
+            - Report issues or bugs
+            - Suggest improvements
+            - Give kudos for what's working well 🎉
+
+            ### 📊 Metrics
+
+            For detailed metrics, see:
+            - [Release Metrics Report](../../blob/main/RELEASE_METRICS.md)
+            - [Workflow Runs](../../actions)
+
+            ### 🔗 Resources
+
+            - [Release Process Documentation](../../blob/main/CONTRIBUTING.md#release-process)
+            - [Release Automation Plan](../../blob/main/RELEASE_AUTOMATION_PLAN.md)
+            - [Phase Completion Reports](../../tree/main)
+              - [Phase 1: Foundation](../../blob/main/RELEASE_AUTOMATION_SUMMARY.md)
+              - [Phase 2: Testing](../../blob/main/PHASE_2_COMPLETE.md)
+              - [Phase 3: Workflows](../../blob/main/PHASE_3_COMPLETE.md)
+              - [Phase 4: Release Candidates](../../blob/main/PHASE_4_COMPLETE.md)
+              - [Phase 5: Documentation](../../blob/main/PHASE_5_COMPLETE.md)
+
+            ---
+
+            **Note**: This issue will remain open for 2 weeks to collect feedback. Feel free to add comments anytime!
+
+            *This issue was automatically created by the Release Feedback workflow*`,
+              labels: ['feedback', 'release-automation', 'monthly-review']
+            });
+
+            console.log(`Created feedback issue #${issue.data.number}`);
+            return issue.data.number;
+
+      - name: Notify team
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          echo "✅ Created monthly feedback issue for ${{ steps.date.outputs.month }} ${{ steps.date.outputs.year }}"
+          echo "📝 Team members can now provide feedback on the release automation system"
+
+      - name: Skip notification
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          echo "ℹ️  Feedback issue already exists: #${{ steps.check.outputs.issue_number }}"
+          echo "Skipping creation to avoid duplicates"

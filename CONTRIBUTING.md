@@ -371,6 +371,267 @@ Brief description of changes
 Closes #issue_number
 ```
 
+## Release Process
+
+### Overview
+
+The project uses automated release workflows with semantic versioning. Releases are triggered by git tags and managed through GitHub Actions.
+
+### Versioning Strategy
+
+We follow [Semantic Versioning 2.0.0](https://semver.org/):
+
+- **MAJOR** (X.0.0): Breaking changes, major architectural changes
+- **MINOR** (0.X.0): New features, backward-compatible improvements
+- **PATCH** (0.0.X): Bug fixes, documentation updates
+
+**Pre-release versions**:
+- `X.Y.Z-alpha.N` - Early development, unstable
+- `X.Y.Z-beta.N` - Feature complete, testing phase
+- `X.Y.Z-rc.N` - Release candidate, production-ready testing
+
+### Commit Message Format (Important!)
+
+We use **Conventional Commits** for automated changelog generation and version bumping:
+
+```bash
+# Format: <type>(<scope>): <subject>
+
+# Types that trigger version bumps:
+feat:     New feature (→ MINOR version bump)
+fix:      Bug fix (→ PATCH version bump)
+BREAKING CHANGE: Breaking change (→ MAJOR version bump)
+
+# Other types (no version bump):
+docs:     Documentation changes
+style:    Code style (formatting, no logic change)
+refactor: Code refactoring
+perf:     Performance improvements
+test:     Adding/updating tests
+chore:    Maintenance tasks
+ci:       CI/CD changes
+build:    Build system changes
+
+# Examples:
+feat(agents): add kubernetes-engineer agent
+fix(orchestrator): resolve race condition in workflow execution
+docs(readme): update installation instructions
+BREAKING CHANGE: remove deprecated HybridOrchestrator.run() method
+```
+
+### Pre-release Checklist
+
+Before creating a release, maintainers run:
+
+```bash
+# Run automated pre-release checks
+python3 scripts/pre_release_checklist.py
+
+# This checks:
+# ✓ Version consistency across all files
+# ✓ All tests pass
+# ✓ No security vulnerabilities
+# ✓ Code is properly formatted
+# ✓ Package builds successfully
+```
+
+### Release Process (For Maintainers)
+
+#### Standard Release
+
+```bash
+# 1. Ensure main branch is clean
+git checkout main
+git pull origin main
+
+# 2. Run pre-release checklist
+python3 scripts/pre_release_checklist.py
+
+# 3. Bump version (creates commit and tag automatically)
+pip install bump2version
+bump2version patch  # or: minor, major
+
+# 4. Push to trigger release workflow
+git push origin main --tags
+
+# 5. GitHub Actions automatically:
+#    - Runs all tests
+#    - Builds package
+#    - Publishes to PyPI
+#    - Generates changelog
+#    - Creates GitHub Release
+```
+
+#### Release Candidate
+
+Release candidates allow testing new features on TestPyPI before production release.
+
+**Creating a Release Candidate:**
+
+```bash
+# 1. Bump to RC version (updates all files + creates tag)
+bump2version patch  # This creates the base version first
+# Then manually create RC tag
+git tag v2.3.0-rc.1
+git push origin v2.3.0-rc.1
+
+# Or create RC tag directly if version files are ready
+git tag v2.3.0-rc.1
+git push origin v2.3.0-rc.1
+```
+
+**What Happens Automatically:**
+- ✅ All quality gates run (tests, security, formatting)
+- ✅ Package published to TestPyPI
+- ✅ GitHub pre-release created
+- ✅ Testing announcement issue created
+- ✅ RC artifacts retained for 30 days
+
+**Testing the RC:**
+
+```bash
+# Install from TestPyPI
+pip install --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple \
+  claude-force==2.3.0-rc.1
+
+# Test thoroughly:
+# - Run all features
+# - Check for regressions
+# - Verify documentation
+# - Report issues
+```
+
+**Promoting RC to Production:**
+
+Once testing is complete and approved:
+
+```bash
+# Option 1: Use GitHub Actions (Recommended)
+# 1. Go to Actions → "Promote Release Candidate to Production"
+# 2. Click "Run workflow"
+# 3. Enter RC version: 2.3.0-rc.1
+# 4. Leave production version empty (auto-generates 2.3.0)
+# 5. Click "Run workflow"
+
+# Option 2: Manual promotion
+# This will be replaced by the automated workflow above
+```
+
+The promotion workflow automatically:
+- ✅ Validates RC exists on TestPyPI
+- ✅ Updates version files
+- ✅ Creates production tag
+- ✅ Triggers production release workflow
+- ✅ Closes RC testing issue
+- ✅ Publishes to PyPI
+
+#### Hotfix Release
+
+For urgent bug fixes:
+
+```bash
+# 1. Create hotfix branch from tag
+git checkout -b hotfix/v1.0.1 v1.0.0
+
+# 2. Fix the bug
+git commit -m "fix: critical security vulnerability in agent loader"
+
+# 3. Bump patch version
+bump2version patch
+
+# 4. Merge to main and push tags
+git checkout main
+git merge hotfix/v1.0.1
+git push origin main --tags
+```
+
+### Version Consistency
+
+All version numbers must be consistent across:
+- `pyproject.toml`
+- `setup.py`
+- `claude_force/__init__.py`
+- `README.md`
+
+Run this to check:
+```bash
+python3 scripts/check_version_consistency.py
+```
+
+The `bump2version` tool updates all these files automatically.
+
+### Changelog
+
+Changelogs are generated automatically from commit messages using `git-cliff`:
+
+```bash
+# Generate changelog for latest release
+git-cliff --latest --output CHANGELOG.md
+
+# Preview changelog without writing
+git-cliff --latest --strip header
+```
+
+**Important**: Use conventional commit messages so changes are properly categorized in the changelog!
+
+### Release Checklist (For Maintainers)
+
+Before creating a release:
+
+- [ ] All tests pass (`pytest tests/ -v`)
+- [ ] Version is consistent across all files
+- [ ] CHANGELOG.md is updated (auto-generated)
+- [ ] Documentation is current
+- [ ] No security vulnerabilities (`bandit -r claude_force/`)
+- [ ] Code is formatted (`black --check claude_force/`)
+- [ ] Package builds successfully (`python -m build`)
+- [ ] All PRs are merged
+- [ ] Release notes are prepared
+
+### Post-release
+
+After a release is published:
+
+1. **Verify PyPI**: Check https://pypi.org/project/claude-force/
+2. **Test installation**: `pip install claude-force==X.Y.Z`
+3. **Update documentation**: If using GitHub Pages or external docs
+4. **Announce**: Create announcement issue, notify community
+5. **Monitor**: Watch for installation issues or bug reports
+
+### Troubleshooting Releases
+
+**Release failed?**
+
+```bash
+# Check GitHub Actions logs
+# Fix the issue
+# Delete the tag locally and remotely:
+git tag -d vX.Y.Z
+git push origin :refs/tags/vX.Y.Z
+
+# Re-run the release process
+```
+
+**Version conflict on PyPI?**
+
+```bash
+# PyPI doesn't allow re-uploading same version
+# Bump to next patch version:
+bump2version patch
+git push origin main --tags
+```
+
+**Need to rollback?**
+
+```bash
+# Use the emergency rollback workflow
+# Go to GitHub Actions → Emergency Rollback
+# Enter the version to rollback to
+```
+
+For more details, see [RELEASE_AUTOMATION_PLAN.md](RELEASE_AUTOMATION_PLAN.md).
+
 ## Adding New Features
 
 ### Adding a New Agent

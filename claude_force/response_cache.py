@@ -503,6 +503,31 @@ class ResponseCache:
                 },
             )
 
+    def delete(self, key: str) -> bool:
+        """
+        Delete key from cache.
+
+        Args:
+            key: Cache key to delete (full hash key)
+
+        Returns:
+            True if deleted, False if not found
+        """
+        if key not in self._memory_cache and not (self.cache_dir / f"{key}.json").exists():
+            return False
+
+        self._evict(key)
+        return True
+
+    def size(self) -> int:
+        """
+        Get number of entries in cache.
+
+        Returns:
+            Number of cached entries
+        """
+        return len(self._memory_cache)
+
     def clear(self):
         """Clear entire cache."""
         logger.info("Clearing cache", extra={"entries": len(self._memory_cache)})

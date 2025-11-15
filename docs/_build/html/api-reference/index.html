@@ -1,0 +1,400 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">API Reference</a><ul>
+<li><a class="reference internal" href="#core-components">Core Components</a><ul>
+<li><a class="reference internal" href="#orchestration">Orchestration</a></li>
+<li><a class="reference internal" href="#agent-selection">Agent Selection</a></li>
+<li><a class="reference internal" href="#performance-analytics">Performance &amp; Analytics</a></li>
+<li><a class="reference internal" href="#marketplace-skills">Marketplace &amp; Skills</a></li>
+<li><a class="reference internal" href="#command-line-interface">Command-Line Interface</a></li>
+<li><a class="reference internal" href="#utilities">Utilities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quick-api-examples">Quick API Examples</a><ul>
+<li><a class="reference internal" href="#basic-agent-execution">Basic Agent Execution</a></li>
+<li><a class="reference internal" href="#semantic-agent-recommendation">Semantic Agent Recommendation</a></li>
+<li><a class="reference internal" href="#hybrid-model-selection">Hybrid Model Selection</a></li>
+<li><a class="reference internal" href="#performance-tracking">Performance Tracking</a></li>
+<li><a class="reference internal" href="#workflow-composition">Workflow Composition</a></li>
+<li><a class="reference internal" href="#marketplace-operations">Marketplace Operations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-conventions">API Conventions</a><ul>
+<li><a class="reference internal" href="#error-handling">Error Handling</a></li>
+<li><a class="reference internal" href="#return-types">Return Types</a></li>
+<li><a class="reference internal" href="#async-support">Async Support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-index">Module Index</a></li>
+<li><a class="reference internal" href="#type-annotations">Type Annotations</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/index.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<p>Complete API documentation for claude-force Python package.</p>
+<section id="core-components">
+<h2>Core Components<a class="headerlink" href="#core-components" title="Link to this heading"></a></h2>
+<section id="orchestration">
+<h3>Orchestration<a class="headerlink" href="#orchestration" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="orchestrator.html"><span class="std std-doc">AgentOrchestrator</span></a></strong> - Main orchestration engine for running agents and workflows</p></li>
+<li><p><strong><a class="reference internal" href="#hybrid-orchestrator.md"><span class="xref myst">HybridOrchestrator</span></a></strong> - Intelligent model selection and cost optimization</p></li>
+<li><p><strong><a class="reference internal" href="#workflow-composer.md"><span class="xref myst">WorkflowComposer</span></a></strong> - Create and manage custom multi-agent workflows</p></li>
+</ul>
+</section>
+<section id="agent-selection">
+<h3>Agent Selection<a class="headerlink" href="#agent-selection" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#semantic-selector.md"><span class="xref myst">SemanticAgentSelector</span></a></strong> - AI-powered agent recommendation using embeddings</p></li>
+<li><p><strong><a class="reference internal" href="#agent-router.md"><span class="xref myst">AgentRouter</span></a></strong> - Agent routing and matching logic</p></li>
+</ul>
+</section>
+<section id="performance-analytics">
+<h3>Performance &amp; Analytics<a class="headerlink" href="#performance-analytics" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#performance-tracker.md"><span class="xref myst">PerformanceTracker</span></a></strong> - Track execution metrics, costs, and performance</p></li>
+<li><p><strong><a class="reference internal" href="#analytics.md"><span class="xref myst">Analytics</span></a></strong> - Advanced analytics and reporting</p></li>
+</ul>
+</section>
+<section id="marketplace-skills">
+<h3>Marketplace &amp; Skills<a class="headerlink" href="#marketplace-skills" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#marketplace.md"><span class="xref myst">AgentMarketplace</span></a></strong> - Install and share community agents</p></li>
+<li><p><strong><a class="reference internal" href="#skills-manager.md"><span class="xref myst">SkillsManager</span></a></strong> - Manage agent skills and capabilities</p></li>
+<li><p><strong><a class="reference internal" href="#template-gallery.md"><span class="xref myst">TemplateGallery</span></a></strong> - Project templates and scaffolding</p></li>
+</ul>
+</section>
+<section id="command-line-interface">
+<h3>Command-Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#cli.md"><span class="xref myst">CLI Commands</span></a></strong> - All command-line interface commands and options</p></li>
+</ul>
+</section>
+<section id="utilities">
+<h3>Utilities<a class="headerlink" href="#utilities" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="#import-export.md"><span class="xref myst">ImportExport</span></a></strong> - Configuration import/export utilities</p></li>
+<li><p><strong><a class="reference internal" href="#quick-start.md"><span class="xref myst">QuickStart</span></a></strong> - Project initialization and setup</p></li>
+<li><p><strong><a class="reference internal" href="#contribution.md"><span class="xref myst">Contribution</span></a></strong> - Contribution workflow helpers</p></li>
+</ul>
+</section>
+</section>
+<section id="quick-api-examples">
+<h2>Quick API Examples<a class="headerlink" href="#quick-api-examples" title="Link to this heading"></a></h2>
+<section id="basic-agent-execution">
+<h3>Basic Agent Execution<a class="headerlink" href="#basic-agent-execution" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span>
+    <span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">,</span>
+    <span class="n">enable_tracking</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Review authentication module&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="semantic-agent-recommendation">
+<h3>Semantic Agent Recommendation<a class="headerlink" href="#semantic-agent-recommendation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.semantic_selector</span><span class="w"> </span><span class="kn">import</span> <span class="n">SemanticAgentSelector</span>
+
+<span class="n">selector</span> <span class="o">=</span> <span class="n">SemanticAgentSelector</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+
+<span class="n">matches</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">match_agents</span><span class="p">(</span>
+    <span class="n">task_description</span><span class="o">=</span><span class="s2">&quot;Find and fix security vulnerabilities&quot;</span><span class="p">,</span>
+    <span class="n">top_k</span><span class="o">=</span><span class="mi">3</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="hybrid-model-selection">
+<h3>Hybrid Model Selection<a class="headerlink" href="#hybrid-model-selection" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.hybrid_orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">HybridOrchestrator</span>
+
+<span class="n">hybrid</span> <span class="o">=</span> <span class="n">HybridOrchestrator</span><span class="p">(</span>
+    <span class="n">auto_select_model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cost_threshold</span><span class="o">=</span><span class="mf">0.50</span>
+<span class="p">)</span>
+
+<span class="c1"># Automatically selects Haiku for simple tasks</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fix typo in README&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Automatically selects Sonnet/Opus for complex tasks</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span>
+    <span class="s2">&quot;backend-architect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Design microservices architecture&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-tracking">
+<h3>Performance Tracking<a class="headerlink" href="#performance-tracking" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.performance_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">PerformanceTracker</span>
+
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">PerformanceTracker</span><span class="p">(</span><span class="n">metrics_dir</span><span class="o">=</span><span class="s2">&quot;.claude/metrics&quot;</span><span class="p">)</span>
+
+<span class="c1"># Record execution</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">record_execution</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span>
+    <span class="n">task</span><span class="o">=</span><span class="s2">&quot;Review code&quot;</span><span class="p">,</span>
+    <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">execution_time_ms</span><span class="o">=</span><span class="mf">1500.0</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-3-5-sonnet-20241022&quot;</span><span class="p">,</span>
+    <span class="n">input_tokens</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+    <span class="n">output_tokens</span><span class="o">=</span><span class="mi">250</span>
+<span class="p">)</span>
+
+<span class="c1"># Get analytics</span>
+<span class="n">analytics</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_summary</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total executions: </span><span class="si">{</span><span class="n">analytics</span><span class="p">[</span><span class="s1">&#39;total_executions&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total cost: $</span><span class="si">{</span><span class="n">analytics</span><span class="p">[</span><span class="s1">&#39;total_cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success rate: </span><span class="si">{</span><span class="n">analytics</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="workflow-composition">
+<h3>Workflow Composition<a class="headerlink" href="#workflow-composition" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.workflow_composer</span><span class="w"> </span><span class="kn">import</span> <span class="n">WorkflowComposer</span>
+
+<span class="n">composer</span> <span class="o">=</span> <span class="n">WorkflowComposer</span><span class="p">()</span>
+
+<span class="n">workflow</span> <span class="o">=</span> <span class="n">composer</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span>
+    <span class="n">goal</span><span class="o">=</span><span class="s2">&quot;Implement user authentication with security review and testing&quot;</span><span class="p">,</span>
+    <span class="n">include_marketplace</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Workflow: </span><span class="si">{</span><span class="n">workflow</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Steps: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estimated cost: $</span><span class="si">{</span><span class="n">workflow</span><span class="o">.</span><span class="n">total_estimated_cost</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">step_number</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">agent_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">step</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="marketplace-operations">
+<h3>Marketplace Operations<a class="headerlink" href="#marketplace-operations" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.marketplace</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentMarketplace</span>
+
+<span class="n">marketplace</span> <span class="o">=</span> <span class="n">AgentMarketplace</span><span class="p">()</span>
+
+<span class="c1"># List available agents</span>
+<span class="n">agents</span> <span class="o">=</span> <span class="n">marketplace</span><span class="o">.</span><span class="n">list_agents</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="s2">&quot;security&quot;</span><span class="p">)</span>
+
+<span class="c1"># Search</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">marketplace</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;authentication security&quot;</span><span class="p">)</span>
+
+<span class="c1"># Install agent</span>
+<span class="n">marketplace</span><span class="o">.</span><span class="n">install_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;oauth-specialist&quot;</span><span class="p">,</span>
+    <span class="n">target_dir</span><span class="o">=</span><span class="s2">&quot;.claude&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="api-conventions">
+<h2>API Conventions<a class="headerlink" href="#api-conventions" title="Link to this heading"></a></h2>
+<section id="error-handling">
+<h3>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading"></a></h3>
+<p>All claude-force APIs use exception-based error handling:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AgentNotFoundError</span><span class="p">,</span>
+    <span class="n">APIKeyMissingError</span><span class="p">,</span>
+    <span class="n">ConfigurationError</span>
+<span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">orchestrator</span><span class="o">.</span><span class="n">run_agent</span><span class="p">(</span><span class="s2">&quot;code-reviewer&quot;</span><span class="p">,</span> <span class="s2">&quot;Review code&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">APIKeyMissingError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Set ANTHROPIC_API_KEY environment variable&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">AgentNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agent not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid configuration: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="return-types">
+<h3>Return Types<a class="headerlink" href="#return-types" title="Link to this heading"></a></h3>
+<p>Most methods return typed objects:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">AgentResult</span></code> - Result of agent execution</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AgentMatch</span></code> - Agent recommendation with confidence</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ExecutionMetrics</span></code> - Performance metrics</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ComposedWorkflow</span></code> - Workflow composition</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MarketplaceAgent</span></code> - Marketplace agent information</p></li>
+</ul>
+</section>
+<section id="async-support">
+<h3>Async Support<a class="headerlink" href="#async-support" title="Link to this heading"></a></h3>
+<p>Currently, claude-force is synchronous. Async support is planned for v3.0.</p>
+</section>
+</section>
+<section id="module-index">
+<h2>Module Index<a class="headerlink" href="#module-index" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>claude_force.orchestrator</strong> - Core orchestration</p></li>
+<li><p><strong>claude_force.semantic_selector</strong> - Semantic agent selection</p></li>
+<li><p><strong>claude_force.hybrid_orchestrator</strong> - Model selection</p></li>
+<li><p><strong>claude_force.performance_tracker</strong> - Performance tracking</p></li>
+<li><p><strong>claude_force.workflow_composer</strong> - Workflow composition</p></li>
+<li><p><strong>claude_force.marketplace</strong> - Agent marketplace</p></li>
+<li><p><strong>claude_force.skills_manager</strong> - Skills management</p></li>
+<li><p><strong>claude_force.analytics</strong> - Analytics and reporting</p></li>
+<li><p><strong>claude_force.agent_router</strong> - Agent routing</p></li>
+<li><p><strong>claude_force.template_gallery</strong> - Project templates</p></li>
+<li><p><strong>claude_force.import_export</strong> - Import/export utilities</p></li>
+<li><p><strong>claude_force.quick_start</strong> - Project initialization</p></li>
+<li><p><strong>claude_force.cli</strong> - Command-line interface</p></li>
+</ul>
+</section>
+<section id="type-annotations">
+<h2>Type Annotations<a class="headerlink" href="#type-annotations" title="Link to this heading"></a></h2>
+<p>All claude-force APIs use type hints:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentResult</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run an agent with type-safe parameters&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<p>Most APIs accept a <code class="docutils literal notranslate"><span class="pre">config_path</span></code> parameter pointing to <code class="docutils literal notranslate"><span class="pre">claude.json</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+<span class="n">selector</span> <span class="o">=</span> <span class="n">SemanticAgentSelector</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;.claude/claude.json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Explore detailed documentation for each component</p></li>
+<li><p>Check out <a class="reference internal" href="#../guides/index.md"><span class="xref myst">Guides</span></a> for tutorials</p></li>
+<li><p>See <a class="reference internal" href="#../examples/index.md"><span class="xref myst">Examples</span></a> for real-world usage</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Need help?</strong> Open an issue on <a class="reference external" href="https://github.com/khanh-vu/claude-force/issues">GitHub</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

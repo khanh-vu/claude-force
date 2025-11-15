@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation Guide &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Installation Guide</a><ul>
+<li><a class="reference internal" href="#quick-install">Quick Install</a><ul>
+<li><a class="reference internal" href="#from-pypi-recommended">From PyPI (Recommended)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#detailed-installation">Detailed Installation</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#check-python-version">Check Python Version</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-methods">Installation Methods</a><ul>
+<li><a class="reference internal" href="#method-1-pypi-recommended">Method 1: PyPI (Recommended)</a></li>
+<li><a class="reference internal" href="#method-2-from-source-for-development">Method 2: From Source (For Development)</a></li>
+<li><a class="reference internal" href="#method-3-install-from-github">Method 3: Install from GitHub</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a><ul>
+<li><a class="reference internal" href="#semantic-agent-selection">Semantic Agent Selection</a></li>
+<li><a class="reference internal" href="#development-tools">Development Tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#set-up-api-key">Set Up API Key</a><ul>
+<li><a class="reference internal" href="#option-1-environment-variable-recommended">Option 1: Environment Variable (Recommended)</a></li>
+<li><a class="reference internal" href="#option-2-pass-to-cli">Option 2: Pass to CLI</a></li>
+<li><a class="reference internal" href="#option-3-python-api">Option 3: Python API</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#verification">Verification</a><ul>
+<li><a class="reference internal" href="#verify-installation">Verify Installation</a></li>
+<li><a class="reference internal" href="#run-tests">Run Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#command-not-found">Command Not Found</a></li>
+<li><a class="reference internal" href="#import-errors">Import Errors</a></li>
+<li><a class="reference internal" href="#api-key-errors">API Key Errors</a></li>
+<li><a class="reference internal" href="#sentence-transformers-not-found">Sentence Transformers Not Found</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#platform-specific-notes">Platform-Specific Notes</a><ul>
+<li><a class="reference internal" href="#macos">macOS</a></li>
+<li><a class="reference internal" href="#linux-ubuntu-debian">Linux (Ubuntu/Debian)</a></li>
+<li><a class="reference internal" href="#windows">Windows</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="installation-guide">
+<h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Link to this heading"></a></h1>
+<p>Complete installation guide for claude-force.</p>
+<section id="quick-install">
+<h2>Quick Install<a class="headerlink" href="#quick-install" title="Link to this heading"></a></h2>
+<section id="from-pypi-recommended">
+<h3>From PyPI (Recommended)<a class="headerlink" href="#from-pypi-recommended" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>claude-force
+claude-force<span class="w"> </span>--version
+</pre></div>
+</div>
+<p>That’s it! You’re ready to use claude-force.</p>
+</section>
+</section>
+<section id="detailed-installation">
+<h2>Detailed Installation<a class="headerlink" href="#detailed-installation" title="Link to this heading"></a></h2>
+<section id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Python 3.8+</strong> (Python 3.10+ recommended)</p></li>
+<li><p><strong>pip</strong> package manager</p></li>
+<li><p><strong>Anthropic API Key</strong> (<a class="reference external" href="https://console.anthropic.com/">Get one here</a>)</p></li>
+</ul>
+<section id="check-python-version">
+<h4>Check Python Version<a class="headerlink" href="#check-python-version" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>--version
+<span class="c1"># Should show: Python 3.8.0 or higher</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="installation-methods">
+<h3>Installation Methods<a class="headerlink" href="#installation-methods" title="Link to this heading"></a></h3>
+<section id="method-1-pypi-recommended">
+<h4>Method 1: PyPI (Recommended)<a class="headerlink" href="#method-1-pypi-recommended" title="Link to this heading"></a></h4>
+<p>Install the latest stable version:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install</span>
+pip<span class="w"> </span>install<span class="w"> </span>claude-force
+
+<span class="c1"># Verify installation</span>
+claude-force<span class="w"> </span>--help
+
+<span class="c1"># Upgrade to latest</span>
+pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>claude-force
+</pre></div>
+</div>
+</section>
+<section id="method-2-from-source-for-development">
+<h4>Method 2: From Source (For Development)<a class="headerlink" href="#method-2-from-source-for-development" title="Link to this heading"></a></h4>
+<p>Install from GitHub for the latest development version:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/khanh-vu/claude-force.git
+<span class="nb">cd</span><span class="w"> </span>claude-force
+
+<span class="c1"># Create virtual environment (recommended)</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate<span class="w">  </span><span class="c1"># On Windows: venv\Scripts\activate</span>
+
+<span class="c1"># Install in development mode</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+
+<span class="c1"># Install with dev dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="method-3-install-from-github">
+<h4>Method 3: Install from GitHub<a class="headerlink" href="#method-3-install-from-github" title="Link to this heading"></a></h4>
+<p>Install directly from GitHub without cloning:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/khanh-vu/claude-force.git
+</pre></div>
+</div>
+</section>
+</section>
+<section id="optional-dependencies">
+<h3>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading"></a></h3>
+<section id="semantic-agent-selection">
+<h4>Semantic Agent Selection<a class="headerlink" href="#semantic-agent-selection" title="Link to this heading"></a></h4>
+<p>For AI-powered agent recommendation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>sentence-transformers<span class="w"> </span>numpy
+</pre></div>
+</div>
+</section>
+<section id="development-tools">
+<h4>Development Tools<a class="headerlink" href="#development-tools" title="Link to this heading"></a></h4>
+<p>For development and testing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pytest<span class="w"> </span>pytest-cov<span class="w"> </span>black<span class="w"> </span>pylint<span class="w"> </span>mypy
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<section id="set-up-api-key">
+<h3>Set Up API Key<a class="headerlink" href="#set-up-api-key" title="Link to this heading"></a></h3>
+<section id="option-1-environment-variable-recommended">
+<h4>Option 1: Environment Variable (Recommended)<a class="headerlink" href="#option-1-environment-variable-recommended" title="Link to this heading"></a></h4>
+<p><strong>Linux/macOS:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-api-key-here&#39;</span>
+
+<span class="c1"># Add to shell profile for persistence</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export ANTHROPIC_API_KEY=&quot;your-api-key-here&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="c1"># or for zsh:</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export ANTHROPIC_API_KEY=&quot;your-api-key-here&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc
+</pre></div>
+</div>
+<p><strong>Windows (PowerShell):</strong></p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nv">$env:ANTHROPIC_API_KEY</span> <span class="p">=</span> <span class="s2">&quot;your-api-key-here&quot;</span>
+
+<span class="c"># For persistence:</span>
+<span class="no">[System.Environment]</span><span class="p">::</span><span class="n">SetEnvironmentVariable</span><span class="p">(</span><span class="s1">&#39;ANTHROPIC_API_KEY&#39;</span><span class="p">,</span> <span class="s1">&#39;your-api-key-here&#39;</span><span class="p">,</span> <span class="s1">&#39;User&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="option-2-pass-to-cli">
+<h4>Option 2: Pass to CLI<a class="headerlink" href="#option-2-pass-to-cli" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>claude-force<span class="w"> </span>--api-key<span class="w"> </span>your-api-key-here<span class="w"> </span>run<span class="w"> </span>agent<span class="w"> </span>code-reviewer<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;...&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="option-3-python-api">
+<h4>Option 3: Python API<a class="headerlink" href="#option-3-python-api" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">(</span>
+    <span class="n">anthropic_api_key</span><span class="o">=</span><span class="s2">&quot;your-api-key-here&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="verification">
+<h2>Verification<a class="headerlink" href="#verification" title="Link to this heading"></a></h2>
+<section id="verify-installation">
+<h3>Verify Installation<a class="headerlink" href="#verify-installation" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check version</span>
+claude-force<span class="w"> </span>--version
+
+<span class="c1"># List available commands</span>
+claude-force<span class="w"> </span>--help
+
+<span class="c1"># Test with a simple command</span>
+claude-force<span class="w"> </span>init<span class="w"> </span>./test-project<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Test project&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;test&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="run-tests">
+<h3>Run Tests<a class="headerlink" href="#run-tests" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run all tests</span>
+pytest<span class="w"> </span>test_claude_system.py<span class="w"> </span>-v
+
+<span class="c1"># Run with coverage</span>
+pytest<span class="w"> </span>test_claude_system.py<span class="w"> </span>--cov<span class="o">=</span>claude_force<span class="w"> </span>--cov-report<span class="o">=</span>html
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="command-not-found">
+<h3>Command Not Found<a class="headerlink" href="#command-not-found" title="Link to this heading"></a></h3>
+<p><strong>Problem</strong>: <code class="docutils literal notranslate"><span class="pre">command</span> <span class="pre">not</span> <span class="pre">found:</span> <span class="pre">claude-force</span></code></p>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure virtual environment is activated</span>
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate<span class="w">  </span><span class="c1"># Linux/macOS</span>
+venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate<span class="w">     </span><span class="c1"># Windows</span>
+
+<span class="c1"># Or reinstall</span>
+pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>claude-force
+</pre></div>
+</div>
+</section>
+<section id="import-errors">
+<h3>Import Errors<a class="headerlink" href="#import-errors" title="Link to this heading"></a></h3>
+<p><strong>Problem</strong>: <code class="docutils literal notranslate"><span class="pre">ModuleNotFoundError:</span> <span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'claude_force'</span></code></p>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install package</span>
+pip<span class="w"> </span>install<span class="w"> </span>claude-force
+
+<span class="c1"># Or for development</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="api-key-errors">
+<h3>API Key Errors<a class="headerlink" href="#api-key-errors" title="Link to this heading"></a></h3>
+<p><strong>Problem</strong>: <code class="docutils literal notranslate"><span class="pre">ValueError:</span> <span class="pre">Anthropic</span> <span class="pre">API</span> <span class="pre">key</span> <span class="pre">required</span></code></p>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set environment variable</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s1">&#39;your-key&#39;</span>
+
+<span class="c1"># Or pass to command</span>
+claude-force<span class="w"> </span>--api-key<span class="w"> </span>your-key<span class="w"> </span>...
+</pre></div>
+</div>
+</section>
+<section id="sentence-transformers-not-found">
+<h3>Sentence Transformers Not Found<a class="headerlink" href="#sentence-transformers-not-found" title="Link to this heading"></a></h3>
+<p><strong>Problem</strong>: <code class="docutils literal notranslate"><span class="pre">ImportError:</span> <span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">'sentence_transformers'</span></code></p>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install optional dependency</span>
+pip<span class="w"> </span>install<span class="w"> </span>sentence-transformers
+</pre></div>
+</div>
+</section>
+</section>
+<section id="platform-specific-notes">
+<h2>Platform-Specific Notes<a class="headerlink" href="#platform-specific-notes" title="Link to this heading"></a></h2>
+<section id="macos">
+<h3>macOS<a class="headerlink" href="#macos" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install Python via Homebrew</span>
+brew<span class="w"> </span>install<span class="w"> </span>python@3.11
+
+<span class="c1"># Install claude-force</span>
+pip3<span class="w"> </span>install<span class="w"> </span>claude-force
+</pre></div>
+</div>
+</section>
+<section id="linux-ubuntu-debian">
+<h3>Linux (Ubuntu/Debian)<a class="headerlink" href="#linux-ubuntu-debian" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install Python and pip</span>
+sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>python3-venv
+
+<span class="c1"># Install claude-force</span>
+pip3<span class="w"> </span>install<span class="w"> </span>claude-force
+</pre></div>
+</div>
+</section>
+<section id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>Download Python from <a class="reference external" href="https://www.python.org/downloads/">python.org</a></p></li>
+<li><p>Check “Add Python to PATH” during installation</p></li>
+<li><p>Open PowerShell and run:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">claude-force</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Quick Start</strong>: See <a class="reference internal" href="#quickstart.md"><span class="xref myst">Quick Start Guide</span></a></p></li>
+<li><p><strong>API Reference</strong>: Explore <a class="reference internal" href="api-reference/index.html"><span class="std std-doc">API Documentation</span></a></p></li>
+<li><p><strong>Examples</strong>: Check out <a class="reference internal" href="#examples/index.md"><span class="xref myst">Examples</span></a></p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Need help?</strong> Open an issue on <a class="reference external" href="https://github.com/khanh-vu/claude-force/issues">GitHub</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

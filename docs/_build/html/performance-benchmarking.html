@@ -1,0 +1,1204 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Benchmarking Guide &mdash; claude-force 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            claude-force
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Performance Benchmarking Guide</a><ul>
+<li><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#benchmark-types">Benchmark Types</a><ul>
+<li><a class="reference internal" href="#latency-benchmarks">1. Latency Benchmarks</a></li>
+<li><a class="reference internal" href="#cost-benchmarks">2. Cost Benchmarks</a></li>
+<li><a class="reference internal" href="#throughput-benchmarks">3. Throughput Benchmarks</a></li>
+<li><a class="reference internal" href="#accuracy-benchmarks">4. Accuracy Benchmarks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-benchmarks">Running Benchmarks</a><ul>
+<li><a class="reference internal" href="#built-in-benchmark-suite">Built-in Benchmark Suite</a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li><a class="reference internal" href="#available-scenarios">Available Scenarios</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#single-agent-benchmark">Single Agent Benchmark</a></li>
+<li><a class="reference internal" href="#workflow-benchmark">Workflow Benchmark</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-benchmarks">Custom Benchmarks</a><ul>
+<li><a class="reference internal" href="#create-custom-benchmark-suite">Create Custom Benchmark Suite</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#load-testing">Load Testing</a><ul>
+<li><a class="reference internal" href="#concurrent-execution-test">Concurrent Execution Test</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-profiling">Performance Profiling</a><ul>
+<li><a class="reference internal" href="#cpu-profiling">CPU Profiling</a></li>
+<li><a class="reference internal" href="#memory-profiling">Memory Profiling</a></li>
+<li><a class="reference internal" href="#line-by-line-profiling">Line-by-Line Profiling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regression-testing">Regression Testing</a><ul>
+<li><a class="reference internal" href="#automated-regression-detection">Automated Regression Detection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ci-cd-integration">CI/CD Integration</a><ul>
+<li><a class="reference internal" href="#github-actions">GitHub Actions</a></li>
+<li><a class="reference internal" href="#gitlab-ci">GitLab CI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">claude-force</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Performance Benchmarking Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/performance-benchmarking.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="performance-benchmarking-guide">
+<h1>Performance Benchmarking Guide<a class="headerlink" href="#performance-benchmarking-guide" title="Link to this heading"></a></h1>
+<p><strong>For:</strong> Claude Force v2.2.0+
+<strong>Last Updated:</strong> 2025-11-14</p>
+<hr class="docutils" />
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<p>Run comprehensive benchmarks in one command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/home/user/claude-force
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--report
+</pre></div>
+</div>
+<p>View results in <code class="docutils literal notranslate"><span class="pre">benchmarks/results/dashboard.html</span></code></p>
+</section>
+<hr class="docutils" />
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#benchmark-types"><span class="xref myst">Benchmark Types</span></a></p></li>
+<li><p><a class="reference internal" href="#running-benchmarks"><span class="xref myst">Running Benchmarks</span></a></p></li>
+<li><p><a class="reference internal" href="#custom-benchmarks"><span class="xref myst">Custom Benchmarks</span></a></p></li>
+<li><p><a class="reference internal" href="#load-testing"><span class="xref myst">Load Testing</span></a></p></li>
+<li><p><a class="reference internal" href="#performance-profiling"><span class="xref myst">Performance Profiling</span></a></p></li>
+<li><p><a class="reference internal" href="#regression-testing"><span class="xref myst">Regression Testing</span></a></p></li>
+<li><p><a class="reference internal" href="#cicd-integration"><span class="xref myst">CI/CD Integration</span></a></p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="benchmark-types">
+<h2>Benchmark Types<a class="headerlink" href="#benchmark-types" title="Link to this heading"></a></h2>
+<section id="latency-benchmarks">
+<h3>1. Latency Benchmarks<a class="headerlink" href="#latency-benchmarks" title="Link to this heading"></a></h3>
+<p>Measure execution time for various task complexities.</p>
+<p><strong>What it measures:</strong></p>
+<ul class="simple">
+<li><p>Agent execution time (end-to-end)</p></li>
+<li><p>API call latency</p></li>
+<li><p>Local processing overhead</p></li>
+<li><p>Model-specific performance</p></li>
+</ul>
+<p><strong>Example scenarios:</strong></p>
+<ul class="simple">
+<li><p>Simple code explanation (Haiku, ~2-4s)</p></li>
+<li><p>Medium code review (Sonnet, ~4-6s)</p></li>
+<li><p>Complex refactoring (Opus, ~8-15s)</p></li>
+</ul>
+</section>
+<section id="cost-benchmarks">
+<h3>2. Cost Benchmarks<a class="headerlink" href="#cost-benchmarks" title="Link to this heading"></a></h3>
+<p>Measure cost efficiency and optimization effectiveness.</p>
+<p><strong>What it measures:</strong></p>
+<ul class="simple">
+<li><p>Cost per execution</p></li>
+<li><p>Token usage (input/output)</p></li>
+<li><p>Model selection accuracy</p></li>
+<li><p>Cost savings vs baseline (Sonnet-only)</p></li>
+</ul>
+<p><strong>Key metrics:</strong></p>
+<ul class="simple">
+<li><p>Average cost per task type</p></li>
+<li><p>Haiku usage % (target: 60-80%)</p></li>
+<li><p>Total cost for benchmark suite</p></li>
+</ul>
+</section>
+<section id="throughput-benchmarks">
+<h3>3. Throughput Benchmarks<a class="headerlink" href="#throughput-benchmarks" title="Link to this heading"></a></h3>
+<p>Measure system capacity under load.</p>
+<p><strong>What it measures:</strong></p>
+<ul class="simple">
+<li><p>Tasks per minute</p></li>
+<li><p>Concurrent execution capability</p></li>
+<li><p>Resource utilization</p></li>
+<li><p>Queue wait times</p></li>
+</ul>
+<p><strong>Test configurations:</strong></p>
+<ul class="simple">
+<li><p>Sequential (1 task at a time)</p></li>
+<li><p>Low concurrency (5 concurrent)</p></li>
+<li><p>Medium concurrency (10 concurrent)</p></li>
+<li><p>High concurrency (20 concurrent)</p></li>
+</ul>
+</section>
+<section id="accuracy-benchmarks">
+<h3>4. Accuracy Benchmarks<a class="headerlink" href="#accuracy-benchmarks" title="Link to this heading"></a></h3>
+<p>Measure agent selection and task routing accuracy.</p>
+<p><strong>What it measures:</strong></p>
+<ul class="simple">
+<li><p>Semantic selection accuracy</p></li>
+<li><p>Hybrid orchestrator routing accuracy</p></li>
+<li><p>Skills analysis accuracy</p></li>
+<li><p>Context relevance</p></li>
+</ul>
+<p><strong>Evaluation:</strong></p>
+<ul class="simple">
+<li><p>Manual review of agent selection</p></li>
+<li><p>Task completion success rate</p></li>
+<li><p>Output quality assessment</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="running-benchmarks">
+<h2>Running Benchmarks<a class="headerlink" href="#running-benchmarks" title="Link to this heading"></a></h2>
+<section id="built-in-benchmark-suite">
+<h3>Built-in Benchmark Suite<a class="headerlink" href="#built-in-benchmark-suite" title="Link to this heading"></a></h3>
+<section id="basic-usage">
+<h4>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run all benchmarks</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py
+
+<span class="c1"># Run specific scenario</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--scenario<span class="w"> </span>simple_code_review
+
+<span class="c1"># Run with custom iterations</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--iterations<span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># Generate HTML report</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--report<span class="w"> </span>--output<span class="w"> </span>benchmarks/results/
+</pre></div>
+</div>
+</section>
+<section id="available-scenarios">
+<h4>Available Scenarios<a class="headerlink" href="#available-scenarios" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p><strong>simple_task</strong> - Basic code explanation (Haiku)</p></li>
+<li><p><strong>medium_task</strong> - Code review with suggestions (Sonnet)</p></li>
+<li><p><strong>complex_task</strong> - Comprehensive refactoring (Opus)</p></li>
+<li><p><strong>workflow_test</strong> - Multi-agent workflow execution</p></li>
+</ol>
+</section>
+</section>
+<section id="single-agent-benchmark">
+<h3>Single Agent Benchmark<a class="headerlink" href="#single-agent-benchmark" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create benchmark_agent.py</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>benchmark_agent.py<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">#!/usr/bin/env python3</span>
+<span class="s">&quot;&quot;&quot;</span>
+<span class="s">Benchmark a specific agent.</span>
+<span class="s">&quot;&quot;&quot;</span>
+<span class="s">import time</span>
+<span class="s">import sys</span>
+<span class="s">from claude_force.orchestrator import AgentOrchestrator</span>
+
+<span class="s">def benchmark_agent(agent_name: str, task: str, iterations: int = 10):</span>
+<span class="s">    &quot;&quot;&quot;Benchmark a specific agent.&quot;&quot;&quot;</span>
+<span class="s">    orchestrator = AgentOrchestrator()</span>
+
+<span class="s">    results = {</span>
+<span class="s">        &#39;times&#39;: [],</span>
+<span class="s">        &#39;successes&#39;: 0,</span>
+<span class="s">        &#39;failures&#39;: 0,</span>
+<span class="s">        &#39;tokens_input&#39;: [],</span>
+<span class="s">        &#39;tokens_output&#39;: [],</span>
+<span class="s">        &#39;costs&#39;: []</span>
+<span class="s">    }</span>
+
+<span class="s">    print(f&quot;Benchmarking: {agent_name}&quot;)</span>
+<span class="s">    print(f&quot;Task: {task[:50]}...&quot;)</span>
+<span class="s">    print(f&quot;Iterations: {iterations}\n&quot;)</span>
+
+<span class="s">    for i in range(iterations):</span>
+<span class="s">        print(f&quot;  Iteration {i+1}/{iterations}... &quot;, end=&#39;&#39;, flush=True)</span>
+
+<span class="s">        start = time.time()</span>
+<span class="s">        try:</span>
+<span class="s">            result = orchestrator.execute_agent(agent_name, task)</span>
+<span class="s">            elapsed = (time.time() - start) * 1000  # ms</span>
+
+<span class="s">            results[&#39;times&#39;].append(elapsed)</span>
+<span class="s">            results[&#39;successes&#39;] += 1</span>
+
+<span class="s">            # Get metrics from last execution</span>
+<span class="s">            tracker = orchestrator.performance_tracker</span>
+<span class="s">            last_metric = tracker.get_all_metrics()[-1]</span>
+
+<span class="s">            results[&#39;tokens_input&#39;].append(last_metric.input_tokens)</span>
+<span class="s">            results[&#39;tokens_output&#39;].append(last_metric.output_tokens)</span>
+<span class="s">            results[&#39;costs&#39;].append(last_metric.estimated_cost)</span>
+
+<span class="s">            print(f&quot;{elapsed:.0f}ms ✓&quot;)</span>
+
+<span class="s">        except Exception as e:</span>
+<span class="s">            elapsed = (time.time() - start) * 1000</span>
+<span class="s">            results[&#39;times&#39;].append(elapsed)</span>
+<span class="s">            results[&#39;failures&#39;] += 1</span>
+<span class="s">            print(f&quot;FAILED ({elapsed:.0f}ms) ✗&quot;)</span>
+<span class="s">            print(f&quot;    Error: {str(e)}&quot;)</span>
+
+<span class="s">    # Calculate statistics</span>
+<span class="s">    times = results[&#39;times&#39;]</span>
+<span class="s">    times_sorted = sorted(times)</span>
+
+<span class="s">    print(f&quot;\n{&#39;=&#39;*60}&quot;)</span>
+<span class="s">    print(f&quot;BENCHMARK RESULTS: {agent_name}&quot;)</span>
+<span class="s">    print(f&quot;{&#39;=&#39;*60}\n&quot;)</span>
+
+<span class="s">    print(f&quot;Success Rate: {results[&#39;successes&#39;]}/{iterations} ({results[&#39;successes&#39;]/iterations*100:.1f}%)&quot;)</span>
+<span class="s">    print()</span>
+
+<span class="s">    print(&quot;Latency:&quot;)</span>
+<span class="s">    print(f&quot;  Mean:   {sum(times) / len(times):.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  Median: {times_sorted[len(times)//2]:.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  Min:    {min(times):.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  Max:    {max(times):.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  P95:    {times_sorted[int(len(times)*0.95)]:.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  P99:    {times_sorted[int(len(times)*0.99)]:.0f}ms&quot;)</span>
+<span class="s">    print()</span>
+
+<span class="s">    if results[&#39;tokens_input&#39;]:</span>
+<span class="s">        print(&quot;Token Usage:&quot;)</span>
+<span class="s">        print(f&quot;  Avg Input:  {sum(results[&#39;tokens_input&#39;]) / len(results[&#39;tokens_input&#39;]):.0f} tokens&quot;)</span>
+<span class="s">        print(f&quot;  Avg Output: {sum(results[&#39;tokens_output&#39;]) / len(results[&#39;tokens_output&#39;]):.0f} tokens&quot;)</span>
+<span class="s">        print(f&quot;  Total:      {sum(results[&#39;tokens_input&#39;]) + sum(results[&#39;tokens_output&#39;]):,} tokens&quot;)</span>
+<span class="s">        print()</span>
+
+<span class="s">    if results[&#39;costs&#39;]:</span>
+<span class="s">        total_cost = sum(results[&#39;costs&#39;])</span>
+<span class="s">        avg_cost = total_cost / len(results[&#39;costs&#39;])</span>
+<span class="s">        print(&quot;Cost:&quot;)</span>
+<span class="s">        print(f&quot;  Per execution: ${avg_cost:.6f}&quot;)</span>
+<span class="s">        print(f&quot;  Total:         ${total_cost:.4f}&quot;)</span>
+<span class="s">        print()</span>
+
+<span class="s">    return results</span>
+
+<span class="s">if __name__ == &quot;__main__&quot;:</span>
+<span class="s">    if len(sys.argv) &lt; 3:</span>
+<span class="s">        print(&quot;Usage: python benchmark_agent.py &lt;agent_name&gt; &lt;task&gt; [iterations]&quot;)</span>
+<span class="s">        sys.exit(1)</span>
+
+<span class="s">    agent_name = sys.argv[1]</span>
+<span class="s">    task = sys.argv[2]</span>
+<span class="s">    iterations = int(sys.argv[3]) if len(sys.argv) &gt; 3 else 10</span>
+
+<span class="s">    benchmark_agent(agent_name, task, iterations)</span>
+<span class="s">EOF</span>
+
+chmod<span class="w"> </span>+x<span class="w"> </span>benchmark_agent.py
+</pre></div>
+</div>
+<p><strong>Usage:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Benchmark python-expert</span>
+python<span class="w"> </span>benchmark_agent.py<span class="w"> </span>python-expert<span class="w"> </span><span class="s2">&quot;Explain list comprehensions in Python&quot;</span><span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># Benchmark code-reviewer</span>
+python<span class="w"> </span>benchmark_agent.py<span class="w"> </span>code-reviewer<span class="w"> </span><span class="s2">&quot;Review this function for best practices&quot;</span><span class="w"> </span><span class="m">5</span>
+</pre></div>
+</div>
+</section>
+<section id="workflow-benchmark">
+<h3>Workflow Benchmark<a class="headerlink" href="#workflow-benchmark" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create benchmark_workflow.py</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>benchmark_workflow.py<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">#!/usr/bin/env python3</span>
+<span class="s">&quot;&quot;&quot;</span>
+<span class="s">Benchmark workflow execution.</span>
+<span class="s">&quot;&quot;&quot;</span>
+<span class="s">import time</span>
+<span class="s">from claude_force.orchestrator import AgentOrchestrator</span>
+
+<span class="s">def benchmark_workflow(workflow_name: str, iterations: int = 5):</span>
+<span class="s">    &quot;&quot;&quot;Benchmark workflow execution.&quot;&quot;&quot;</span>
+<span class="s">    orchestrator = AgentOrchestrator()</span>
+
+<span class="s">    results = {</span>
+<span class="s">        &#39;times&#39;: [],</span>
+<span class="s">        &#39;successes&#39;: 0,</span>
+<span class="s">        &#39;failures&#39;: 0,</span>
+<span class="s">        &#39;step_times&#39;: {},</span>
+<span class="s">        &#39;total_cost&#39;: 0</span>
+<span class="s">    }</span>
+
+<span class="s">    print(f&quot;Benchmarking workflow: {workflow_name}&quot;)</span>
+<span class="s">    print(f&quot;Iterations: {iterations}\n&quot;)</span>
+
+<span class="s">    for i in range(iterations):</span>
+<span class="s">        print(f&quot;Iteration {i+1}/{iterations}:&quot;)</span>
+
+<span class="s">        start = time.time()</span>
+<span class="s">        try:</span>
+<span class="s">            # Load workflow</span>
+<span class="s">            workflow = orchestrator.config[&#39;workflows&#39;].get(workflow_name)</span>
+<span class="s">            if not workflow:</span>
+<span class="s">                raise ValueError(f&quot;Workflow &#39;{workflow_name}&#39; not found&quot;)</span>
+
+<span class="s">            # Execute each step</span>
+<span class="s">            step_start_time = time.time()</span>
+<span class="s">            for j, step in enumerate(workflow[&#39;steps&#39;]):</span>
+<span class="s">                step_name = f&quot;  Step {j+1}: {step[&#39;agent&#39;]}&quot;</span>
+<span class="s">                print(f&quot;{step_name:30s} &quot;, end=&#39;&#39;, flush=True)</span>
+
+<span class="s">                step_start = time.time()</span>
+<span class="s">                orchestrator.execute_agent(step[&#39;agent&#39;], step[&#39;task&#39;])</span>
+<span class="s">                step_elapsed = (time.time() - step_start) * 1000</span>
+
+<span class="s">                if step[&#39;agent&#39;] not in results[&#39;step_times&#39;]:</span>
+<span class="s">                    results[&#39;step_times&#39;][step[&#39;agent&#39;]] = []</span>
+<span class="s">                results[&#39;step_times&#39;][step[&#39;agent&#39;]].append(step_elapsed)</span>
+
+<span class="s">                print(f&quot;{step_elapsed:.0f}ms ✓&quot;)</span>
+
+<span class="s">            elapsed = (time.time() - start) * 1000</span>
+<span class="s">            results[&#39;times&#39;].append(elapsed)</span>
+<span class="s">            results[&#39;successes&#39;] += 1</span>
+
+<span class="s">            print(f&quot;  {&#39;Total:&#39;:&lt;30s} {elapsed:.0f}ms\n&quot;)</span>
+
+<span class="s">        except Exception as e:</span>
+<span class="s">            elapsed = (time.time() - start) * 1000</span>
+<span class="s">            results[&#39;times&#39;].append(elapsed)</span>
+<span class="s">            results[&#39;failures&#39;] += 1</span>
+<span class="s">            print(f&quot;  FAILED: {str(e)}\n&quot;)</span>
+
+<span class="s">    # Calculate statistics</span>
+<span class="s">    times = results[&#39;times&#39;]</span>
+<span class="s">    times_sorted = sorted(times)</span>
+
+<span class="s">    print(f&quot;{&#39;=&#39;*60}&quot;)</span>
+<span class="s">    print(f&quot;WORKFLOW BENCHMARK RESULTS: {workflow_name}&quot;)</span>
+<span class="s">    print(f&quot;{&#39;=&#39;*60}\n&quot;)</span>
+
+<span class="s">    print(f&quot;Success Rate: {results[&#39;successes&#39;]}/{iterations} ({results[&#39;successes&#39;]/iterations*100:.1f}%)&quot;)</span>
+<span class="s">    print()</span>
+
+<span class="s">    print(&quot;Total Workflow Time:&quot;)</span>
+<span class="s">    print(f&quot;  Mean:   {sum(times) / len(times):.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  Median: {times_sorted[len(times)//2]:.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  Min:    {min(times):.0f}ms&quot;)</span>
+<span class="s">    print(f&quot;  Max:    {max(times):.0f}ms&quot;)</span>
+<span class="s">    print()</span>
+
+<span class="s">    print(&quot;Average Time per Step:&quot;)</span>
+<span class="s">    for agent, step_times in sorted(results[&#39;step_times&#39;].items()):</span>
+<span class="s">        avg_time = sum(step_times) / len(step_times)</span>
+<span class="s">        print(f&quot;  {agent:30s} {avg_time:.0f}ms&quot;)</span>
+<span class="s">    print()</span>
+
+<span class="s">    return results</span>
+
+<span class="s">if __name__ == &quot;__main__&quot;:</span>
+<span class="s">    import sys</span>
+
+<span class="s">    if len(sys.argv) &lt; 2:</span>
+<span class="s">        print(&quot;Usage: python benchmark_workflow.py &lt;workflow_name&gt; [iterations]&quot;)</span>
+<span class="s">        sys.exit(1)</span>
+
+<span class="s">    workflow_name = sys.argv[1]</span>
+<span class="s">    iterations = int(sys.argv[2]) if len(sys.argv) &gt; 2 else 5</span>
+
+<span class="s">    benchmark_workflow(workflow_name, iterations)</span>
+<span class="s">EOF</span>
+
+chmod<span class="w"> </span>+x<span class="w"> </span>benchmark_workflow.py
+</pre></div>
+</div>
+<p><strong>Usage:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Benchmark code-quality-check workflow</span>
+python<span class="w"> </span>benchmark_workflow.py<span class="w"> </span>code-quality-check<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># Benchmark documentation-generation workflow</span>
+python<span class="w"> </span>benchmark_workflow.py<span class="w"> </span>documentation-generation<span class="w"> </span><span class="m">3</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="custom-benchmarks">
+<h2>Custom Benchmarks<a class="headerlink" href="#custom-benchmarks" title="Link to this heading"></a></h2>
+<section id="create-custom-benchmark-suite">
+<h3>Create Custom Benchmark Suite<a class="headerlink" href="#create-custom-benchmark-suite" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Custom benchmark suite for your specific use cases.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomBenchmark</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;benchmark_results&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a benchmark scenario.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scenario: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">scenario_results</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="n">agent</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="n">task</span><span class="p">,</span>
+            <span class="s1">&#39;iterations&#39;</span><span class="p">:</span> <span class="n">iterations</span><span class="p">,</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s1">&#39;executions&#39;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">iterations</span><span class="si">}</span><span class="s2">] &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+                <span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+
+                <span class="c1"># Get last metric</span>
+                <span class="n">last_metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">performance_tracker</span><span class="o">.</span><span class="n">get_all_metrics</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+                <span class="n">execution_result</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;iteration&#39;</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s1">&#39;execution_time_ms&#39;</span><span class="p">:</span> <span class="n">elapsed</span><span class="p">,</span>
+                    <span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="n">last_metric</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span>
+                    <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="n">last_metric</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">,</span>
+                    <span class="s1">&#39;estimated_cost&#39;</span><span class="p">:</span> <span class="n">last_metric</span><span class="o">.</span><span class="n">estimated_cost</span><span class="p">,</span>
+                    <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">last_metric</span><span class="o">.</span><span class="n">model</span>
+                <span class="p">}</span>
+
+                <span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;executions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">execution_result</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms ✓&quot;</span><span class="p">)</span>
+
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+                <span class="n">execution_result</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;iteration&#39;</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="s1">&#39;execution_time_ms&#39;</span><span class="p">:</span> <span class="n">elapsed</span><span class="p">,</span>
+                    <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="p">}</span>
+                <span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;executions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">execution_result</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FAILED ✗&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate summary statistics</span>
+        <span class="n">successful</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;executions&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">successful</span><span class="p">:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;execution_time_ms&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">successful</span><span class="p">]</span>
+            <span class="n">times_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+
+            <span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;success_rate&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">successful</span><span class="p">)</span> <span class="o">/</span> <span class="n">iterations</span><span class="p">,</span>
+                <span class="s1">&#39;mean_time_ms&#39;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">),</span>
+                <span class="s1">&#39;median_time_ms&#39;</span><span class="p">:</span> <span class="n">times_sorted</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span>
+                <span class="s1">&#39;min_time_ms&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">times</span><span class="p">),</span>
+                <span class="s1">&#39;max_time_ms&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">times</span><span class="p">),</span>
+                <span class="s1">&#39;p95_time_ms&#39;</span><span class="p">:</span> <span class="n">times_sorted</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="o">*</span><span class="mf">0.95</span><span class="p">)],</span>
+                <span class="s1">&#39;avg_input_tokens&#39;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">successful</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">successful</span><span class="p">),</span>
+                <span class="s1">&#39;avg_output_tokens&#39;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;output_tokens&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">successful</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">successful</span><span class="p">),</span>
+                <span class="s1">&#39;total_cost&#39;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;estimated_cost&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">successful</span><span class="p">)</span>
+            <span class="p">}</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Success Rate: </span><span class="si">{</span><span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Mean Time: </span><span class="si">{</span><span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;mean_time_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total Cost: $</span><span class="si">{</span><span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;total_cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scenario_results</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;success_rate&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;All iterations failed&#39;</span>
+            <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scenario_results</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scenario_results</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save benchmark results to JSON.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;benchmark_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">.json&quot;</span>
+
+        <span class="n">output_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">filename</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span>
+                <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                <span class="s1">&#39;scenarios&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
+            <span class="p">},</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ Results saved to: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print overall benchmark summary.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;BENCHMARK SUMMARY&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">total_scenarios</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">total_executions</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;iterations&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">total_successes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;executions&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Scenarios: </span><span class="si">{</span><span class="n">total_scenarios</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Executions: </span><span class="si">{</span><span class="n">total_executions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overall Success Rate: </span><span class="si">{</span><span class="n">total_successes</span><span class="o">/</span><span class="n">total_executions</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scenario Results:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="s1">&#39;mean_time_ms&#39;</span> <span class="ow">in</span> <span class="n">summary</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">30s</span><span class="si">}</span><span class="s2"> &quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;6.1%</span><span class="si">}</span><span class="s2">  &quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;mean_time_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;7.0f</span><span class="si">}</span><span class="s2">ms  &quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;total_cost&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">30s</span><span class="si">}</span><span class="s2"> FAILED&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+
+<span class="c1"># Example usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">benchmark</span> <span class="o">=</span> <span class="n">CustomBenchmark</span><span class="p">()</span>
+
+    <span class="c1"># Define your scenarios</span>
+    <span class="n">scenarios</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Simple Python Question&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python-expert&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;What are list comprehensions?&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;iterations&#39;</span><span class="p">:</span> <span class="mi">10</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Code Review&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;code-reviewer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Review this function: def add(a, b): return a + b&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;iterations&#39;</span><span class="p">:</span> <span class="mi">5</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;API Design&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;api-designer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Design a REST API for a todo application&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;iterations&#39;</span><span class="p">:</span> <span class="mi">5</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Run all scenarios</span>
+    <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">scenarios</span><span class="p">:</span>
+        <span class="n">benchmark</span><span class="o">.</span><span class="n">run_scenario</span><span class="p">(</span><span class="o">**</span><span class="n">scenario</span><span class="p">)</span>
+
+    <span class="c1"># Print and save results</span>
+    <span class="n">benchmark</span><span class="o">.</span><span class="n">print_summary</span><span class="p">()</span>
+    <span class="n">benchmark</span><span class="o">.</span><span class="n">save_results</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Save and run:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save to file</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>custom_benchmark.py<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s"># ... (paste the code above)</span>
+<span class="s">EOF</span>
+
+<span class="c1"># Run benchmark</span>
+python<span class="w"> </span>custom_benchmark.py
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="load-testing">
+<h2>Load Testing<a class="headerlink" href="#load-testing" title="Link to this heading"></a></h2>
+<section id="concurrent-execution-test">
+<h3>Concurrent Execution Test<a class="headerlink" href="#concurrent-execution-test" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Load test with concurrent agent execution.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">claude_force.orchestrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentOrchestrator</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_task_async</span><span class="p">(</span><span class="n">orchestrator</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">task_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute single task asynchronously (simulated).&quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Note: Current implementation is synchronous</span>
+        <span class="c1"># This simulates async by running in executor</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">orchestrator</span><span class="o">.</span><span class="n">execute_agent</span><span class="p">,</span>
+            <span class="n">agent</span><span class="p">,</span>
+            <span class="n">task</span>
+        <span class="p">)</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;task_id&#39;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;time_ms&#39;</span><span class="p">:</span> <span class="n">elapsed</span>
+        <span class="p">}</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;task_id&#39;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;time_ms&#39;</span><span class="p">:</span> <span class="n">elapsed</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="p">}</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">load_test</span><span class="p">(</span><span class="n">num_tasks</span><span class="p">,</span> <span class="n">concurrency</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run load test with specified concurrency.&quot;&quot;&quot;</span>
+    <span class="n">orchestrator</span> <span class="o">=</span> <span class="n">AgentOrchestrator</span><span class="p">()</span>
+
+    <span class="c1"># Generate tasks</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python-expert&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Explain concept </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_tasks</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LOAD TEST&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Tasks: </span><span class="si">{</span><span class="n">num_tasks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Concurrency: </span><span class="si">{</span><span class="n">concurrency</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Create semaphore for concurrency control</span>
+    <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">concurrency</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_with_semaphore</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">execute_task_async</span><span class="p">(</span>
+                <span class="n">orchestrator</span><span class="p">,</span>
+                <span class="n">task</span><span class="p">[</span><span class="s1">&#39;agent&#39;</span><span class="p">],</span>
+                <span class="n">task</span><span class="p">[</span><span class="s1">&#39;task&#39;</span><span class="p">],</span>
+                <span class="n">task</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Execute all tasks</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+        <span class="n">execute_with_semaphore</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span>
+    <span class="p">])</span>
+
+    <span class="n">total_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+
+    <span class="c1"># Analyze results</span>
+    <span class="n">successes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">])</span>
+    <span class="n">failures</span> <span class="o">=</span> <span class="n">num_tasks</span> <span class="o">-</span> <span class="n">successes</span>
+    <span class="n">success_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">successes</span> <span class="o">/</span> <span class="n">num_tasks</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+
+    <span class="n">execution_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;time_ms&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">execution_times</span><span class="p">:</span>
+        <span class="n">avg_time</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span>
+        <span class="n">min_time</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span>
+        <span class="n">max_time</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span>
+        <span class="n">times_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">execution_times</span><span class="p">)</span>
+        <span class="n">p50</span> <span class="o">=</span> <span class="n">times_sorted</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">times_sorted</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">p95</span> <span class="o">=</span> <span class="n">times_sorted</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">times_sorted</span><span class="p">)</span><span class="o">*</span><span class="mf">0.95</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">avg_time</span> <span class="o">=</span> <span class="n">min_time</span> <span class="o">=</span> <span class="n">max_time</span> <span class="o">=</span> <span class="n">p50</span> <span class="o">=</span> <span class="n">p95</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">throughput</span> <span class="o">=</span> <span class="n">num_tasks</span> <span class="o">/</span> <span class="n">total_time</span>
+
+    <span class="c1"># Print results</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RESULTS&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">60</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Time: </span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success Rate: </span><span class="si">{</span><span class="n">successes</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">num_tasks</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">success_rate</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Throughput: </span><span class="si">{</span><span class="n">throughput</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> tasks/second&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Latency:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Average: </span><span class="si">{</span><span class="n">avg_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  P50:     </span><span class="si">{</span><span class="n">p50</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  P95:     </span><span class="si">{</span><span class="n">p95</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Min:     </span><span class="si">{</span><span class="n">min_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Max:     </span><span class="si">{</span><span class="n">max_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">results</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="n">num_tasks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">50</span>
+    <span class="n">concurrency</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="mi">5</span>
+
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">load_test</span><span class="p">(</span><span class="n">num_tasks</span><span class="p">,</span> <span class="n">concurrency</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>Usage:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 50 tasks, 5 concurrent</span>
+python<span class="w"> </span>load_test.py<span class="w"> </span><span class="m">50</span><span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># 100 tasks, 10 concurrent</span>
+python<span class="w"> </span>load_test.py<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># 200 tasks, 20 concurrent</span>
+python<span class="w"> </span>load_test.py<span class="w"> </span><span class="m">200</span><span class="w"> </span><span class="m">20</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-profiling">
+<h2>Performance Profiling<a class="headerlink" href="#performance-profiling" title="Link to this heading"></a></h2>
+<section id="cpu-profiling">
+<h3>CPU Profiling<a class="headerlink" href="#cpu-profiling" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install profiling tool</span>
+pip<span class="w"> </span>install<span class="w"> </span>py-spy
+
+<span class="c1"># Profile agent execution</span>
+py-spy<span class="w"> </span>record<span class="w"> </span>-o<span class="w"> </span>profile.svg<span class="w"> </span>--<span class="w"> </span>python<span class="w"> </span>benchmark_agent.py<span class="w"> </span>python-expert<span class="w"> </span><span class="s2">&quot;Explain decorators&quot;</span><span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># View flame graph</span>
+open<span class="w"> </span>profile.svg<span class="w">  </span><span class="c1"># or firefox profile.svg</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-profiling">
+<h3>Memory Profiling<a class="headerlink" href="#memory-profiling" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install memory profiler</span>
+pip<span class="w"> </span>install<span class="w"> </span>memory_profiler
+
+<span class="c1"># Create profiled script</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>profile_memory.py<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<span class="s">from memory_profiler import profile</span>
+<span class="s">from claude_force.orchestrator import AgentOrchestrator</span>
+
+<span class="s">@profile</span>
+<span class="s">def run_agent():</span>
+<span class="s">    orchestrator = AgentOrchestrator()</span>
+<span class="s">    result = orchestrator.execute_agent(&quot;python-expert&quot;, &quot;Explain list comprehensions&quot;)</span>
+<span class="s">    return result</span>
+
+<span class="s">if __name__ == &quot;__main__&quot;:</span>
+<span class="s">    run_agent()</span>
+<span class="s">EOF</span>
+
+<span class="c1"># Run profiler</span>
+python<span class="w"> </span>-m<span class="w"> </span>memory_profiler<span class="w"> </span>profile_memory.py
+</pre></div>
+</div>
+</section>
+<section id="line-by-line-profiling">
+<h3>Line-by-Line Profiling<a class="headerlink" href="#line-by-line-profiling" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install line_profiler</span>
+pip<span class="w"> </span>install<span class="w"> </span>line_profiler
+
+<span class="c1"># Add @profile decorator to functions you want to profile</span>
+<span class="c1"># Then run:</span>
+kernprof<span class="w"> </span>-l<span class="w"> </span>-v<span class="w"> </span>your_script.py
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="regression-testing">
+<h2>Regression Testing<a class="headerlink" href="#regression-testing" title="Link to this heading"></a></h2>
+<section id="automated-regression-detection">
+<h3>Automated Regression Detection<a class="headerlink" href="#automated-regression-detection" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Automated performance regression testing.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">load_baseline</span><span class="p">(</span><span class="n">baseline_file</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load baseline metrics.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">baseline_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_current_benchmarks</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run current benchmarks and return results.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">custom_benchmark</span><span class="w"> </span><span class="kn">import</span> <span class="n">CustomBenchmark</span>
+
+    <span class="n">benchmark</span> <span class="o">=</span> <span class="n">CustomBenchmark</span><span class="p">()</span>
+
+    <span class="c1"># Run same scenarios as baseline</span>
+    <span class="n">scenarios</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Simple Python Question&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python-expert&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;What are list comprehensions?&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;iterations&#39;</span><span class="p">:</span> <span class="mi">10</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Code Review&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;agent&#39;</span><span class="p">:</span> <span class="s1">&#39;code-reviewer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;task&#39;</span><span class="p">:</span> <span class="s1">&#39;Review this function: def add(a, b): return a + b&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;iterations&#39;</span><span class="p">:</span> <span class="mi">5</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">scenarios</span><span class="p">:</span>
+        <span class="n">benchmark</span><span class="o">.</span><span class="n">run_scenario</span><span class="p">(</span><span class="o">**</span><span class="n">scenario</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">results</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_regressions</span><span class="p">(</span><span class="n">baseline</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.15</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Detect performance regressions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        baseline: Baseline benchmark results</span>
+<span class="sd">        current: Current benchmark results</span>
+<span class="sd">        threshold: Allowed degradation (1.15 = 15% slower)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of regressions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">regressions</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Match scenarios by name</span>
+    <span class="n">baseline_by_name</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">baseline</span><span class="p">[</span><span class="s1">&#39;scenarios&#39;</span><span class="p">]}</span>
+
+    <span class="k">for</span> <span class="n">current_scenario</span> <span class="ow">in</span> <span class="n">current</span><span class="p">:</span>
+        <span class="n">scenario_name</span> <span class="o">=</span> <span class="n">current_scenario</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">baseline_scenario</span> <span class="o">=</span> <span class="n">baseline_by_name</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scenario_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">baseline_scenario</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">current_summary</span> <span class="o">=</span> <span class="n">current_scenario</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">baseline_summary</span> <span class="o">=</span> <span class="n">baseline_scenario</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;summary&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">current_summary</span> <span class="ow">and</span> <span class="n">baseline_summary</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Check latency regression</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">current_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mean_time_ms&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">baseline_time</span> <span class="o">=</span> <span class="n">baseline_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mean_time_ms&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">current_time</span> <span class="o">&gt;</span> <span class="n">baseline_time</span> <span class="o">*</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">regressions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;scenario&#39;</span><span class="p">:</span> <span class="n">scenario_name</span><span class="p">,</span>
+                <span class="s1">&#39;metric&#39;</span><span class="p">:</span> <span class="s1">&#39;Mean Execution Time&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;baseline&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">baseline_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;current&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;degradation&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">((</span><span class="n">current_time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">baseline_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span>
+            <span class="p">})</span>
+
+        <span class="c1"># Check success rate regression</span>
+        <span class="n">current_success</span> <span class="o">=</span> <span class="n">current_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success_rate&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">baseline_success</span> <span class="o">=</span> <span class="n">baseline_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success_rate&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">current_success</span> <span class="o">&lt;</span> <span class="n">baseline_success</span> <span class="o">*</span> <span class="mf">0.95</span><span class="p">:</span>  <span class="c1"># 5% drop</span>
+            <span class="n">regressions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;scenario&#39;</span><span class="p">:</span> <span class="n">scenario_name</span><span class="p">,</span>
+                <span class="s1">&#39;metric&#39;</span><span class="p">:</span> <span class="s1">&#39;Success Rate&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;baseline&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">baseline_success</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;current&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">current_success</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;degradation&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">baseline_success</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">current_success</span><span class="p">)</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">pp&quot;</span>
+            <span class="p">})</span>
+
+        <span class="c1"># Check cost regression</span>
+        <span class="n">current_cost</span> <span class="o">=</span> <span class="n">current_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_cost&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">baseline_cost</span> <span class="o">=</span> <span class="n">baseline_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_cost&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">current_cost</span> <span class="o">&gt;</span> <span class="n">baseline_cost</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">:</span>  <span class="c1"># 50% cost increase</span>
+            <span class="n">regressions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;scenario&#39;</span><span class="p">:</span> <span class="n">scenario_name</span><span class="p">,</span>
+                <span class="s1">&#39;metric&#39;</span><span class="p">:</span> <span class="s1">&#39;Total Cost&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;baseline&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">baseline_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;current&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">current_cost</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s1">&#39;degradation&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">((</span><span class="n">current_cost</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">baseline_cost</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span>
+            <span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">regressions</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">baseline_file</span> <span class="o">=</span> <span class="s2">&quot;benchmark_results/baseline.json&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">baseline_file</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;❌ Baseline file not found. Create baseline first:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   python custom_benchmark.py&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   mv benchmark_results/benchmark_*.json </span><span class="si">{</span><span class="n">baseline_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading baseline...&quot;</span><span class="p">)</span>
+    <span class="n">baseline</span> <span class="o">=</span> <span class="n">load_baseline</span><span class="p">(</span><span class="n">baseline_file</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running current benchmarks...&quot;</span><span class="p">)</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">run_current_benchmarks</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Detecting regressions...&quot;</span><span class="p">)</span>
+    <span class="n">regressions</span> <span class="o">=</span> <span class="n">detect_regressions</span><span class="p">(</span><span class="n">baseline</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">regressions</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">⚠️  PERFORMANCE REGRESSIONS DETECTED:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regressions</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Scenario: </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;scenario&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Metric: </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;metric&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Baseline:    </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;baseline&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Current:     </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;current&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Degradation: </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;degradation&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ No performance regressions detected&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="ci-cd-integration">
+<h2>CI/CD Integration<a class="headerlink" href="#ci-cd-integration" title="Link to this heading"></a></h2>
+<section id="github-actions">
+<h3>GitHub Actions<a class="headerlink" href="#github-actions" title="Link to this heading"></a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># .github/workflows/performance-test.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Performance Tests</span>
+
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">develop</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">benchmark</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v3</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Set up Python</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v4</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.11&#39;</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">pip install -e .</span>
+<span class="w">          </span><span class="no">pip install pytest pytest-benchmark</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run benchmarks</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">ANTHROPIC_API_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.ANTHROPIC_API_KEY }}</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">python custom_benchmark.py</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check for regressions</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">python regression_test.py</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Upload benchmark results</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/upload-artifact@v3</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark-results</span>
+<span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark_results/</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Comment PR with results</span>
+<span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.event_name == &#39;pull_request&#39;</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/github-script@v6</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">script</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">            </span><span class="no">const fs = require(&#39;fs&#39;);</span>
+<span class="w">            </span><span class="no">const results = JSON.parse(fs.readFileSync(&#39;benchmark_results/benchmark_latest.json&#39;));</span>
+
+<span class="w">            </span><span class="no">let comment = &#39;## Performance Benchmark Results\n\n&#39;;</span>
+<span class="w">            </span><span class="no">comment += &#39;| Scenario | Success Rate | Avg Time | Cost |\n&#39;;</span>
+<span class="w">            </span><span class="no">comment += &#39;|----------|--------------|----------|------|\n&#39;;</span>
+
+<span class="w">            </span><span class="no">for (const scenario of results.scenarios) {</span>
+<span class="w">              </span><span class="no">const summary = scenario.summary;</span>
+<span class="w">              </span><span class="no">comment += `| ${scenario.name} | ${(summary.success_rate * 100).toFixed(1)}% | ${summary.mean_time_ms.toFixed(0)}ms | $${summary.total_cost.toFixed(4)} |\n`;</span>
+<span class="w">            </span><span class="no">}</span>
+
+<span class="w">            </span><span class="no">github.rest.issues.createComment({</span>
+<span class="w">              </span><span class="no">issue_number: context.issue.number,</span>
+<span class="w">              </span><span class="no">owner: context.repo.owner,</span>
+<span class="w">              </span><span class="no">repo: context.repo.repo,</span>
+<span class="w">              </span><span class="no">body: comment</span>
+<span class="w">            </span><span class="no">});</span>
+</pre></div>
+</div>
+</section>
+<section id="gitlab-ci">
+<h3>GitLab CI<a class="headerlink" href="#gitlab-ci" title="Link to this heading"></a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># .gitlab-ci.yml</span>
+<span class="nt">performance-test</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python:3.11</span>
+<span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pip install -e .</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python custom_benchmark.py</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python regression_test.py</span>
+<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark_results/</span>
+<span class="w">    </span><span class="nt">expire_in</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30 days</span>
+<span class="w">  </span><span class="nt">only</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">merge_requests</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<p><strong>Quick Commands:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run built-in benchmarks</span>
+python<span class="w"> </span>benchmarks/run_benchmarks.py<span class="w"> </span>--report
+
+<span class="c1"># Benchmark specific agent</span>
+python<span class="w"> </span>benchmark_agent.py<span class="w"> </span>python-expert<span class="w"> </span><span class="s2">&quot;Explain decorators&quot;</span><span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># Benchmark workflow</span>
+python<span class="w"> </span>benchmark_workflow.py<span class="w"> </span>code-quality-check<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># Run custom benchmark suite</span>
+python<span class="w"> </span>custom_benchmark.py
+
+<span class="c1"># Load test</span>
+python<span class="w"> </span>load_test.py<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># Check for regressions</span>
+python<span class="w"> </span>regression_test.py
+</pre></div>
+</div>
+<p><strong>Best Practices:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Establish baseline</strong> before making changes</p></li>
+<li><p><strong>Run benchmarks regularly</strong> (nightly, pre-release)</p></li>
+<li><p><strong>Compare results</strong> against baseline</p></li>
+<li><p><strong>Set performance budgets</strong> (latency, cost, success rate)</p></li>
+<li><p><strong>Profile when optimizing</strong> (CPU, memory)</p></li>
+<li><p><strong>Test under load</strong> (concurrency, stress tests)</p></li>
+<li><p><strong>Automate in CI/CD</strong> (catch regressions early)</p></li>
+</ol>
+<p><strong>Key Metrics:</strong></p>
+<ul class="simple">
+<li><p>✅ Execution time (P50, P95, P99)</p></li>
+<li><p>✅ Success rate (&gt;95% target)</p></li>
+<li><p>✅ Cost per execution</p></li>
+<li><p>✅ Token usage</p></li>
+<li><p>✅ Throughput (tasks/second)</p></li>
+</ul>
+<hr class="docutils" />
+<p>For detailed analysis and monitoring, see:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="performance-analysis.html"><span class="std std-doc">Performance Analysis Report</span></a></p></li>
+<li><p><a class="reference internal" href="performance-monitoring-guide.html"><span class="std std-doc">Performance Monitoring Guide</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, claude-force contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

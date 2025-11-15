@@ -7,8 +7,8 @@ copyright = "2025, claude-force contributors"
 author = "claude-force contributors"
 
 # The full version, including alpha/beta/rc tags
-release = "2.1.0"
-version = "2.1.0"
+release = "2.2.0"
+version = "2.2.0"
 
 # -- General configuration ---------------------------------------------------
 
@@ -65,7 +65,6 @@ napoleon_attr_annotations = True
 # Intersphinx mapping
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "anthropic": ("https://docs.anthropic.com/", None),
 }
 
 # MyST settings (for Markdown support)
