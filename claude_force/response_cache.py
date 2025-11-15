@@ -87,7 +87,8 @@ class ResponseCache:
         """
         # ✅ Validate cache directory to prevent path traversal (SECURITY FIX)
         if cache_dir:
-            cache_dir = cache_dir.resolve()
+            # ✅ Expand tilde (~) before resolving to handle paths like ~/cache
+            cache_dir = cache_dir.expanduser().resolve()
             base = Path.home() / ".claude"
             # Allow /tmp and current directory for testing
             allowed_bases = [base, Path("/tmp"), Path.cwd()]

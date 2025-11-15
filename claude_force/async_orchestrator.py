@@ -437,11 +437,12 @@ class AsyncAgentOrchestrator:
             prompt_parts = [agent_definition, ""]
 
             # ✅ Inject memory context if available
+            # Use original task (not sanitized) for memory lookup to preserve full context
             if use_memory and self.memory:
                 try:
                     # Run synchronous memory call in thread pool (Python 3.8 compatible)
                     context = await _run_in_thread(
-                        self.memory.get_context_for_task, sanitized_task, agent_name
+                        self.memory.get_context_for_task, task, agent_name
                     )
                     if context:
                         prompt_parts.extend([context, ""])
@@ -524,12 +525,13 @@ class AsyncAgentOrchestrator:
                     logger.warning("Failed to cache response", extra={"error": str(cache_error)})
 
             # ✅ Store in memory (only if use_memory=True)
+            # Use original task (not sanitized) for memory storage to preserve full context
             if use_memory and self.memory:
                 try:
                     await _run_in_thread(
                         self.memory.store_session,
                         agent_name=agent_name,
-                        task=sanitized_task,
+                        task=task,
                         output=output,
                         success=True,
                         execution_time_ms=execution_time_ms,
@@ -605,12 +607,13 @@ class AsyncAgentOrchestrator:
                 )
 
             # ✅ Store failed execution in memory (only if use_memory=True)
+            # Use original task (not sanitized) for memory storage to preserve full context
             if use_memory and self.memory:
                 try:
                     await _run_in_thread(
                         self.memory.store_session,
                         agent_name=agent_name,
-                        task=sanitized_task,
+                        task=task,
                         output=str(e),
                         success=False,
                         execution_time_ms=execution_time_ms,

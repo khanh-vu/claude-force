@@ -580,3 +580,123 @@ def test_cache_performance(tmp_path):
     # Should be reasonably fast
     assert store_time < 5.0  # Should store 1000 entries in < 5s
     assert retrieve_time < 1.0  # Should retrieve 1000 entries in < 1s
+
+
+# ============================================================================
+# Regression Tests (✅ NEW from Codex review)
+# ============================================================================
+
+def test_cache_expands_user_home():
+    """Test that tilde (~) in cache path is properly expanded."""
+    from pathlib import Path
+
+    # Create cache with tilde path
+    cache_path = Path("~/.claude/test_cache_tilde")
+    cache = ResponseCache(cache_dir=cache_path, cache_secret="test_secret")
+
+    # Verify that tilde was expanded and path is under home directory
+    assert cache.cache_dir.is_absolute()
+    assert str(cache.cache_dir).startswith(str(Path.home()))
+    assert "~" not in str(cache.cache_dir)
+
+    # Clean up
+    import shutil
+    if cache.cache_dir.exists():
+        shutil.rmtree(cache.cache_dir)
+
+
+def test_ttl_expiration_updates_size(tmp_path):
+    """Test that TTL expiration properly updates cache size accounting."""
+    cache = ResponseCache(
+        cache_dir=tmp_path / "cache",
+        ttl_hours=0.0001,  # Very short TTL (~0.36 seconds)
+        cache_secret="test_secret"
+    )
+
+    # Store an entry
+    large_response = "x" * 10000  # 10KB
+    cache.set("agent", "task", "model", large_response, 100, 50, 0.001)
+
+    # Verify size increased
+    initial_size = cache.stats['size_bytes']
+    assert initial_size > 0
+
+    # Wait for TTL to expire
+    time.sleep(0.5)
+
+    # Try to get expired entry (should trigger eviction)
+    result = cache.get("agent", "task", "model")
+    assert result is None
+
+    # Verify size was decreased
+    assert cache.stats['size_bytes'] < initial_size
+    # Should be 0 or close to 0 (accounting for index file)
+    assert cache.stats['size_bytes'] < 1000
+
+
+def test_overwrite_updates_size(tmp_path):
+    """Test that overwriting cache entries properly updates size accounting."""
+    cache = ResponseCache(
+        cache_dir=tmp_path / "cache",
+        cache_secret="test_secret"
+    )
+
+    # Store initial entry
+    initial_response = "x" * 1000  # 1KB
+    cache.set("agent", "task", "model", initial_response, 100, 50, 0.001)
+    size_after_first = cache.stats['size_bytes']
+    assert size_after_first > 0
+
+    # Overwrite with larger entry
+    larger_response = "x" * 5000  # 5KB
+    cache.set("agent", "task", "model", larger_response, 100, 50, 0.001)
+    size_after_overwrite = cache.stats['size_bytes']
+
+    # Size should have increased (not doubled)
+    # The old entry size should have been subtracted before adding new size
+    assert size_after_overwrite > size_after_first
+    size_difference = size_after_overwrite - size_after_first
+    # Should be approximately 4KB (5KB - 1KB), allow some margin for metadata
+    assert 3000 < size_difference < 6000
+
+    # Overwrite with smaller entry
+    smaller_response = "y" * 500  # 0.5KB
+    cache.set("agent", "task", "model", smaller_response, 100, 50, 0.001)
+    size_after_small = cache.stats['size_bytes']
+
+    # Size should have decreased
+    assert size_after_small < size_after_overwrite
+
+
+def test_eviction_enforces_size_limit(tmp_path):
+    """Test that eviction loops until cache is actually under size limit."""
+    cache = ResponseCache(
+        cache_dir=tmp_path / "cache",
+        max_size_mb=0.1,  # 100KB limit
+        cache_secret="test_secret"
+    )
+
+    # Add many entries to exceed limit
+    # Each entry is ~10KB, so we'll add 20 entries = 200KB total
+    for i in range(20):
+        large_response = "x" * 10000  # 10KB each
+        cache.set(f"agent{i}", f"task{i}", "model", large_response, 100, 50, 0.001)
+
+    # Cache should have evicted enough entries to stay under limit
+    max_bytes = cache.max_size_bytes
+    actual_bytes = cache.stats['size_bytes']
+
+    # Should be under the limit
+    assert actual_bytes <= max_bytes, f"Cache size {actual_bytes} exceeds limit {max_bytes}"
+
+    # Verify evictions occurred
+    assert cache.stats['evictions'] > 0
+
+    # Verify not all entries are still present
+    present_count = 0
+    for i in range(20):
+        if cache.get(f"agent{i}", f"task{i}", "model") is not None:
+            present_count += 1
+
+    # Should have evicted some entries
+    assert present_count < 20
