@@ -36,7 +36,7 @@ except ImportError:
     wait_exponential = None
     RetryError = Exception
 
-from .performance_tracker import PerformanceTracker
+from .performance_tracker import PerformanceTracker, PRICING
 from .agent_memory import AgentMemory
 from .response_cache import ResponseCache
 
@@ -482,10 +482,26 @@ class AsyncAgentOrchestrator:
                     workflow_position=workflow_position,
                 )
 
-            # ✅ Calculate estimated cost (rough estimate)
-            # Sonnet: ~$3 per million input tokens, ~$15 per million output tokens
-            input_cost = response.usage.input_tokens * 3 / 1_000_000
-            output_cost = response.usage.output_tokens * 15 / 1_000_000
+            # ✅ P2 FIX: Calculate estimated cost using model-specific pricing
+            # Find pricing for this specific model
+            pricing = None
+            for model_pattern, prices in PRICING.items():
+                if model_pattern in model:
+                    pricing = prices
+                    break
+
+            if not pricing:
+                # Default to Sonnet pricing if model not found
+                pricing = PRICING.get(
+                    "claude-3-5-sonnet-20241022", {"input": 0.003, "output": 0.015}
+                )
+                logger.debug(
+                    f"Model pricing not found, using Sonnet default",
+                    extra={"model": model},
+                )
+
+            input_cost = (response.usage.input_tokens / 1_000_000) * pricing["input"]
+            output_cost = (response.usage.output_tokens / 1_000_000) * pricing["output"]
             estimated_cost = input_cost + output_cost
 
             # ✅ Store in cache

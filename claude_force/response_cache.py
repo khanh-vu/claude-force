@@ -363,18 +363,31 @@ class ResponseCache:
         # Store on disk
         cache_file = self.cache_dir / f"{key}.json"
 
+        # ✅ P2 FIX: Track old file size for accurate size accounting
+        old_size = 0
+        if cache_file.exists():
+            try:
+                old_size = cache_file.stat().st_size
+            except OSError:
+                old_size = 0
+
         # ✅ Improved error handling for file write
         try:
             with open(cache_file, "w") as f:
                 json.dump(asdict(entry), f, indent=2)
 
-            # Update size only if write succeeded
+            # Update size accounting: subtract old size, add new size
             actual_size = cache_file.stat().st_size
-            self.stats["size_bytes"] += actual_size
+            self.stats["size_bytes"] = self.stats["size_bytes"] - old_size + actual_size
 
             logger.debug(
                 "Cache entry stored",
-                extra={"key": key[:8], "agent": agent_name, "size_bytes": actual_size},
+                extra={
+                    "key": key[:8],
+                    "agent": agent_name,
+                    "size_bytes": actual_size,
+                    "old_size": old_size,
+                },
             )
 
         except Exception as e:
