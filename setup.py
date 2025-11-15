@@ -52,6 +52,11 @@ setup(
     package_data={
         "claude_force": ["py.typed"],
     },
+    options={
+        'metadata': {
+            'license_files': []
+        }
+    },
     keywords="claude anthropic ai agents multi-agent orchestration",
     project_urls={
         "Bug Reports": "https://github.com/khanh-vu/claude-force/issues",
