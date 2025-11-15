@@ -1,6 +1,5 @@
 # Include documentation
 include README.md
-include LICENSE
 include CHANGELOG.md
 include QUICK_START.md
 include BUILD_DOCUMENTATION.md
