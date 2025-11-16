@@ -375,16 +375,24 @@ class Handoff:
         """
         Parse Handoff from markdown format.
 
-        This is a basic implementation - can be enhanced with more robust parsing.
+        Args:
+            markdown: Markdown-formatted handoff content
+
+        Returns:
+            Parsed Handoff object
+
+        Raises:
+            NotImplementedError: Markdown parsing not yet implemented
+
+        Note:
+            This feature is planned for a future release. For now, use
+            HandoffGenerator.load_latest_handoff() to load saved handoffs,
+            or HandoffGenerator.generate_handoff() to create new ones.
         """
-        # Basic implementation - just extract key fields
-        # Full implementation would parse all sections
-        handoff = cls()
-
-        # Parse session ID, started, etc. from header
-        # This is simplified - production would need full parser
-
-        return handoff
+        raise NotImplementedError(
+            "Handoff.from_markdown() not yet implemented. "
+            "Use HandoffGenerator.load_latest_handoff() to load saved handoffs."
+        )
 
     def __repr__(self) -> str:
         return f"Handoff(session_id='{self.session_id}', duration={self.duration_minutes}min, confidence={self.confidence_level.value})"

@@ -185,8 +185,11 @@ class HandoffGenerator:
         if hasattr(self.orchestrator, 'performance_tracker'):
             try:
                 performance_data = self.orchestrator.performance_tracker.get_summary()
-            except Exception:
-                pass
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(
+                    f"Failed to retrieve performance metrics: {e}"
+                )
 
         return {
             'started': datetime.now(),

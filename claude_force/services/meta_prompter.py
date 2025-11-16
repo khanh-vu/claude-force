@@ -112,29 +112,52 @@ class MetaPrompter:
 
         Returns:
             MetaPromptResponse with proposed workflow
+
+        Raises:
+            RuntimeError: If LLM call fails
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         # Build prompt for LLM
         prompt = self._build_meta_prompt(request, previous_iterations)
 
-        # For now, we'll create a basic implementation
-        # In production, this would call Claude via the orchestrator
-        # to actually perform meta-prompting
+        # Add structured response instructions
+        prompt += "\n\n## Response Format\n\n"
+        prompt += "Please provide your response in the following format:\n\n"
+        prompt += "**REFINED OBJECTIVE:**\n[Clarified, specific objective]\n\n"
+        prompt += "**REASONING:**\n[Why this approach makes sense]\n\n"
+        prompt += "**PROPOSED WORKFLOW:**\n[Step-by-step workflow using available agents and commands]\n\n"
+        prompt += "**RATIONALE:**\n[Why this specific workflow was chosen]\n\n"
+        prompt += "**SUCCESS CRITERIA:**\n- [Criterion 1]\n- [Criterion 2]\n\n"
+        prompt += "**RISK ASSESSMENT:**\n- [Risk 1]: [Mitigation]\n- [Risk 2]: [Mitigation]\n"
 
-        # Simulate LLM response (in production, this would be real LLM call)
-        response = MetaPromptResponse(
-            refined_objective=request.objective,
-            reasoning="Meta-prompting analysis would go here",
-            proposed_approach=ProposedApproach(
-                workflow="Generated workflow based on objective",
-                rationale="Rationale for this approach",
-                alternatives_considered=[]
-            ),
-            governance_compliance=GovernanceCompliance(),
-            success_criteria=[],
-            risk_assessment=[]
-        )
+        try:
+            # Call orchestrator to run meta-prompting
+            # Use Sonnet model for better reasoning
+            result = self.orchestrator.run_agent(
+                agent_name="meta-architect",  # Uses meta-architect if available, falls back to default
+                task=prompt,
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=8192,
+                temperature=0.7  # Some creativity but still focused
+            )
 
-        return response
+            if not result.success:
+                error_msg = "; ".join(result.errors) if result.errors else "Unknown error"
+                raise RuntimeError(f"Meta-prompting LLM call failed: {error_msg}")
+
+            # Parse structured response
+            response = self._parse_llm_response(result.output, request)
+            return response
+
+        except ValueError as e:
+            # Agent not found - use fallback
+            logger.warning(f"meta-architect agent not found, using fallback: {e}")
+            return self._create_fallback_response(request)
+        except Exception as e:
+            logger.error(f"Meta-prompting failed: {e}")
+            raise RuntimeError(f"Meta-prompting failed: {e}")
 
     def _validate_governance(
         self,
@@ -407,13 +430,20 @@ class MetaPrompter:
         Returns:
             True if agent exists
         """
-        # In production, this would check orchestrator's agent registry
-        # For now, just check if orchestrator has method to get agent info
+        # Check orchestrator's agent registry
         if hasattr(self.orchestrator, 'get_agent_info'):
             try:
                 info = self.orchestrator.get_agent_info(agent_name)
-                return info is not None
-            except Exception:
+                return info is not None  # If we got here, agent exists
+            except (ValueError, KeyError):
+                # Agent not found in registry
+                pass
+            except Exception as e:
+                # Unexpected error - log it
+                import logging
+                logging.getLogger(__name__).warning(
+                    f"Unexpected error checking agent '{agent_name}': {e}"
+                )
                 pass
 
         # Fallback: check if agent file exists
@@ -422,6 +452,90 @@ class MetaPrompter:
         template_file = Path(f"claude_force/templates/agents/{agent_name}.md")
 
         return agent_file.exists() or template_file.exists()
+
+    def _parse_llm_response(self, llm_output: str, request: MetaPromptRequest) -> MetaPromptResponse:
+        """
+        Parse LLM's structured response into MetaPromptResponse.
+
+        Args:
+            llm_output: Raw LLM output text
+            request: Original request for fallback values
+
+        Returns:
+            Parsed MetaPromptResponse
+        """
+        import re
+
+        # Extract sections using regex
+        def extract_section(text: str, header: str) -> str:
+            """Extract content under a markdown header."""
+            pattern = rf'\*\*{header}:\*\*\s*\n(.+?)(?=\n\*\*|\Z)'
+            match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+            return ""
+
+        def extract_list(text: str, header: str) -> List[str]:
+            """Extract bullet list items under a header."""
+            content = extract_section(text, header)
+            if not content:
+                return []
+            # Extract list items
+            items = re.findall(r'^[\-\*]\s*(.+?)$', content, re.MULTILINE)
+            return [item.strip() for item in items if item.strip()]
+
+        # Parse each section
+        refined_objective = extract_section(llm_output, "REFINED OBJECTIVE")
+        reasoning = extract_section(llm_output, "REASONING")
+        workflow = extract_section(llm_output, "PROPOSED WORKFLOW")
+        rationale = extract_section(llm_output, "RATIONALE")
+
+        success_criteria = extract_list(llm_output, "SUCCESS CRITERIA")
+        risk_items = extract_list(llm_output, "RISK ASSESSMENT")
+
+        # Use request objective as fallback
+        if not refined_objective:
+            refined_objective = request.objective
+
+        # Build response
+        return MetaPromptResponse(
+            refined_objective=refined_objective or request.objective,
+            reasoning=reasoning or "Analysis of objective and constraints",
+            proposed_approach=ProposedApproach(
+                workflow=workflow or "No workflow generated",
+                rationale=rationale or "Approach based on available resources",
+                alternatives_considered=[]
+            ),
+            governance_compliance=GovernanceCompliance(),  # Will be filled by validation
+            success_criteria=success_criteria or ["Objective achieved"],
+            risk_assessment=risk_items or []
+        )
+
+    def _create_fallback_response(self, request: MetaPromptRequest) -> MetaPromptResponse:
+        """
+        Create fallback response when LLM call fails.
+
+        Args:
+            request: Original request
+
+        Returns:
+            Basic MetaPromptResponse
+        """
+        return MetaPromptResponse(
+            refined_objective=request.objective,
+            reasoning="Fallback response - meta-architect agent not available",
+            proposed_approach=ProposedApproach(
+                workflow=f"Manual workflow needed for: {request.objective}",
+                rationale="LLM-based meta-prompting unavailable, manual planning required",
+                alternatives_considered=[]
+            ),
+            governance_compliance=GovernanceCompliance(
+                validation_status=False,
+                violations=["Meta-prompting service unavailable"]
+            ),
+            success_criteria=["Complete the objective manually"],
+            risk_assessment=["Risk: No automated workflow generation available"]
+        )
 
     def _get_available_skills(self) -> List[str]:
         """

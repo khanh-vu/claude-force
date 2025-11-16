@@ -310,6 +310,19 @@ class TodoItem:
                     tags_str = line.split(":", 1)[1].strip()
                     todo.tags = [t.strip().lstrip("#") for t in tags_str.split(",")]
 
+        # Validate required fields
+        if not todo.action or not todo.action.strip():
+            raise ValueError("Todo action is required and cannot be empty")
+
+        # Validate files (security check for path traversal)
+        if todo.files:
+            for file_path in todo.files:
+                if file_path and (".." in file_path or file_path.startswith("/")):
+                    raise ValueError(
+                        f"Invalid file path '{file_path}': "
+                        "absolute paths and parent directory references are not allowed"
+                    )
+
         return todo
 
     def __repr__(self) -> str:

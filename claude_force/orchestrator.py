@@ -270,9 +270,9 @@ class AgentOrchestrator(BaseOrchestrator):
                 context = self.memory.get_context_for_task(task, agent_name)
                 if context:
                     prompt_parts.extend([context, ""])
-            except Exception:
+            except Exception as e:
                 # If memory retrieval fails, continue without it
-                pass
+                logger.debug(f"Memory retrieval failed for agent '{agent_name}': {e}")
 
         prompt_parts.extend(
             [
@@ -377,9 +377,9 @@ class AgentOrchestrator(BaseOrchestrator):
                             "workflow_position": workflow_position,
                         },
                     )
-                except Exception:
+                except Exception as e:
                     # Memory storage failures shouldn't break execution
-                    pass
+                    logger.debug(f"Failed to store execution in memory for '{agent_name}': {e}")
 
             return AgentResult(
                 agent_name=agent_name,
@@ -431,9 +431,9 @@ class AgentOrchestrator(BaseOrchestrator):
                             "workflow_position": workflow_position,
                         },
                     )
-                except Exception:
+                except Exception as e:
                     # Memory storage failures shouldn't break execution
-                    pass
+                    logger.debug(f"Failed to store failed execution in memory for '{agent_name}': {e}")
 
             return AgentResult(
                 agent_name=agent_name,
@@ -742,8 +742,8 @@ Continue from the previous agent's output. Original task: {task}
                 try:
                     from claude_force.semantic_selector import SemanticAgentSelector
                     semantic_selector = SemanticAgentSelector()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"SemanticAgentSelector unavailable: {e}")
 
                 self._todo_manager = TodoManager(
                     cache=ResponseCache(),
@@ -825,30 +825,3 @@ Continue from the previous agent's output. Original task: {task}
                     skills.append(skill_dir.name)
 
         return skills
-
-    def get_agent_info(self, agent_name: str) -> Optional[Dict[str, Any]]:
-        """
-        Get information about a specific agent.
-
-        Args:
-            agent_name: Name of agent to query
-
-        Returns:
-            Agent info dict or None if not found
-
-        Example:
-            info = orchestrator.get_agent_info("code-reviewer")
-            if info:
-                print(f"Agent: {info['name']}")
-        """
-        agent_config = self.config["agents"].get(agent_name)
-        if not agent_config:
-            return None
-
-        return {
-            "name": agent_name,
-            "file": agent_config.get("file"),
-            "contract": agent_config.get("contract"),
-            "skills": agent_config.get("skills", []),
-            "enabled": agent_config.get("enabled", True)
-        }

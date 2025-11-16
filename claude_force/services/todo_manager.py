@@ -183,8 +183,12 @@ class TodoManager:
         try:
             matches = self._semantic_selector.find_best_agent(query, top_k=5)
             return {match.agent_name: match.confidence for match in matches}
-        except Exception:
+        except Exception as e:
             # If semantic selector fails, return empty
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Semantic agent selection failed for query '{query}': {e}"
+            )
             return {}
 
     def suggest_workflow_for_todo(self, todo: TodoItem) -> Optional[str]:
@@ -440,8 +444,12 @@ class TodoManager:
             try:
                 todo = TodoItem.from_markdown(section)
                 todos.append(todo)
-            except Exception:
+            except Exception as e:
                 # Skip malformed sections
+                import logging
+                logging.getLogger(__name__).debug(
+                    f"Skipping malformed todo section: {e}"
+                )
                 continue
 
         return todos
@@ -569,8 +577,16 @@ class TodoManager:
 
         content = "\n".join(lines)
 
-        # Append to archive (don't overwrite)
+        # Append to archive (don't overwrite) with file locking for concurrent access
         with open(archive_file, 'a') as f:
-            if archive_file.stat().st_size > 0:
-                f.write("\n\n")
-            f.write(content)
+            # Acquire exclusive lock to prevent race conditions
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            try:
+                # Check size after acquiring lock (not before)
+                f.seek(0, 2)  # Seek to end
+                if f.tell() > 0:  # Check current position (file size)
+                    f.write("\n\n")
+                f.write(content)
+            finally:
+                # Release lock
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
