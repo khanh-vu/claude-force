@@ -17,6 +17,7 @@ import uuid
 @dataclass
 class MetaPromptConstraints:
     """Constraints for meta-prompting to respect"""
+
     governance_rules: List[str] = field(default_factory=list)
     available_resources: Dict[str, List[str]] = field(default_factory=dict)
     budget_limit: Optional[float] = None
@@ -26,6 +27,7 @@ class MetaPromptConstraints:
 @dataclass
 class MetaPromptContext:
     """Context for meta-prompting to consider"""
+
     current_state: str = ""
     previous_attempts: List[str] = field(default_factory=list)
     project_info: Dict[str, str] = field(default_factory=dict)
@@ -49,7 +51,9 @@ class MetaPromptRequest:
 
     # Metadata
     requested_at: datetime = field(default_factory=datetime.now)
-    request_id: str = field(default_factory=lambda: f"meta-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}")
+    request_id: str = field(
+        default_factory=lambda: f"meta-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
+    )
 
     def to_xml(self) -> str:
         """
@@ -63,7 +67,11 @@ class MetaPromptRequest:
         lines.append(f"  <objective>{self._escape_xml(self.objective)}</objective>")
 
         # Constraints
-        if self.constraints.governance_rules or self.constraints.available_resources or self.constraints.budget_limit:
+        if (
+            self.constraints.governance_rules
+            or self.constraints.available_resources
+            or self.constraints.budget_limit
+        ):
             lines.append("  <constraints>")
 
             if self.constraints.governance_rules:
@@ -82,10 +90,14 @@ class MetaPromptRequest:
                 lines.append("    </resources>")
 
             if self.constraints.budget_limit:
-                lines.append(f"    <budget_limit>${self.constraints.budget_limit:.2f}</budget_limit>")
+                lines.append(
+                    f"    <budget_limit>${self.constraints.budget_limit:.2f}</budget_limit>"
+                )
 
             if self.constraints.timeline:
-                lines.append(f"    <timeline>{self._escape_xml(self.constraints.timeline)}</timeline>")
+                lines.append(
+                    f"    <timeline>{self._escape_xml(self.constraints.timeline)}</timeline>"
+                )
 
             lines.append("  </constraints>")
 
@@ -94,7 +106,9 @@ class MetaPromptRequest:
             lines.append("  <context>")
 
             if self.context.current_state:
-                lines.append(f"    <current_state>{self._escape_xml(self.context.current_state)}</current_state>")
+                lines.append(
+                    f"    <current_state>{self._escape_xml(self.context.current_state)}</current_state>"
+                )
 
             if self.context.previous_attempts:
                 lines.append("    <previous_attempts>")
@@ -111,12 +125,18 @@ class MetaPromptRequest:
     @staticmethod
     def _escape_xml(text: str) -> str:
         """Escape XML special characters"""
-        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+        return (
+            text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
 
 
 @dataclass
 class ProposedApproach:
     """Meta-prompt's proposed approach with rationale"""
+
     workflow: str = ""
     rationale: str = ""
     alternatives_considered: List[str] = field(default_factory=list)
@@ -125,6 +145,7 @@ class ProposedApproach:
 @dataclass
 class GovernanceCompliance:
     """Governance validation result for meta-prompted workflow"""
+
     rules_applied: List[str] = field(default_factory=list)
     validation_status: bool = False
     violations: List[str] = field(default_factory=list)
@@ -155,7 +176,9 @@ class MetaPromptResponse:
     converging: bool = True
 
     # Metadata
-    response_id: str = field(default_factory=lambda: f"meta-resp-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}")
+    response_id: str = field(
+        default_factory=lambda: f"meta-resp-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
+    )
     generated_at: datetime = field(default_factory=datetime.now)
 
     def to_xml(self) -> str:
@@ -167,15 +190,21 @@ class MetaPromptResponse:
         lines = ["<meta_prompt_response>"]
 
         # Refined objective
-        lines.append(f"  <refined_objective>{self._escape_xml(self.refined_objective)}</refined_objective>")
+        lines.append(
+            f"  <refined_objective>{self._escape_xml(self.refined_objective)}</refined_objective>"
+        )
 
         # Reasoning
         lines.append(f"  <reasoning>{self._escape_xml(self.reasoning)}</reasoning>")
 
         # Proposed approach
         lines.append("  <proposed_approach>")
-        lines.append(f"    <workflow>{self._escape_xml(self.proposed_approach.workflow)}</workflow>")
-        lines.append(f"    <rationale>{self._escape_xml(self.proposed_approach.rationale)}</rationale>")
+        lines.append(
+            f"    <workflow>{self._escape_xml(self.proposed_approach.workflow)}</workflow>"
+        )
+        lines.append(
+            f"    <rationale>{self._escape_xml(self.proposed_approach.rationale)}</rationale>"
+        )
 
         if self.proposed_approach.alternatives_considered:
             lines.append("    <alternatives_considered>")
@@ -194,7 +223,9 @@ class MetaPromptResponse:
                 lines.append(f"      <rule>{self._escape_xml(rule)}</rule>")
             lines.append("    </rules_applied>")
 
-        lines.append(f"    <validation_status>{'pass' if self.governance_compliance.validation_status else 'fail'}</validation_status>")
+        lines.append(
+            f"    <validation_status>{'pass' if self.governance_compliance.validation_status else 'fail'}</validation_status>"
+        )
 
         if self.governance_compliance.violations:
             lines.append("    <violations>")
@@ -225,7 +256,12 @@ class MetaPromptResponse:
     @staticmethod
     def _escape_xml(text: str) -> str:
         """Escape XML special characters"""
-        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+        return (
+            text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
 
 
 @dataclass
@@ -235,6 +271,7 @@ class RefinementIteration:
 
     This allows the system to learn and improve from failed attempts.
     """
+
     iteration_number: int = 0
     previous_attempt: str = ""
     validation_failures: List[str] = field(default_factory=list)
@@ -243,9 +280,11 @@ class RefinementIteration:
 
     def to_xml(self) -> str:
         """Convert to XML format for feedback loop"""
-        lines = [f"<refinement_iteration n=\"{self.iteration_number}\">"]
+        lines = [f'<refinement_iteration n="{self.iteration_number}">']
 
-        lines.append(f"  <previous_attempt>{MetaPromptResponse._escape_xml(self.previous_attempt)}</previous_attempt>")
+        lines.append(
+            f"  <previous_attempt>{MetaPromptResponse._escape_xml(self.previous_attempt)}</previous_attempt>"
+        )
 
         if self.validation_failures:
             lines.append("  <validation_failures>")
@@ -256,7 +295,9 @@ class RefinementIteration:
         lines.append(f"  <guidance>{MetaPromptResponse._escape_xml(self.guidance)}</guidance>")
 
         if self.refined_attempt:
-            lines.append(f"  <refined_attempt>{MetaPromptResponse._escape_xml(self.refined_attempt)}</refined_attempt>")
+            lines.append(
+                f"  <refined_attempt>{MetaPromptResponse._escape_xml(self.refined_attempt)}</refined_attempt>"
+            )
 
         lines.append("</refinement_iteration>")
 

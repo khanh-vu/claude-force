@@ -17,7 +17,7 @@ from .handoff import (
     ActiveContext,
     GovernanceStatus,
     PerformanceMetrics,
-    ConfidenceLevel
+    ConfidenceLevel,
 )
 from .meta_prompt import (
     MetaPromptRequest,
@@ -26,7 +26,7 @@ from .meta_prompt import (
     MetaPromptContext,
     ProposedApproach,
     GovernanceCompliance,
-    RefinementIteration
+    RefinementIteration,
 )
 
 __all__ = [

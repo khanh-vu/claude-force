@@ -45,9 +45,7 @@ class TodoManager:
         self.todo_path = Path(todo_path)
         self._cache = cache or ResponseCache()
         self._semantic_selector = semantic_selector
-        self._validator = PathValidator(
-            allowed_dirs=[".claude", "src", "tests", "docs"]
-        )
+        self._validator = PathValidator(allowed_dirs=[".claude", "src", "tests", "docs"])
 
     def add_todo(
         self, todo: TodoItem, check_duplicates: bool = True
@@ -180,9 +178,11 @@ class TodoManager:
         query_parts = [
             todo.action,
             todo.problem,
-            f"Required capabilities: {', '.join(todo.required_capabilities)}"
-            if todo.required_capabilities
-            else "",
+            (
+                f"Required capabilities: {', '.join(todo.required_capabilities)}"
+                if todo.required_capabilities
+                else ""
+            ),
         ]
         query = ". ".join(filter(None, query_parts))
 
@@ -327,9 +327,7 @@ class TodoManager:
             except Exception as e:
                 raise ValueError(f"Invalid file path '{path}': {e}")
 
-    def _find_similar_todos(
-        self, todo: TodoItem, existing: List[TodoItem]
-    ) -> List[TodoItem]:
+    def _find_similar_todos(self, todo: TodoItem, existing: List[TodoItem]) -> List[TodoItem]:
         """
         Find similar todos using text similarity.
 
@@ -483,9 +481,7 @@ class TodoManager:
                 # Skip malformed sections
                 import logging
 
-                logging.getLogger(__name__).debug(
-                    f"Skipping malformed todo section: {e}"
-                )
+                logging.getLogger(__name__).debug(f"Skipping malformed todo section: {e}")
                 continue
 
         return todos
@@ -524,9 +520,7 @@ class TodoManager:
         # Header
         lines.append("# Active Todos")
         lines.append("")
-        lines.append(
-            f"**Last Updated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        lines.append(f"**Last Updated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append(f"**Total**: {len(todos)} todos")
         lines.append("")
         lines.append("---")
@@ -534,19 +528,13 @@ class TodoManager:
 
         # Group by priority
         high_priority = [
-            t
-            for t in todos
-            if t.priority == Priority.HIGH and t.status == TodoStatus.ACTIVE
+            t for t in todos if t.priority == Priority.HIGH and t.status == TodoStatus.ACTIVE
         ]
         medium_priority = [
-            t
-            for t in todos
-            if t.priority == Priority.MEDIUM and t.status == TodoStatus.ACTIVE
+            t for t in todos if t.priority == Priority.MEDIUM and t.status == TodoStatus.ACTIVE
         ]
         low_priority = [
-            t
-            for t in todos
-            if t.priority == Priority.LOW and t.status == TodoStatus.ACTIVE
+            t for t in todos if t.priority == Priority.LOW and t.status == TodoStatus.ACTIVE
         ]
         in_progress = [t for t in todos if t.status == TodoStatus.IN_PROGRESS]
         completed = [t for t in todos if t.status == TodoStatus.COMPLETED]
@@ -613,9 +601,7 @@ class TodoManager:
 
         # Build archive content
         lines = []
-        lines.append(
-            f"# Archived Todos - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        lines.append(f"# Archived Todos - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append("")
         lines.append(f"**Count**: {len(todos)} todos")
         lines.append("")

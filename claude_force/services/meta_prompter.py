@@ -130,9 +130,7 @@ class MetaPrompter:
         prompt += "**PROPOSED WORKFLOW:**\n[Step-by-step workflow using available agents and commands]\n\n"
         prompt += "**RATIONALE:**\n[Why this specific workflow was chosen]\n\n"
         prompt += "**SUCCESS CRITERIA:**\n- [Criterion 1]\n- [Criterion 2]\n\n"
-        prompt += (
-            "**RISK ASSESSMENT:**\n- [Risk 1]: [Mitigation]\n- [Risk 2]: [Mitigation]\n"
-        )
+        prompt += "**RISK ASSESSMENT:**\n- [Risk 1]: [Mitigation]\n- [Risk 2]: [Mitigation]\n"
 
         try:
             # Call orchestrator to run meta-prompting
@@ -146,9 +144,7 @@ class MetaPrompter:
             )
 
             if not result.success:
-                error_msg = (
-                    "; ".join(result.errors) if result.errors else "Unknown error"
-                )
+                error_msg = "; ".join(result.errors) if result.errors else "Unknown error"
                 raise RuntimeError(f"Meta-prompting LLM call failed: {error_msg}")
 
             # Parse structured response
@@ -257,9 +253,7 @@ class MetaPrompter:
                 guidance_parts.append(f"Fix: {violation}")
 
         if not guidance_parts:
-            guidance_parts.append(
-                "No specific guidance available. Review governance rules."
-            )
+            guidance_parts.append("No specific guidance available. Review governance rules.")
 
         return "\n".join(guidance_parts)
 
@@ -313,9 +307,7 @@ class MetaPrompter:
         # Header
         parts.append("# Meta-Prompting Request")
         parts.append("")
-        parts.append(
-            "Please refine the following objective into a concrete workflow plan."
-        )
+        parts.append("Please refine the following objective into a concrete workflow plan.")
         parts.append("")
 
         # Include request as XML
@@ -519,9 +511,7 @@ class MetaPrompter:
             risk_assessment=risk_items or [],
         )
 
-    def _create_fallback_response(
-        self, request: MetaPromptRequest
-    ) -> MetaPromptResponse:
+    def _create_fallback_response(self, request: MetaPromptRequest) -> MetaPromptResponse:
         """
         Create fallback response when LLM call fails.
 

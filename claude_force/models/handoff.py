@@ -64,9 +64,7 @@ class WorkRemaining:
     """Prioritized list of remaining work (critical for AI planning)"""
 
     priority_1_critical: List[str] = field(default_factory=list)  # Blocks everything
-    priority_2_high: List[str] = field(
-        default_factory=list
-    )  # Important but not blocking
+    priority_2_high: List[str] = field(default_factory=list)  # Important but not blocking
     priority_3_nice_to_have: List[str] = field(default_factory=list)  # Can be deferred
     dependencies: List[str] = field(default_factory=list)  # Task dependencies
 
@@ -163,9 +161,7 @@ class Handoff:
         lines.append("")
         lines.append(f"**Session**: {self.session_id}")
         lines.append(f"**Started**: {self.started.strftime('%Y-%m-%d %H:%M')}")
-        lines.append(
-            f"**Duration**: {self.duration_minutes // 60}h {self.duration_minutes % 60}m"
-        )
+        lines.append(f"**Duration**: {self.duration_minutes // 60}h {self.duration_minutes % 60}m")
 
         # Status emoji based on confidence
         status_emoji = {
@@ -366,9 +362,7 @@ class Handoff:
         )
         lines.append(f"🤖 **Agents Run**: {pm.agents_executed}")
         lines.append(f"📊 **Tokens Used**: {pm.token_usage:,} tokens")
-        lines.append(
-            f"📈 **Context Window**: {pm.context_window_used_percent:.1f}% used"
-        )
+        lines.append(f"📈 **Context Window**: {pm.context_window_used_percent:.1f}% used")
         lines.append("")
         lines.append("---")
         lines.append("")
@@ -392,9 +386,7 @@ class Handoff:
         lines.append("")
 
         # Footer
-        lines.append(
-            f"**Generated**: {self.generated_at.strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        lines.append(f"**Generated**: {self.generated_at.strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append(
             f"**Saved to**: `.claude/handoffs/handoff-{self.generated_at.strftime('%Y-%m-%d-%H%M%S')}.md`"
         )

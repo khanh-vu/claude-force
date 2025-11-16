@@ -92,9 +92,7 @@ class AgentOrchestrator(BaseOrchestrator):
                 self._client = anthropic.Client(api_key=self.api_key)
             except ImportError:
                 raise ImportError(
-                    format_missing_dependency_error(
-                        "anthropic", "pip install anthropic"
-                    )
+                    format_missing_dependency_error("anthropic", "pip install anthropic")
                 )
         return self._client
 
@@ -126,9 +124,7 @@ class AgentOrchestrator(BaseOrchestrator):
     def _load_config(self) -> Dict:
         """Load claude.json configuration"""
         if not self.config_path.exists():
-            raise FileNotFoundError(
-                format_config_not_found_error(str(self.config_path))
-            )
+            raise FileNotFoundError(format_config_not_found_error(str(self.config_path)))
 
         try:
             with open(self.config_path, "r") as f:
@@ -330,9 +326,7 @@ class AgentOrchestrator(BaseOrchestrator):
             agent_contract = self._load_agent_contract(agent_name)
 
             # Build prompt (with memory context if enabled)
-            prompt = self._build_prompt(
-                agent_definition, agent_contract, task, agent_name
-            )
+            prompt = self._build_prompt(agent_definition, agent_contract, task, agent_name)
 
             # Call Claude API
             response = self.client.messages.create(
@@ -383,9 +377,7 @@ class AgentOrchestrator(BaseOrchestrator):
                     )
                 except Exception as e:
                     # Memory storage failures shouldn't break execution
-                    logger.debug(
-                        f"Failed to store execution in memory for '{agent_name}': {e}"
-                    )
+                    logger.debug(f"Failed to store execution in memory for '{agent_name}': {e}")
 
             return AgentResult(
                 agent_name=agent_name,
@@ -393,8 +385,7 @@ class AgentOrchestrator(BaseOrchestrator):
                 output=output,
                 metadata={
                     "model": model,
-                    "tokens_used": response.usage.input_tokens
-                    + response.usage.output_tokens,
+                    "tokens_used": response.usage.input_tokens + response.usage.output_tokens,
                     "input_tokens": response.usage.input_tokens,
                     "output_tokens": response.usage.output_tokens,
                     "execution_time_ms": execution_time_ms,
@@ -477,9 +468,7 @@ class AgentOrchestrator(BaseOrchestrator):
         workflow = self.config["workflows"].get(workflow_name)
         if workflow is None:
             all_workflows = list(self.config["workflows"].keys())
-            raise ValueError(
-                format_workflow_not_found_error(workflow_name, all_workflows)
-            )
+            raise ValueError(format_workflow_not_found_error(workflow_name, all_workflows))
 
         results = []
         current_task = task
@@ -601,9 +590,7 @@ Continue from the previous agent's output. Original task: {task}
             )
 
         selector = SemanticAgentSelector(config_path=str(self.config_path))
-        matches = selector.select_agents(
-            task, top_k=top_k, min_confidence=min_confidence
-        )
+        matches = selector.select_agents(task, top_k=top_k, min_confidence=min_confidence)
 
         return [
             {

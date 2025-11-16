@@ -191,9 +191,7 @@ class HandoffGenerator:
             except Exception as e:
                 import logging
 
-                logging.getLogger(__name__).debug(
-                    f"Failed to retrieve performance metrics: {e}"
-                )
+                logging.getLogger(__name__).debug(f"Failed to retrieve performance metrics: {e}")
 
         return {
             "started": datetime.now(),
@@ -249,9 +247,7 @@ class HandoffGenerator:
 
         # Check if we have work completed
         work_completed = session_data.get("work_completed", {})
-        if work_completed.get("completed_items") or work_completed.get(
-            "files_modified"
-        ):
+        if work_completed.get("completed_items") or work_completed.get("files_modified"):
             score += 1
 
         # Check if we have work remaining defined
@@ -287,9 +283,7 @@ class HandoffGenerator:
             conversation_highlights=summary_data.get("conversation_highlights", ""),
         )
 
-    def _build_workflow_progress(
-        self, session_data: Dict[str, Any]
-    ) -> Optional[WorkflowProgress]:
+    def _build_workflow_progress(self, session_data: Dict[str, Any]) -> Optional[WorkflowProgress]:
         """Extract workflow progress if applicable"""
         workflow_data = session_data.get("workflow_progress")
 
@@ -335,9 +329,7 @@ class HandoffGenerator:
             open_questions=context_data.get("open_questions", []),
         )
 
-    def _build_governance_status(
-        self, session_data: Dict[str, Any]
-    ) -> GovernanceStatus:
+    def _build_governance_status(self, session_data: Dict[str, Any]) -> GovernanceStatus:
         """Extract governance status"""
         gov_data = session_data.get("governance_status", {})
 
@@ -349,9 +341,7 @@ class HandoffGenerator:
             next_validation_checkpoint=gov_data.get("next_validation_checkpoint"),
         )
 
-    def _build_performance_metrics(
-        self, session_data: Dict[str, Any]
-    ) -> PerformanceMetrics:
+    def _build_performance_metrics(self, session_data: Dict[str, Any]) -> PerformanceMetrics:
         """Extract performance metrics"""
         perf_data = session_data.get("performance", {})
 
@@ -360,9 +350,7 @@ class HandoffGenerator:
             execution_time_minutes=session_data.get("duration_minutes", 0),
             agents_executed=perf_data.get("agents_executed", 0),
             token_usage=perf_data.get("token_usage", 0),
-            context_window_used_percent=perf_data.get(
-                "context_window_used_percent", 0.0
-            ),
+            context_window_used_percent=perf_data.get("context_window_used_percent", 0.0),
         )
 
     def _generate_resume_instructions(self, session_data: Dict[str, Any]) -> str:
@@ -381,9 +369,7 @@ class HandoffGenerator:
         lines.append("")
 
         # Step 1: Review this handoff
-        lines.append(
-            "1. **Review this handoff** - Read the session summary and active context"
-        )
+        lines.append("1. **Review this handoff** - Read the session summary and active context")
 
         # Step 2: Check work remaining
         work_remaining = session_data.get("work_remaining", {})

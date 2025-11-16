@@ -66,9 +66,7 @@ class TodoItem:
     desired_state: str = ""  # What should happen
 
     # Success criteria (CRITICAL for AI validation)
-    success_criteria: List[str] = field(
-        default_factory=list
-    )  # Specific measurable outcomes
+    success_criteria: List[str] = field(default_factory=list)  # Specific measurable outcomes
 
     # File references with line numbers
     files: List[str] = field(default_factory=list)  # Format: path/to/file.py:123-145
@@ -217,9 +215,7 @@ class TodoItem:
         return "\n".join(lines)
 
     @classmethod
-    def from_markdown(
-        cls, markdown: str, section_id: Optional[str] = None
-    ) -> "TodoItem":
+    def from_markdown(cls, markdown: str, section_id: Optional[str] = None) -> "TodoItem":
         """
         Parse TodoItem from markdown format.
 
@@ -286,9 +282,7 @@ class TodoItem:
                     todo.suggested_agents = [a.strip() for a in agents_str.split(",")]
                 elif line.startswith("- **Workflows:**"):
                     workflows_str = line.split(":", 1)[1].strip()
-                    todo.suggested_workflows = [
-                        w.strip() for w in workflows_str.split(",")
-                    ]
+                    todo.suggested_workflows = [w.strip() for w in workflows_str.split(",")]
             elif current_section == "dependencies":
                 if line.startswith("- Depends on:"):
                     deps_str = line.split(":", 1)[1].strip()
