@@ -7,8 +7,6 @@ import os
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Any
-from dataclasses import asdict
-from functools import lru_cache
 from claude_force.base import BaseOrchestrator, AgentResult
 from claude_force.error_helpers import (
     format_agent_not_found_error,
@@ -270,9 +268,9 @@ class AgentOrchestrator(BaseOrchestrator):
                 context = self.memory.get_context_for_task(task, agent_name)
                 if context:
                     prompt_parts.extend([context, ""])
-            except Exception:
+            except Exception as e:
                 # If memory retrieval fails, continue without it
-                pass
+                logger.debug(f"Memory retrieval failed for agent '{agent_name}': {e}")
 
         prompt_parts.extend(
             [
@@ -377,9 +375,9 @@ class AgentOrchestrator(BaseOrchestrator):
                             "workflow_position": workflow_position,
                         },
                     )
-                except Exception:
+                except Exception as e:
                     # Memory storage failures shouldn't break execution
-                    pass
+                    logger.debug(f"Failed to store execution in memory for '{agent_name}': {e}")
 
             return AgentResult(
                 agent_name=agent_name,
@@ -431,9 +429,11 @@ class AgentOrchestrator(BaseOrchestrator):
                             "workflow_position": workflow_position,
                         },
                     )
-                except Exception:
+                except Exception as e:
                     # Memory storage failures shouldn't break execution
-                    pass
+                    logger.debug(
+                        f"Failed to store failed execution in memory for '{agent_name}': {e}"
+                    )
 
             return AgentResult(
                 agent_name=agent_name,
@@ -474,10 +474,13 @@ class AgentOrchestrator(BaseOrchestrator):
         current_task = task
 
         for i, agent_name in enumerate(workflow):
-            print(f"Running agent {i+1}/{len(workflow)}: {agent_name}...")
+            print(f"Running agent {i + 1}/{len(workflow)}: {agent_name}...")
 
             result = self.run_agent(
-                agent_name, current_task, workflow_name=workflow_name, workflow_position=i + 1
+                agent_name,
+                current_task,
+                workflow_name=workflow_name,
+                workflow_position=i + 1,
             )
             results.append(result)
 
@@ -714,3 +717,114 @@ Continue from the previous agent's output. Original task: {task}
             self.tracker.export_csv(output_path)
         else:
             raise ValueError(f"Unsupported format: {format}")
+
+    # TÂCHES Integration - Workflow Management Services
+
+    @property
+    def todos(self):
+        """
+        Lazy load TodoManager service.
+
+        Provides todo management with AI-optimized task capture.
+
+        Example:
+            todo = TodoItem(action="Fix bug", problem="Login fails", ...)
+            orchestrator.todos.add_todo(todo)
+            todos = orchestrator.todos.get_todos()
+        """
+        if not hasattr(self, "_todo_manager"):
+            self._todo_manager = None
+
+        if self._todo_manager is None:
+            try:
+                from claude_force.services.todo_manager import TodoManager
+                from claude_force.response_cache import ResponseCache
+
+                # Get semantic selector if available
+                semantic_selector = None
+                try:
+                    from claude_force.semantic_selector import SemanticAgentSelector
+
+                    semantic_selector = SemanticAgentSelector()
+                except Exception as e:
+                    logger.debug(f"SemanticAgentSelector unavailable: {e}")
+
+                self._todo_manager = TodoManager(
+                    cache=ResponseCache(), semantic_selector=semantic_selector
+                )
+            except Exception as e:
+                logger.warning(f"TodoManager initialization failed: {e}")
+
+        return self._todo_manager
+
+    @property
+    def handoffs(self):
+        """
+        Lazy load HandoffGenerator service.
+
+        Provides session handoff generation for continuity.
+
+        Example:
+            handoff = orchestrator.handoffs.generate_handoff()
+            path = orchestrator.handoffs.save_handoff(handoff)
+        """
+        if not hasattr(self, "_handoff_generator"):
+            self._handoff_generator = None
+
+        if self._handoff_generator is None:
+            try:
+                from claude_force.services.handoff_generator import HandoffGenerator
+
+                self._handoff_generator = HandoffGenerator(self)
+            except Exception as e:
+                logger.warning(f"HandoffGenerator initialization failed: {e}")
+
+        return self._handoff_generator
+
+    @property
+    def meta_prompt(self):
+        """
+        Lazy load MetaPrompter service.
+
+        Provides meta-prompting with governance validation.
+
+        Example:
+            request = MetaPromptRequest(objective="Build auth system")
+            response = orchestrator.meta_prompt.generate_workflow(request)
+        """
+        if not hasattr(self, "_meta_prompter"):
+            self._meta_prompter = None
+
+        if self._meta_prompter is None:
+            try:
+                from claude_force.services.meta_prompter import MetaPrompter
+
+                self._meta_prompter = MetaPrompter(self)
+            except Exception as e:
+                logger.warning(f"MetaPrompter initialization failed: {e}")
+
+        return self._meta_prompter
+
+    # Helper methods for TÂCHES services
+
+    def get_available_skills(self) -> List[str]:
+        """
+        Get list of available skills.
+
+        Returns:
+            List of skill names
+
+        Example:
+            skills = orchestrator.get_available_skills()
+            print(f"Available: {', '.join(skills)}")
+        """
+        skills = []
+
+        # Check .claude/skills directory
+        skills_dir = self.config_path.parent / "skills"
+        if skills_dir.exists():
+            for skill_dir in skills_dir.iterdir():
+                if skill_dir.is_dir():
+                    skills.append(skill_dir.name)
+
+        return skills
