@@ -9,9 +9,12 @@ Provides:
 - Handoff archival
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any, TYPE_CHECKING
 from pathlib import Path
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from claude_force.orchestrator import AgentOrchestrator
 
 from ..models.handoff import (
     Handoff,
@@ -22,7 +25,7 @@ from ..models.handoff import (
     ActiveContext,
     GovernanceStatus,
     PerformanceMetrics,
-    ConfidenceLevel
+    ConfidenceLevel,
 )
 
 
@@ -38,14 +41,14 @@ class HandoffGenerator:
     - Archives handoffs with timestamps
     """
 
-    def __init__(self, orchestrator: 'AgentOrchestrator'):
+    def __init__(self, orchestrator: "AgentOrchestrator"):
         self.orchestrator = orchestrator
 
     def generate_handoff(
         self,
         session_id: Optional[str] = None,
         confidence_level: ConfidenceLevel = ConfidenceLevel.HIGH,
-        auto_detect_confidence: bool = True
+        auto_detect_confidence: bool = True,
     ) -> Handoff:
         """
         Generate structured handoff from current session.
@@ -72,19 +75,19 @@ class HandoffGenerator:
         # Build handoff components
         handoff = Handoff(
             session_id=session_id,
-            started=session_data.get('started', datetime.now()),
-            duration_minutes=session_data.get('duration_minutes', 0),
+            started=session_data.get("started", datetime.now()),
+            duration_minutes=session_data.get("duration_minutes", 0),
             confidence_level=confidence_level,
             resume_instructions=self._generate_resume_instructions(session_data),
-            original_task=session_data.get('original_task', ''),
+            original_task=session_data.get("original_task", ""),
             session_summary=self._build_session_summary(session_data),
             workflow_progress=self._build_workflow_progress(session_data),
             work_completed=self._build_work_completed(session_data),
             work_remaining=self._build_work_remaining(session_data),
             active_context=self._build_active_context(session_data),
-            technical_context=session_data.get('technical_context', []),
+            technical_context=session_data.get("technical_context", []),
             governance_status=self._build_governance_status(session_data),
-            performance_metrics=self._build_performance_metrics(session_data)
+            performance_metrics=self._build_performance_metrics(session_data),
         )
 
         return handoff
@@ -93,7 +96,7 @@ class HandoffGenerator:
         self,
         handoff: Handoff,
         output_path: Optional[Path] = None,
-        also_save_to_whats_next: bool = True
+        also_save_to_whats_next: bool = True,
     ) -> Path:
         """
         Save handoff to file with archival.
@@ -182,49 +185,50 @@ class HandoffGenerator:
 
         # Get performance data from orchestrator if available
         performance_data = {}
-        if hasattr(self.orchestrator, 'performance_tracker'):
+        if hasattr(self.orchestrator, "performance_tracker"):
             try:
                 performance_data = self.orchestrator.performance_tracker.get_summary()
             except Exception as e:
                 import logging
+
                 logging.getLogger(__name__).debug(
                     f"Failed to retrieve performance metrics: {e}"
                 )
 
         return {
-            'started': datetime.now(),
-            'duration_minutes': 0,
-            'original_task': original_task,
-            'session_summary': {
-                'key_decisions': [],
-                'critical_insights': [],
-                'conversation_highlights': ''
+            "started": datetime.now(),
+            "duration_minutes": 0,
+            "original_task": original_task,
+            "session_summary": {
+                "key_decisions": [],
+                "critical_insights": [],
+                "conversation_highlights": "",
             },
-            'workflow_progress': None,
-            'work_completed': {
-                'completed_items': [],
-                'files_modified': {},
-                'agent_outputs': []
+            "workflow_progress": None,
+            "work_completed": {
+                "completed_items": [],
+                "files_modified": {},
+                "agent_outputs": [],
             },
-            'work_remaining': {
-                'priority_1': [],
-                'priority_2': [],
-                'priority_3': [],
-                'dependencies': []
+            "work_remaining": {
+                "priority_1": [],
+                "priority_2": [],
+                "priority_3": [],
+                "dependencies": [],
             },
-            'active_context': {
-                'most_relevant': [],
-                'known_blockers': [],
-                'open_questions': []
+            "active_context": {
+                "most_relevant": [],
+                "known_blockers": [],
+                "open_questions": [],
             },
-            'technical_context': [],
-            'governance_status': {
-                'validation_passed': True,
-                'scorecard_pass': 0,
-                'scorecard_total': 0,
-                'blockers': []
+            "technical_context": [],
+            "governance_status": {
+                "validation_passed": True,
+                "scorecard_pass": 0,
+                "scorecard_total": 0,
+                "blockers": [],
             },
-            'performance': performance_data
+            "performance": performance_data,
         }
 
     def _detect_confidence_level(self, session_data: Dict[str, Any]) -> ConfidenceLevel:
@@ -238,30 +242,31 @@ class HandoffGenerator:
             Detected confidence level
         """
         score = 0
-        max_score = 5
 
         # Check if we have original task
-        if session_data.get('original_task'):
+        if session_data.get("original_task"):
             score += 1
 
         # Check if we have work completed
-        work_completed = session_data.get('work_completed', {})
-        if work_completed.get('completed_items') or work_completed.get('files_modified'):
+        work_completed = session_data.get("work_completed", {})
+        if work_completed.get("completed_items") or work_completed.get(
+            "files_modified"
+        ):
             score += 1
 
         # Check if we have work remaining defined
-        work_remaining = session_data.get('work_remaining', {})
-        if work_remaining.get('priority_1') or work_remaining.get('priority_2'):
+        work_remaining = session_data.get("work_remaining", {})
+        if work_remaining.get("priority_1") or work_remaining.get("priority_2"):
             score += 1
 
         # Check if we have active context
-        active_context = session_data.get('active_context', {})
-        if active_context.get('most_relevant'):
+        active_context = session_data.get("active_context", {})
+        if active_context.get("most_relevant"):
             score += 1
 
         # Check if governance passed
-        governance = session_data.get('governance_status', {})
-        if governance.get('validation_passed'):
+        governance = session_data.get("governance_status", {})
+        if governance.get("validation_passed"):
             score += 1
 
         # Convert score to confidence level
@@ -274,82 +279,90 @@ class HandoffGenerator:
 
     def _build_session_summary(self, session_data: Dict[str, Any]) -> SessionSummary:
         """Build session summary with key decisions"""
-        summary_data = session_data.get('session_summary', {})
+        summary_data = session_data.get("session_summary", {})
 
         return SessionSummary(
-            key_decisions=summary_data.get('key_decisions', []),
-            critical_insights=summary_data.get('critical_insights', []),
-            conversation_highlights=summary_data.get('conversation_highlights', '')
+            key_decisions=summary_data.get("key_decisions", []),
+            critical_insights=summary_data.get("critical_insights", []),
+            conversation_highlights=summary_data.get("conversation_highlights", ""),
         )
 
-    def _build_workflow_progress(self, session_data: Dict[str, Any]) -> Optional[WorkflowProgress]:
+    def _build_workflow_progress(
+        self, session_data: Dict[str, Any]
+    ) -> Optional[WorkflowProgress]:
         """Extract workflow progress if applicable"""
-        workflow_data = session_data.get('workflow_progress')
+        workflow_data = session_data.get("workflow_progress")
 
         if not workflow_data:
             return None
 
         return WorkflowProgress(
-            workflow_name=workflow_data.get('workflow_name', ''),
-            total_agents=workflow_data.get('total_agents', 0),
-            completed_agents=workflow_data.get('completed_agents', 0),
-            current_phase=workflow_data.get('current_phase', ''),
-            agent_executions=workflow_data.get('agent_executions', [])
+            workflow_name=workflow_data.get("workflow_name", ""),
+            total_agents=workflow_data.get("total_agents", 0),
+            completed_agents=workflow_data.get("completed_agents", 0),
+            current_phase=workflow_data.get("current_phase", ""),
+            agent_executions=workflow_data.get("agent_executions", []),
         )
 
     def _build_work_completed(self, session_data: Dict[str, Any]) -> WorkCompleted:
         """Build work completed summary"""
-        work_data = session_data.get('work_completed', {})
+        work_data = session_data.get("work_completed", {})
 
         return WorkCompleted(
-            completed_items=work_data.get('completed_items', []),
-            files_modified=work_data.get('files_modified', {}),
-            agent_outputs=work_data.get('agent_outputs', [])
+            completed_items=work_data.get("completed_items", []),
+            files_modified=work_data.get("files_modified", {}),
+            agent_outputs=work_data.get("agent_outputs", []),
         )
 
     def _build_work_remaining(self, session_data: Dict[str, Any]) -> WorkRemaining:
         """Build prioritized work remaining"""
-        work_data = session_data.get('work_remaining', {})
+        work_data = session_data.get("work_remaining", {})
 
         return WorkRemaining(
-            priority_1_critical=work_data.get('priority_1', []),
-            priority_2_high=work_data.get('priority_2', []),
-            priority_3_nice_to_have=work_data.get('priority_3', []),
-            dependencies=work_data.get('dependencies', [])
+            priority_1_critical=work_data.get("priority_1", []),
+            priority_2_high=work_data.get("priority_2", []),
+            priority_3_nice_to_have=work_data.get("priority_3", []),
+            dependencies=work_data.get("dependencies", []),
         )
 
     def _build_active_context(self, session_data: Dict[str, Any]) -> ActiveContext:
         """Build most relevant active context"""
-        context_data = session_data.get('active_context', {})
+        context_data = session_data.get("active_context", {})
 
         return ActiveContext(
-            most_relevant=context_data.get('most_relevant', []),
-            known_blockers=context_data.get('known_blockers', []),
-            open_questions=context_data.get('open_questions', [])
+            most_relevant=context_data.get("most_relevant", []),
+            known_blockers=context_data.get("known_blockers", []),
+            open_questions=context_data.get("open_questions", []),
         )
 
-    def _build_governance_status(self, session_data: Dict[str, Any]) -> GovernanceStatus:
+    def _build_governance_status(
+        self, session_data: Dict[str, Any]
+    ) -> GovernanceStatus:
         """Extract governance status"""
-        gov_data = session_data.get('governance_status', {})
+        gov_data = session_data.get("governance_status", {})
 
         return GovernanceStatus(
-            validation_passed=gov_data.get('validation_passed', True),
-            scorecard_pass=gov_data.get('scorecard_pass', 0),
-            scorecard_total=gov_data.get('scorecard_total', 0),
-            blockers=gov_data.get('blockers', []),
-            next_validation_checkpoint=gov_data.get('next_validation_checkpoint')
+            validation_passed=gov_data.get("validation_passed", True),
+            scorecard_pass=gov_data.get("scorecard_pass", 0),
+            scorecard_total=gov_data.get("scorecard_total", 0),
+            blockers=gov_data.get("blockers", []),
+            next_validation_checkpoint=gov_data.get("next_validation_checkpoint"),
         )
 
-    def _build_performance_metrics(self, session_data: Dict[str, Any]) -> PerformanceMetrics:
+    def _build_performance_metrics(
+        self, session_data: Dict[str, Any]
+    ) -> PerformanceMetrics:
         """Extract performance metrics"""
-        perf_data = session_data.get('performance', {})
+        perf_data = session_data.get("performance", {})
 
         return PerformanceMetrics(
-            total_cost=perf_data.get('total_cost', 0.0),
-            execution_time_minutes=session_data.get('duration_minutes', 0),
-            agents_executed=perf_data.get('agents_executed', 0),
-            token_usage=perf_data.get('token_usage', 0),
-            context_window_used_percent=perf_data.get('context_window_used_percent', 0.0)
+            total_cost=perf_data.get("total_cost", 0.0),
+            execution_time_minutes=session_data.get("duration_minutes", 0),
+            agents_executed=perf_data.get("agents_executed", 0),
+            token_usage=perf_data.get("token_usage", 0),
+            context_window_used_percent=perf_data.get(
+                "context_window_used_percent", 0.0
+            ),
         )
 
     def _generate_resume_instructions(self, session_data: Dict[str, Any]) -> str:
@@ -368,21 +381,25 @@ class HandoffGenerator:
         lines.append("")
 
         # Step 1: Review this handoff
-        lines.append("1. **Review this handoff** - Read the session summary and active context")
+        lines.append(
+            "1. **Review this handoff** - Read the session summary and active context"
+        )
 
         # Step 2: Check work remaining
-        work_remaining = session_data.get('work_remaining', {})
-        if work_remaining.get('priority_1'):
-            next_task = work_remaining['priority_1'][0]
+        work_remaining = session_data.get("work_remaining", {})
+        if work_remaining.get("priority_1"):
+            next_task = work_remaining["priority_1"][0]
             lines.append(f"2. **Start with**: {next_task}")
         else:
             lines.append("2. **Run `/status`** to check current state")
 
         # Step 3: Continue workflow or run agent
-        workflow_data = session_data.get('workflow_progress')
+        workflow_data = session_data.get("workflow_progress")
         if workflow_data:
-            workflow_name = workflow_data.get('workflow_name', '')
-            lines.append(f"3. **Continue workflow**: `/run-workflow {workflow_name}` (will resume automatically)")
+            workflow_name = workflow_data.get("workflow_name", "")
+            lines.append(
+                f"3. **Continue workflow**: `/run-workflow {workflow_name}` (will resume automatically)"
+            )
         else:
             lines.append("3. **Run appropriate agent** based on next steps")
 

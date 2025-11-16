@@ -9,15 +9,18 @@ Provides:
 - Convergence tracking
 """
 
-from typing import List, Optional
+from typing import List, TYPE_CHECKING
 import re
+
+if TYPE_CHECKING:
+    from claude_force.orchestrator import AgentOrchestrator
 
 from ..models.meta_prompt import (
     MetaPromptRequest,
     MetaPromptResponse,
     ProposedApproach,
     GovernanceCompliance,
-    RefinementIteration
+    RefinementIteration,
 )
 
 
@@ -35,14 +38,12 @@ class MetaPrompter:
 
     MAX_ITERATIONS = 3
 
-    def __init__(self, orchestrator: 'AgentOrchestrator'):
+    def __init__(self, orchestrator: "AgentOrchestrator"):
         self.orchestrator = orchestrator
-        self.governance = getattr(orchestrator, 'governance_manager', None)
+        self.governance = getattr(orchestrator, "governance_manager", None)
 
     def generate_workflow(
-        self,
-        request: MetaPromptRequest,
-        auto_validate: bool = True
+        self, request: MetaPromptRequest, auto_validate: bool = True
     ) -> MetaPromptResponse:
         """
         Generate workflow with iterative refinement and governance validation.
@@ -78,7 +79,7 @@ class MetaPrompter:
                         previous_attempt=response.proposed_approach.workflow,
                         validation_failures=validation.violations,
                         guidance=self._generate_refinement_guidance(validation),
-                        refined_attempt=""  # Will be filled in next iteration
+                        refined_attempt="",  # Will be filled in next iteration
                     )
                     iterations.append(refinement)
 
@@ -99,9 +100,7 @@ class MetaPrompter:
         return response
 
     def _llm_generate_workflow(
-        self,
-        request: MetaPromptRequest,
-        previous_iterations: List[RefinementIteration]
+        self, request: MetaPromptRequest, previous_iterations: List[RefinementIteration]
     ) -> MetaPromptResponse:
         """
         Use LLM to generate workflow proposal.
@@ -117,6 +116,7 @@ class MetaPrompter:
             RuntimeError: If LLM call fails
         """
         import logging
+
         logger = logging.getLogger(__name__)
 
         # Build prompt for LLM
@@ -130,7 +130,9 @@ class MetaPrompter:
         prompt += "**PROPOSED WORKFLOW:**\n[Step-by-step workflow using available agents and commands]\n\n"
         prompt += "**RATIONALE:**\n[Why this specific workflow was chosen]\n\n"
         prompt += "**SUCCESS CRITERIA:**\n- [Criterion 1]\n- [Criterion 2]\n\n"
-        prompt += "**RISK ASSESSMENT:**\n- [Risk 1]: [Mitigation]\n- [Risk 2]: [Mitigation]\n"
+        prompt += (
+            "**RISK ASSESSMENT:**\n- [Risk 1]: [Mitigation]\n- [Risk 2]: [Mitigation]\n"
+        )
 
         try:
             # Call orchestrator to run meta-prompting
@@ -140,11 +142,13 @@ class MetaPrompter:
                 task=prompt,
                 model="claude-sonnet-4-5-20250929",
                 max_tokens=8192,
-                temperature=0.7  # Some creativity but still focused
+                temperature=0.7,  # Some creativity but still focused
             )
 
             if not result.success:
-                error_msg = "; ".join(result.errors) if result.errors else "Unknown error"
+                error_msg = (
+                    "; ".join(result.errors) if result.errors else "Unknown error"
+                )
                 raise RuntimeError(f"Meta-prompting LLM call failed: {error_msg}")
 
             # Parse structured response
@@ -160,9 +164,7 @@ class MetaPrompter:
             raise RuntimeError(f"Meta-prompting failed: {e}")
 
     def _validate_governance(
-        self,
-        response: MetaPromptResponse,
-        request: MetaPromptRequest
+        self, response: MetaPromptResponse, request: MetaPromptRequest
     ) -> GovernanceCompliance:
         """
         Validate proposed workflow against governance rules.
@@ -207,7 +209,7 @@ class MetaPrompter:
             violations.append(f"Missing required skills: {', '.join(missing_skills)}")
 
         # Check 4: Safety checks (from governance manager)
-        if self.governance and hasattr(self.governance, 'validate_workflow'):
+        if self.governance and hasattr(self.governance, "validate_workflow"):
             rules_applied.append("safety_checks")
             try:
                 gov_result = self.governance.validate_workflow(workflow)
@@ -220,7 +222,7 @@ class MetaPrompter:
         return GovernanceCompliance(
             rules_applied=rules_applied,
             validation_status=len(violations) == 0,
-            violations=violations
+            violations=violations,
         )
 
     def _generate_refinement_guidance(self, validation: GovernanceCompliance) -> str:
@@ -255,7 +257,9 @@ class MetaPrompter:
                 guidance_parts.append(f"Fix: {violation}")
 
         if not guidance_parts:
-            guidance_parts.append("No specific guidance available. Review governance rules.")
+            guidance_parts.append(
+                "No specific guidance available. Review governance rules."
+            )
 
         return "\n".join(guidance_parts)
 
@@ -292,9 +296,7 @@ class MetaPrompter:
         return True
 
     def _build_meta_prompt(
-        self,
-        request: MetaPromptRequest,
-        previous_iterations: List[RefinementIteration]
+        self, request: MetaPromptRequest, previous_iterations: List[RefinementIteration]
     ) -> str:
         """
         Build prompt for LLM meta-prompting.
@@ -311,7 +313,9 @@ class MetaPrompter:
         # Header
         parts.append("# Meta-Prompting Request")
         parts.append("")
-        parts.append("Please refine the following objective into a concrete workflow plan.")
+        parts.append(
+            "Please refine the following objective into a concrete workflow plan."
+        )
         parts.append("")
 
         # Include request as XML
@@ -358,9 +362,9 @@ class MetaPrompter:
 
         # Look for common patterns: "agent-name" or "/run-agent agent-name"
         patterns = [
-            r'/run-agent\s+([a-z-]+)',
-            r'agent:\s*([a-z-]+)',
-            r'([a-z]+-(?:architect|expert|developer|specialist|engineer))'
+            r"/run-agent\s+([a-z-]+)",
+            r"agent:\s*([a-z-]+)",
+            r"([a-z]+-(?:architect|expert|developer|specialist|engineer))",
         ]
 
         for pattern in patterns:
@@ -409,9 +413,9 @@ class MetaPrompter:
 
         # Look for skill mentions
         skill_patterns = [
-            r'skill:\s*([a-z-]+)',
-            r'requires?\s+([a-z-]+)\s+skill',
-            r'using\s+([a-z-]+)\s+skill'
+            r"skill:\s*([a-z-]+)",
+            r"requires?\s+([a-z-]+)\s+skill",
+            r"using\s+([a-z-]+)\s+skill",
         ]
 
         for pattern in skill_patterns:
@@ -431,7 +435,7 @@ class MetaPrompter:
             True if agent exists
         """
         # Check orchestrator's agent registry
-        if hasattr(self.orchestrator, 'get_agent_info'):
+        if hasattr(self.orchestrator, "get_agent_info"):
             try:
                 info = self.orchestrator.get_agent_info(agent_name)
                 return info is not None  # If we got here, agent exists
@@ -441,6 +445,7 @@ class MetaPrompter:
             except Exception as e:
                 # Unexpected error - log it
                 import logging
+
                 logging.getLogger(__name__).warning(
                     f"Unexpected error checking agent '{agent_name}': {e}"
                 )
@@ -448,12 +453,15 @@ class MetaPrompter:
 
         # Fallback: check if agent file exists
         from pathlib import Path
+
         agent_file = Path(f".claude/agents/{agent_name}.md")
         template_file = Path(f"claude_force/templates/agents/{agent_name}.md")
 
         return agent_file.exists() or template_file.exists()
 
-    def _parse_llm_response(self, llm_output: str, request: MetaPromptRequest) -> MetaPromptResponse:
+    def _parse_llm_response(
+        self, llm_output: str, request: MetaPromptRequest
+    ) -> MetaPromptResponse:
         """
         Parse LLM's structured response into MetaPromptResponse.
 
@@ -469,7 +477,7 @@ class MetaPrompter:
         # Extract sections using regex
         def extract_section(text: str, header: str) -> str:
             """Extract content under a markdown header."""
-            pattern = rf'\*\*{header}:\*\*\s*\n(.+?)(?=\n\*\*|\Z)'
+            pattern = rf"\*\*{header}:\*\*\s*\n(.+?)(?=\n\*\*|\Z)"
             match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
             if match:
                 return match.group(1).strip()
@@ -481,7 +489,7 @@ class MetaPrompter:
             if not content:
                 return []
             # Extract list items
-            items = re.findall(r'^[\-\*]\s*(.+?)$', content, re.MULTILINE)
+            items = re.findall(r"^[\-\*]\s*(.+?)$", content, re.MULTILINE)
             return [item.strip() for item in items if item.strip()]
 
         # Parse each section
@@ -504,14 +512,16 @@ class MetaPrompter:
             proposed_approach=ProposedApproach(
                 workflow=workflow or "No workflow generated",
                 rationale=rationale or "Approach based on available resources",
-                alternatives_considered=[]
+                alternatives_considered=[],
             ),
             governance_compliance=GovernanceCompliance(),  # Will be filled by validation
             success_criteria=success_criteria or ["Objective achieved"],
-            risk_assessment=risk_items or []
+            risk_assessment=risk_items or [],
         )
 
-    def _create_fallback_response(self, request: MetaPromptRequest) -> MetaPromptResponse:
+    def _create_fallback_response(
+        self, request: MetaPromptRequest
+    ) -> MetaPromptResponse:
         """
         Create fallback response when LLM call fails.
 
@@ -527,14 +537,14 @@ class MetaPrompter:
             proposed_approach=ProposedApproach(
                 workflow=f"Manual workflow needed for: {request.objective}",
                 rationale="LLM-based meta-prompting unavailable, manual planning required",
-                alternatives_considered=[]
+                alternatives_considered=[],
             ),
             governance_compliance=GovernanceCompliance(
                 validation_status=False,
-                violations=["Meta-prompting service unavailable"]
+                violations=["Meta-prompting service unavailable"],
             ),
             success_criteria=["Complete the objective manually"],
-            risk_assessment=["Risk: No automated workflow generation available"]
+            risk_assessment=["Risk: No automated workflow generation available"],
         )
 
     def _get_available_skills(self) -> List[str]:
@@ -545,7 +555,7 @@ class MetaPrompter:
             List of skill names
         """
         # In production, this would query orchestrator's skills manager
-        if hasattr(self.orchestrator, 'get_available_skills'):
+        if hasattr(self.orchestrator, "get_available_skills"):
             try:
                 return self.orchestrator.get_available_skills()
             except Exception:
@@ -553,6 +563,7 @@ class MetaPrompter:
 
         # Fallback: check skills directory
         from pathlib import Path
+
         skills_dir = Path(".claude/skills")
         if not skills_dir.exists():
             return []

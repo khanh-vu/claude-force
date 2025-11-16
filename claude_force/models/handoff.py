@@ -17,6 +17,7 @@ from enum import Enum
 
 class ConfidenceLevel(Enum):
     """AI's confidence in handoff completeness"""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -25,6 +26,7 @@ class ConfidenceLevel(Enum):
 @dataclass
 class SessionSummary:
     """Summary of session activities with decision context"""
+
     key_decisions: List[str] = field(default_factory=list)
     critical_insights: List[str] = field(default_factory=list)
     conversation_highlights: str = ""
@@ -33,6 +35,7 @@ class SessionSummary:
 @dataclass
 class WorkflowProgress:
     """Workflow execution status"""
+
     workflow_name: str = ""
     total_agents: int = 0
     completed_agents: int = 0
@@ -50,6 +53,7 @@ class WorkflowProgress:
 @dataclass
 class WorkCompleted:
     """Summary of completed work"""
+
     completed_items: List[str] = field(default_factory=list)
     files_modified: Dict[str, str] = field(default_factory=dict)  # path -> description
     agent_outputs: List[Dict[str, str]] = field(default_factory=list)
@@ -58,8 +62,11 @@ class WorkCompleted:
 @dataclass
 class WorkRemaining:
     """Prioritized list of remaining work (critical for AI planning)"""
+
     priority_1_critical: List[str] = field(default_factory=list)  # Blocks everything
-    priority_2_high: List[str] = field(default_factory=list)  # Important but not blocking
+    priority_2_high: List[str] = field(
+        default_factory=list
+    )  # Important but not blocking
     priority_3_nice_to_have: List[str] = field(default_factory=list)  # Can be deferred
     dependencies: List[str] = field(default_factory=list)  # Task dependencies
 
@@ -67,14 +74,18 @@ class WorkRemaining:
 @dataclass
 class ActiveContext:
     """Most relevant context for next session (AI prioritization)"""
+
     most_relevant: List[str] = field(default_factory=list)  # Top 2-3 critical things
-    known_blockers: List[Dict[str, str]] = field(default_factory=list)  # {'blocker': '', 'mitigation': ''}
+    known_blockers: List[Dict[str, str]] = field(
+        default_factory=list
+    )  # {'blocker': '', 'mitigation': ''}
     open_questions: List[str] = field(default_factory=list)
 
 
 @dataclass
 class GovernanceStatus:
     """Quality and governance state"""
+
     validation_passed: bool = False
     scorecard_pass: int = 0
     scorecard_total: int = 0
@@ -85,6 +96,7 @@ class GovernanceStatus:
 @dataclass
 class PerformanceMetrics:
     """Session performance data"""
+
     total_cost: float = 0.0
     execution_time_minutes: int = 0
     agents_executed: int = 0
@@ -151,13 +163,15 @@ class Handoff:
         lines.append("")
         lines.append(f"**Session**: {self.session_id}")
         lines.append(f"**Started**: {self.started.strftime('%Y-%m-%d %H:%M')}")
-        lines.append(f"**Duration**: {self.duration_minutes // 60}h {self.duration_minutes % 60}m")
+        lines.append(
+            f"**Duration**: {self.duration_minutes // 60}h {self.duration_minutes % 60}m"
+        )
 
         # Status emoji based on confidence
         status_emoji = {
             ConfidenceLevel.HIGH: "🟢",
             ConfidenceLevel.MEDIUM: "🟡",
-            ConfidenceLevel.LOW: "🔴"
+            ConfidenceLevel.LOW: "🔴",
         }
         emoji = status_emoji.get(self.confidence_level, "⚪")
         lines.append(f"**Status**: {emoji} {self.confidence_level.value.title()}")
@@ -203,18 +217,20 @@ class Handoff:
             wp = self.workflow_progress
             lines.append("## Progress Summary")
             lines.append("")
-            lines.append(f"**Overall**: {wp.completed_agents} of {wp.total_agents} agents complete ({wp.completion_percentage:.0f}%)")
+            lines.append(
+                f"**Overall**: {wp.completed_agents} of {wp.total_agents} agents complete ({wp.completion_percentage:.0f}%)"
+            )
             lines.append("")
 
             for agent_exec in wp.agent_executions:
-                status = agent_exec.get('status', 'unknown')
-                name = agent_exec.get('name', 'unknown')
+                status = agent_exec.get("status", "unknown")
+                name = agent_exec.get("name", "unknown")
                 emoji = {
-                    'completed': '✅',
-                    'in_progress': '🔄',
-                    'pending': '⏳',
-                    'failed': '❌'
-                }.get(status, '⚪')
+                    "completed": "✅",
+                    "in_progress": "🔄",
+                    "pending": "⏳",
+                    "failed": "❌",
+                }.get(status, "⚪")
                 lines.append(f"{emoji} {name}")
 
             lines.append("")
@@ -234,15 +250,18 @@ class Handoff:
 
             if self.work_completed.files_modified:
                 lines.append("**Files Modified:**")
-                for file_path, description in self.work_completed.files_modified.items():
+                for (
+                    file_path,
+                    description,
+                ) in self.work_completed.files_modified.items():
                     lines.append(f"- `{file_path}`: {description}")
                 lines.append("")
 
             if self.work_completed.agent_outputs:
                 lines.append("**Agent Outputs:**")
                 for output in self.work_completed.agent_outputs:
-                    agent = output.get('agent', 'unknown')
-                    summary = output.get('summary', '')
+                    agent = output.get("agent", "unknown")
+                    summary = output.get("summary", "")
                     lines.append(f"- **{agent}**: {summary}")
                 lines.append("")
 
@@ -297,8 +316,8 @@ class Handoff:
             if ac.known_blockers:
                 lines.append("**Known Blockers:**")
                 for blocker in ac.known_blockers:
-                    b_desc = blocker.get('blocker', '')
-                    b_mit = blocker.get('mitigation', 'None')
+                    b_desc = blocker.get("blocker", "")
+                    b_mit = blocker.get("mitigation", "None")
                     lines.append(f"- ⚠️ {b_desc}")
                     lines.append(f"  - Mitigation: {b_mit}")
                 lines.append("")
@@ -317,9 +336,13 @@ class Handoff:
         lines.append("## Quality Status")
         lines.append("")
         status_emoji = "✅" if gs.validation_passed else "❌"
-        lines.append(f"**Last Validation**: {status_emoji} {'All Checks Pass' if gs.validation_passed else 'Issues Found'}")
+        lines.append(
+            f"**Last Validation**: {status_emoji} {'All Checks Pass' if gs.validation_passed else 'Issues Found'}"
+        )
         lines.append("")
-        lines.append(f"- Scorecard: {gs.scorecard_pass}/{gs.scorecard_total} {'✅' if gs.scorecard_pass == gs.scorecard_total else '⚠️'}")
+        lines.append(
+            f"- Scorecard: {gs.scorecard_pass}/{gs.scorecard_total} {'✅' if gs.scorecard_pass == gs.scorecard_total else '⚠️'}"
+        )
 
         if gs.blockers:
             lines.append("- Blockers:")
@@ -338,10 +361,14 @@ class Handoff:
         lines.append("## Cost & Performance")
         lines.append("")
         lines.append(f"💰 **Total Cost**: ${pm.total_cost:.4f}")
-        lines.append(f"⏱️ **Execution Time**: {pm.execution_time_minutes // 60}h {pm.execution_time_minutes % 60}m")
+        lines.append(
+            f"⏱️ **Execution Time**: {pm.execution_time_minutes // 60}h {pm.execution_time_minutes % 60}m"
+        )
         lines.append(f"🤖 **Agents Run**: {pm.agents_executed}")
         lines.append(f"📊 **Tokens Used**: {pm.token_usage:,} tokens")
-        lines.append(f"📈 **Context Window**: {pm.context_window_used_percent:.1f}% used")
+        lines.append(
+            f"📈 **Context Window**: {pm.context_window_used_percent:.1f}% used"
+        )
         lines.append("")
         lines.append("---")
         lines.append("")
@@ -365,13 +392,17 @@ class Handoff:
         lines.append("")
 
         # Footer
-        lines.append(f"**Generated**: {self.generated_at.strftime('%Y-%m-%d %H:%M:%S')}")
-        lines.append(f"**Saved to**: `.claude/handoffs/handoff-{self.generated_at.strftime('%Y-%m-%d-%H%M%S')}.md`")
+        lines.append(
+            f"**Generated**: {self.generated_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        lines.append(
+            f"**Saved to**: `.claude/handoffs/handoff-{self.generated_at.strftime('%Y-%m-%d-%H%M%S')}.md`"
+        )
 
         return "\n".join(lines)
 
     @classmethod
-    def from_markdown(cls, markdown: str) -> 'Handoff':
+    def from_markdown(cls, markdown: str) -> "Handoff":
         """
         Parse Handoff from markdown format.
 

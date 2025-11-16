@@ -10,11 +10,14 @@ Provides:
 - File locking for concurrent access
 """
 
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict, Tuple, TYPE_CHECKING
 from pathlib import Path
 from datetime import datetime
 import fcntl
 import re
+
+if TYPE_CHECKING:
+    from claude_force.semantic_selector import SemanticAgentSelector
 
 from ..models.todo import TodoItem, Priority, Complexity, TodoStatus
 from ..response_cache import ResponseCache
@@ -37,14 +40,18 @@ class TodoManager:
         self,
         todo_path: str = ".claude/TO-DOS.md",
         cache: Optional[ResponseCache] = None,
-        semantic_selector: Optional['SemanticAgentSelector'] = None
+        semantic_selector: Optional["SemanticAgentSelector"] = None,
     ):
         self.todo_path = Path(todo_path)
         self._cache = cache or ResponseCache()
         self._semantic_selector = semantic_selector
-        self._validator = PathValidator(allowed_dirs=[".claude", "src", "tests", "docs"])
+        self._validator = PathValidator(
+            allowed_dirs=[".claude", "src", "tests", "docs"]
+        )
 
-    def add_todo(self, todo: TodoItem, check_duplicates: bool = True) -> Tuple[bool, Optional[List[TodoItem]]]:
+    def add_todo(
+        self, todo: TodoItem, check_duplicates: bool = True
+    ) -> Tuple[bool, Optional[List[TodoItem]]]:
         """
         Add todo with validation and duplicate checking.
 
@@ -92,9 +99,7 @@ class TodoManager:
         return (True, None)
 
     def get_todos(
-        self,
-        filter_by: Optional[Dict] = None,
-        include_archived: bool = False
+        self, filter_by: Optional[Dict] = None, include_archived: bool = False
     ) -> List[TodoItem]:
         """
         Retrieve todos with optional filtering and caching.
@@ -175,7 +180,9 @@ class TodoManager:
         query_parts = [
             todo.action,
             todo.problem,
-            f"Required capabilities: {', '.join(todo.required_capabilities)}" if todo.required_capabilities else ""
+            f"Required capabilities: {', '.join(todo.required_capabilities)}"
+            if todo.required_capabilities
+            else "",
         ]
         query = ". ".join(filter(None, query_parts))
 
@@ -186,6 +193,7 @@ class TodoManager:
         except Exception as e:
             # If semantic selector fails, return empty
             import logging
+
             logging.getLogger(__name__).warning(
                 f"Semantic agent selection failed for query '{query}': {e}"
             )
@@ -313,13 +321,15 @@ class TodoManager:
         # Validate file paths
         for file_path in todo.files:
             # Extract path without line numbers
-            path = file_path.split(':')[0]
+            path = file_path.split(":")[0]
             try:
                 self._validator.validate_path(path, base_dir=Path.cwd())
             except Exception as e:
                 raise ValueError(f"Invalid file path '{path}': {e}")
 
-    def _find_similar_todos(self, todo: TodoItem, existing: List[TodoItem]) -> List[TodoItem]:
+    def _find_similar_todos(
+        self, todo: TodoItem, existing: List[TodoItem]
+    ) -> List[TodoItem]:
         """
         Find similar todos using text similarity.
 
@@ -355,8 +365,8 @@ class TodoManager:
             Similarity score between 0.0 and 1.0
         """
         # Normalize texts
-        words1 = set(re.findall(r'\w+', text1.lower()))
-        words2 = set(re.findall(r'\w+', text2.lower()))
+        words1 = set(re.findall(r"\w+", text1.lower()))
+        words2 = set(re.findall(r"\w+", text2.lower()))
 
         if not words1 or not words2:
             return 0.0
@@ -380,20 +390,20 @@ class TodoManager:
         """
         filtered = todos
 
-        if 'priority' in filters:
-            priority = Priority(filters['priority'])
+        if "priority" in filters:
+            priority = Priority(filters["priority"])
             filtered = [t for t in filtered if t.priority == priority]
 
-        if 'status' in filters:
-            status = TodoStatus(filters['status'])
+        if "status" in filters:
+            status = TodoStatus(filters["status"])
             filtered = [t for t in filtered if t.status == status]
 
-        if 'complexity' in filters:
-            complexity = Complexity(filters['complexity'])
+        if "complexity" in filters:
+            complexity = Complexity(filters["complexity"])
             filtered = [t for t in filtered if t.complexity == complexity]
 
-        if 'tags' in filters:
-            required_tags = set(filters['tags'])
+        if "tags" in filters:
+            required_tags = set(filters["tags"])
             filtered = [t for t in filtered if required_tags & set(t.tags)]
 
         return filtered
@@ -421,7 +431,7 @@ class TodoManager:
         # mtime changes = likely modified
         # Content hash (first 100 bytes) = catch same-second modifications
         try:
-            with open(self.todo_path, 'rb') as f:
+            with open(self.todo_path, "rb") as f:
                 # Hash first 100 bytes for quick check
                 sample = f.read(100)
                 content_hash = hashlib.md5(sample).hexdigest()[:8]
@@ -455,7 +465,7 @@ class TodoManager:
         content = self.todo_path.read_text()
 
         # Split by todo sections (### headers)
-        sections = re.split(r'\n### ', content)
+        sections = re.split(r"\n### ", content)
 
         todos = []
         for section in sections:
@@ -463,8 +473,8 @@ class TodoManager:
                 continue
 
             # Add back the ### prefix
-            if not section.startswith('###'):
-                section = '### ' + section
+            if not section.startswith("###"):
+                section = "### " + section
 
             try:
                 todo = TodoItem.from_markdown(section)
@@ -472,6 +482,7 @@ class TodoManager:
             except Exception as e:
                 # Skip malformed sections
                 import logging
+
                 logging.getLogger(__name__).debug(
                     f"Skipping malformed todo section: {e}"
                 )
@@ -488,7 +499,7 @@ class TodoManager:
         """
         self.todo_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(self.todo_path, 'w') as f:
+        with open(self.todo_path, "w") as f:
             # Acquire exclusive lock
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:
@@ -513,16 +524,30 @@ class TodoManager:
         # Header
         lines.append("# Active Todos")
         lines.append("")
-        lines.append(f"**Last Updated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(
+            f"**Last Updated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         lines.append(f"**Total**: {len(todos)} todos")
         lines.append("")
         lines.append("---")
         lines.append("")
 
         # Group by priority
-        high_priority = [t for t in todos if t.priority == Priority.HIGH and t.status == TodoStatus.ACTIVE]
-        medium_priority = [t for t in todos if t.priority == Priority.MEDIUM and t.status == TodoStatus.ACTIVE]
-        low_priority = [t for t in todos if t.priority == Priority.LOW and t.status == TodoStatus.ACTIVE]
+        high_priority = [
+            t
+            for t in todos
+            if t.priority == Priority.HIGH and t.status == TodoStatus.ACTIVE
+        ]
+        medium_priority = [
+            t
+            for t in todos
+            if t.priority == Priority.MEDIUM and t.status == TodoStatus.ACTIVE
+        ]
+        low_priority = [
+            t
+            for t in todos
+            if t.priority == Priority.LOW and t.status == TodoStatus.ACTIVE
+        ]
         in_progress = [t for t in todos if t.status == TodoStatus.IN_PROGRESS]
         completed = [t for t in todos if t.status == TodoStatus.COMPLETED]
 
@@ -588,7 +613,9 @@ class TodoManager:
 
         # Build archive content
         lines = []
-        lines.append(f"# Archived Todos - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(
+            f"# Archived Todos - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         lines.append("")
         lines.append(f"**Count**: {len(todos)} todos")
         lines.append("")
@@ -603,7 +630,7 @@ class TodoManager:
         content = "\n".join(lines)
 
         # Append to archive (don't overwrite) with file locking for concurrent access
-        with open(archive_file, 'a') as f:
+        with open(archive_file, "a") as f:
             # Acquire exclusive lock to prevent race conditions
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:

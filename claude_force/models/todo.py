@@ -17,6 +17,7 @@ import uuid
 
 class Priority(Enum):
     """Todo priority levels"""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -24,6 +25,7 @@ class Priority(Enum):
 
 class Complexity(Enum):
     """Estimated complexity for resource planning"""
+
     SIMPLE = "simple"
     MODERATE = "moderate"
     COMPLEX = "complex"
@@ -31,6 +33,7 @@ class Complexity(Enum):
 
 class TodoStatus(Enum):
     """Todo lifecycle status"""
+
     ACTIVE = "active"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -51,7 +54,9 @@ class TodoItem:
     """
 
     # Core fields
-    id: str = field(default_factory=lambda: f"todo-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}")
+    id: str = field(
+        default_factory=lambda: f"todo-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
+    )
     action: str = ""  # Action verb + high-level objective
     why_matters: str = ""  # Context/rationale for this todo
 
@@ -61,7 +66,9 @@ class TodoItem:
     desired_state: str = ""  # What should happen
 
     # Success criteria (CRITICAL for AI validation)
-    success_criteria: List[str] = field(default_factory=list)  # Specific measurable outcomes
+    success_criteria: List[str] = field(
+        default_factory=list
+    )  # Specific measurable outcomes
 
     # File references with line numbers
     files: List[str] = field(default_factory=list)  # Format: path/to/file.py:123-145
@@ -210,7 +217,9 @@ class TodoItem:
         return "\n".join(lines)
 
     @classmethod
-    def from_markdown(cls, markdown: str, section_id: Optional[str] = None) -> 'TodoItem':
+    def from_markdown(
+        cls, markdown: str, section_id: Optional[str] = None
+    ) -> "TodoItem":
         """
         Parse TodoItem from markdown format.
 
@@ -277,7 +286,9 @@ class TodoItem:
                     todo.suggested_agents = [a.strip() for a in agents_str.split(",")]
                 elif line.startswith("- **Workflows:**"):
                     workflows_str = line.split(":", 1)[1].strip()
-                    todo.suggested_workflows = [w.strip() for w in workflows_str.split(",")]
+                    todo.suggested_workflows = [
+                        w.strip() for w in workflows_str.split(",")
+                    ]
             elif current_section == "dependencies":
                 if line.startswith("- Depends on:"):
                     deps_str = line.split(":", 1)[1].strip()
