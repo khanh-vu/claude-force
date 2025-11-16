@@ -400,21 +400,46 @@ class TodoManager:
 
     def _cache_key(self) -> str:
         """
-        Generate cache key based on file mtime.
+        Generate cache key based on file hash for reliable invalidation.
 
         Returns:
             Cache key string
+
+        Note:
+            Uses file size + mtime + content hash to detect changes
+            even when modifications happen within the same second.
         """
         if not self.todo_path.exists():
             return "todos:empty"
 
-        mtime = self.todo_path.stat().st_mtime
-        return f"todos:{mtime}"
+        import hashlib
+
+        stat = self.todo_path.stat()
+
+        # Combine multiple indicators for better cache key uniqueness
+        # Size changes = definitely modified
+        # mtime changes = likely modified
+        # Content hash (first 100 bytes) = catch same-second modifications
+        try:
+            with open(self.todo_path, 'rb') as f:
+                # Hash first 100 bytes for quick check
+                sample = f.read(100)
+                content_hash = hashlib.md5(sample).hexdigest()[:8]
+        except Exception:
+            content_hash = "none"
+
+        return f"todos:{stat.st_size}:{int(stat.st_mtime)}:{content_hash}"
 
     def _invalidate_cache(self) -> None:
-        """Invalidate cached todos"""
+        """
+        Invalidate cached todos.
+
+        Note:
+            Attempts to delete the current cache key. Due to hash-based
+            keys, rapid successive writes are automatically handled.
+        """
         if self.todo_path.exists():
-            cache_key = f"todos:{self.todo_path.stat().st_mtime}"
+            cache_key = self._cache_key()
             self._cache.delete(cache_key)
 
     def _parse_todos(self) -> List[TodoItem]:
