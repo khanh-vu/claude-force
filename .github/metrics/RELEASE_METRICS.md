@@ -11,15 +11,15 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total Releases** | 1 |
-| Production Releases | 1 |
+| **Total Releases** | 2 |
+| Production Releases | 2 |
 | Pre-releases (RC/Alpha/Beta) | 0 |
 
 ### Workflow Performance
 
 | Workflow | Total Runs | Success | Failure | Success Rate | Avg Duration |
 |----------|------------|---------|---------|--------------|--------------|
-| **Production Release** | 19 | 1 | $((19 - 1)) | 5.3% | 4.02 min |
+| **Production Release** | 20 | 2 | $((20 - 2)) | 10.0% | 3.92 min |
 | **Release Candidate** | 1 | 0 | $((1 - 0)) | 0.0% | 12.48 min |
 | **RC Promotion** | 0 | 0 | $((0 - 0)) | 0% | 0 min |
 
@@ -29,23 +29,23 @@
 
 ### Overall Health
 
-- **Overall Success Rate**: 5.0%
-- **Total Workflow Runs**: 20
-- **Total Successful Runs**: 1
+- **Overall Success Rate**: 9.5%
+- **Total Workflow Runs**: 21
+- **Total Successful Runs**: 2
 - **Total Failed Runs**: 19
 
 ❌ **Status**: Needs Attention - Success rate below target
 
 ### Performance Analysis
 
-- **Production Release**: Average 4.02 minutes
+- **Production Release**: Average 3.92 minutes
   - ✅ Excellent performance (< 10 min target)
 - **Release Candidate**: Average 12.48 minutes
 
 ### Release Velocity
 
-- **Release Frequency**: .2 releases per week
-- **Production vs Pre-release**: 1 production / 0 pre-release
+- **Release Frequency**: .4 releases per week
+- **Production vs Pre-release**: 2 production / 0 pre-release
 
 ---
 
