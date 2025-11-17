@@ -819,17 +819,27 @@ def cmd_init(args):
 
         target_dir = Path(args.directory if args.directory != "." else Path.cwd())
         claude_dir = target_dir / ".claude"
+        claude_json_path = claude_dir / "claude.json"
 
-        # Check if .claude already exists
+        # Smart detection of existing .claude directory
+        merge_with_existing = False
         if claude_dir.exists():
-            if not args.force:
-                print(
-                    f"❌ Error: .claude directory already exists in {target_dir}", file=sys.stderr
-                )
-                print("   Use --force to reinitialize", file=sys.stderr)
-                sys.exit(1)
+            if claude_json_path.exists():
+                # claude-force is already initialized
+                if not args.force:
+                    print(
+                        f"❌ Error: claude-force is already initialized in {target_dir}", file=sys.stderr
+                    )
+                    print(f"   Found: {claude_json_path}", file=sys.stderr)
+                    print("   Use --force to reinitialize", file=sys.stderr)
+                    sys.exit(1)
+                else:
+                    print(f"⚠️  Warning: Reinitializing claude-force configuration\n")
             else:
-                print(f"⚠️  Warning: Reinitializing existing .claude directory\n")
+                # .claude exists but no claude.json - likely Claude Code project
+                merge_with_existing = True
+                print(f"📁 Detected existing .claude directory (Claude Code project)")
+                print(f"   Preserving existing files and adding claude-force configuration\n")
 
         print(f"🚀 Initializing claude-force project in {target_dir}\n")
 
@@ -932,7 +942,8 @@ def cmd_init(args):
         # Initialize project
         print("📁 Creating project structure...\n")
         result = orchestrator.initialize_project(
-            config=config, output_dir=str(claude_dir), create_examples=not args.no_examples
+            config=config, output_dir=str(claude_dir), create_examples=not args.no_examples,
+            merge_with_existing=merge_with_existing
         )
 
         # Display results
@@ -941,6 +952,13 @@ def cmd_init(args):
         for file in result["created_files"]:
             rel_path = Path(file).relative_to(target_dir)
             print(f"   ✓ {rel_path}")
+
+        # Show preserved files if merging with existing
+        if result.get("skipped_files"):
+            print(f"\n📌 Preserved {len(result['skipped_files'])} existing files:")
+            for file in result["skipped_files"]:
+                rel_path = Path(file).relative_to(target_dir)
+                print(f"   ⊙ {rel_path}")
 
         print(f"\n📋 Configuration:")
         print(f"   Name: {config.name}")

@@ -362,7 +362,8 @@ class QuickStartOrchestrator:
         return config
 
     def initialize_project(
-        self, config: ProjectConfig, output_dir: str = ".claude", create_examples: bool = True
+        self, config: ProjectConfig, output_dir: str = ".claude", create_examples: bool = True,
+        merge_with_existing: bool = False
     ) -> Dict[str, Any]:
         """
         Initialize .claude/ directory structure.
@@ -371,6 +372,7 @@ class QuickStartOrchestrator:
             config: Project configuration
             output_dir: Output directory (default: .claude)
             create_examples: Create example task files
+            merge_with_existing: If True, preserve existing files (e.g., from Claude Code)
 
         Returns:
             Initialization result with created files
@@ -379,38 +381,40 @@ class QuickStartOrchestrator:
         output_path.mkdir(parents=True, exist_ok=True)
 
         created_files = []
+        skipped_files = []
 
-        # 1. Create claude.json
+        # Helper function to create file if it doesn't exist (or if not merging)
+        def create_file_if_needed(file_path: Path, content: str, description: str = "") -> bool:
+            """Create file if needed, return True if created, False if skipped."""
+            if file_path.exists() and merge_with_existing:
+                skipped_files.append(str(file_path))
+                return False
+            with open(file_path, "w") as f:
+                f.write(content)
+            created_files.append(str(file_path))
+            return True
+
+        # 1. Create claude.json (always create - this is the claude-force config)
         claude_json_path = output_path / "claude.json"
         claude_json = self._generate_claude_json(config)
-
         with open(claude_json_path, "w") as f:
             json.dump(claude_json, f, indent=2)
         created_files.append(str(claude_json_path))
 
-        # 2. Create task.md template
+        # 2. Create task.md template (preserve if exists)
         task_md_path = output_path / "task.md"
         task_md = self._generate_task_template(config)
+        create_file_if_needed(task_md_path, task_md, "task template")
 
-        with open(task_md_path, "w") as f:
-            f.write(task_md)
-        created_files.append(str(task_md_path))
-
-        # 3. Create README.md
+        # 3. Create README.md (preserve if exists)
         readme_path = output_path / "README.md"
         readme = self._generate_readme(config)
+        create_file_if_needed(readme_path, readme, "README")
 
-        with open(readme_path, "w") as f:
-            f.write(readme)
-        created_files.append(str(readme_path))
-
-        # 4. Create scorecard.md
+        # 4. Create scorecard.md (preserve if exists)
         scorecard_path = output_path / "scorecard.md"
         scorecard = self._generate_scorecard(config)
-
-        with open(scorecard_path, "w") as f:
-            f.write(scorecard)
-        created_files.append(str(scorecard_path))
+        create_file_if_needed(scorecard_path, scorecard, "scorecard")
 
         # 5. Create directories
         for directory in ["agents", "contracts", "hooks", "skills", "tasks", "metrics"]:
@@ -436,6 +440,8 @@ class QuickStartOrchestrator:
                     with open(agent_dest, "w") as f:
                         f.write(basic_agent)
                     created_files.append(str(agent_dest))
+            elif merge_with_existing:
+                skipped_files.append(str(agent_dest))
 
             # Copy contract file (skip if already exists to preserve customizations)
             contract_dest = output_path / "contracts" / f"{agent_name}.contract"
@@ -450,6 +456,8 @@ class QuickStartOrchestrator:
                     with open(contract_dest, "w") as f:
                         f.write(basic_contract)
                     created_files.append(str(contract_dest))
+            elif merge_with_existing:
+                skipped_files.append(str(contract_dest))
 
         # 7. Create example task if requested
         if create_examples:
@@ -465,6 +473,7 @@ class QuickStartOrchestrator:
             "success": True,
             "config": config,
             "created_files": created_files,
+            "skipped_files": skipped_files,
             "output_dir": str(output_path),
         }
 
