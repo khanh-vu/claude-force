@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen)](https://github.com/khanh-vu/claude-force/actions)
 [![Status](https://img.shields.io/badge/status-production--ready-blue)](https://github.com/khanh-vu/claude-force)
-[![Version](https://img.shields.io/badge/version-2.2.0-blue)](https://github.com/khanh-vu/claude-force)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/khanh-vu/claude-force)
 
 ## Overview
 
@@ -23,6 +23,16 @@ Claude Force is a comprehensive orchestration platform that enables building sop
 - **10 Workflows** - Pre-built workflows for common development scenarios
 - **9 Templates** - Production-ready project templates
 - **100% Test Coverage** - 331 tests, all passing
+
+### 🆕 TÂCHES Workflow Management (v1.1.0)
+
+Intelligent task orchestration and session continuity:
+
+- **📋 Todo Management** (`/todos`) - AI-optimized task capture with agent recommendations
+- **🔄 Session Handoff** (`/handoff`) - Preserve context across sessions with priority work tracking
+- **🧠 Meta-Prompting** (`/meta-prompt`) - LLM-powered workflow generation with governance validation
+
+See [RELEASE_NOTES_v1.1.0.md](RELEASE_NOTES_v1.1.0.md) for full details.
 
 ## Quick Start
 
