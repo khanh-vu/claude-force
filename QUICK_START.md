@@ -155,6 +155,36 @@ my-project/
 └── ...
 ```
 
+**Integrate with Existing Claude Code Projects:**
+
+If you already have a `.claude` directory (e.g., from Claude Code), `claude-force` will automatically merge:
+
+```bash
+cd my-existing-project  # Already has .claude/ directory
+claude-force init --description "My existing project"
+```
+
+**Output:**
+```
+📁 Detected existing .claude directory (Claude Code project)
+   Preserving existing files and adding claude-force configuration
+
+✅ Project initialized successfully!
+
+📂 Created 2 files:
+   ✓ .claude/claude.json
+   ✓ .claude/examples/example-task.md
+
+📌 Preserved 15 existing files:
+   ⊙ .claude/task.md
+   ⊙ .claude/README.md
+   ⊙ .claude/commands/custom-command.md
+   ⊙ .claude/hooks/pre-run.md
+   ...
+```
+
+Your existing commands, hooks, and task files are preserved! 🎉
+
 ### 3. Use Python API
 
 ```python

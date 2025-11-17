@@ -186,6 +186,86 @@ class TestCLIInit(CLITestCase):
         examples_dir = claude_dir / "examples"
         self.assertFalse(examples_dir.exists(), "Examples should not be created")
 
+    def test_init_merge_with_existing_claude_folder(self):
+        """Test claude-force init merges with existing .claude directory (Claude Code project)."""
+        # Create existing .claude directory (simulate Claude Code project)
+        claude_dir = Path(self.temp_dir) / ".claude"
+        claude_dir.mkdir()
+
+        # Create existing files that should be preserved
+        task_md = claude_dir / "task.md"
+        task_md.write_text("# Existing Task\nThis is my existing task")
+
+        readme_md = claude_dir / "README.md"
+        readme_md.write_text("# My Existing Project\nExisting documentation")
+
+        # Create existing directories (e.g., commands, hooks from Claude Code)
+        commands_dir = claude_dir / "commands"
+        commands_dir.mkdir()
+        (commands_dir / "custom-command.md").write_text("Custom command")
+
+        hooks_dir = claude_dir / "hooks"
+        hooks_dir.mkdir()
+        (hooks_dir / "pre-run.md").write_text("Custom hook")
+
+        # Run init without --force (should detect and merge)
+        result = self.run_cli(
+            "init",
+            self.temp_dir,
+            "--description",
+            "Test project for integration",
+            "--name",
+            "test-project",
+        )
+
+        # Should succeed
+        self.assertExitCode(result, 0)
+        self.assertInOutput(result, "Detected existing .claude directory")
+        self.assertInOutput(result, "Preserving existing files")
+        self.assertInOutput(result, "initialized successfully")
+        self.assertInOutput(result, "Preserved")
+
+        # Verify claude.json was created
+        self.assertTrue((claude_dir / "claude.json").exists(), "claude.json should be created")
+
+        # Verify existing files were preserved
+        self.assertTrue(task_md.exists(), "task.md should be preserved")
+        self.assertEqual(task_md.read_text(), "# Existing Task\nThis is my existing task")
+
+        self.assertTrue(readme_md.exists(), "README.md should be preserved")
+        self.assertEqual(readme_md.read_text(), "# My Existing Project\nExisting documentation")
+
+        # Verify existing directories were preserved
+        self.assertTrue((commands_dir / "custom-command.md").exists())
+        self.assertTrue((hooks_dir / "pre-run.md").exists())
+
+        # Verify new directories were created
+        self.assertTrue((claude_dir / "agents").is_dir())
+        self.assertTrue((claude_dir / "contracts").is_dir())
+
+    def test_init_with_existing_claude_json_requires_force(self):
+        """Test that existing claude.json requires --force flag."""
+        # Create existing .claude directory with claude.json
+        claude_dir = Path(self.temp_dir) / ".claude"
+        claude_dir.mkdir()
+        claude_json = claude_dir / "claude.json"
+        claude_json.write_text('{"version": "1.0.0"}')
+
+        # Run init without --force (should fail)
+        result = self.run_cli(
+            "init",
+            self.temp_dir,
+            "--description",
+            "Test project",
+            "--name",
+            "test-project",
+        )
+
+        # Should fail
+        self.assertNotEqual(result.returncode, 0)
+        self.assertInOutput(result, "already initialized", check_stderr=True)
+        self.assertInOutput(result, "--force", check_stderr=True)
+
     def test_init_missing_description(self):
         """Test error when description is missing in non-interactive mode."""
         result = self.run_cli(
@@ -218,8 +298,8 @@ class TestCLIInit(CLITestCase):
         self.assertInOutput(result, "template", check_stderr=True)
 
     def test_init_existing_directory(self):
-        """Test error when .claude directory already exists without --force."""
-        # Create .claude directory
+        """Test merge when .claude directory exists without claude.json."""
+        # Create .claude directory (simulate Claude Code project)
         claude_dir = Path(self.temp_dir) / ".claude"
         claude_dir.mkdir()
 
@@ -227,9 +307,10 @@ class TestCLIInit(CLITestCase):
             "init", self.temp_dir, "--description", "Test project", "--name", "test-project"
         )
 
-        # Should fail with error
-        self.assertNotEqual(result.returncode, 0)
-        self.assertInOutput(result, "already exists", check_stderr=True)
+        # Should succeed with merge mode
+        self.assertExitCode(result, 0)
+        self.assertInOutput(result, "Detected existing .claude directory")
+        self.assertInOutput(result, "initialized successfully")
 
     def test_init_verbose_errors(self):
         """Test --verbose flag provides detailed error information."""
