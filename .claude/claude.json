@@ -34,6 +34,12 @@
       "domains": ["components", "react", "typescript", "design-system"],
       "priority": 2
     },
+    "seo-performance-expert": {
+      "file": "agents/seo-performance-expert.md",
+      "contract": "contracts/seo-performance-expert.contract",
+      "domains": ["seo", "performance", "core-web-vitals", "optimization", "structured-data", "lighthouse"],
+      "priority": 2
+    },
     "deployment-integration-expert": {
       "file": "agents/deployment-integration-expert.md",
       "contract": "contracts/deployment-integration-expert.contract",
@@ -188,6 +194,7 @@
       "security-specialist",
       "python-expert",
       "ui-components-expert",
+      "seo-performance-expert",
       "frontend-developer",
       "qc-automation-expert",
       "code-reviewer",
@@ -196,6 +203,7 @@
     "frontend-only": [
       "frontend-architect",
       "ui-components-expert",
+      "seo-performance-expert",
       "frontend-developer",
       "qc-automation-expert",
       "code-reviewer"

@@ -118,6 +118,30 @@ class AgentRouter:
             "keywords": ["python", "async", "packages", "pip", "pytest"],
             "description": "Python development expertise",
         },
+        "seo-performance-expert": {
+            "keywords": [
+                "seo",
+                "performance",
+                "core web vitals",
+                "lighthouse",
+                "optimization",
+                "page speed",
+                "lcp",
+                "fid",
+                "cls",
+                "meta tags",
+                "structured data",
+                "schema",
+                "sitemap",
+                "robots.txt",
+                "webp",
+                "lazy loading",
+                "code splitting",
+                "caching",
+                "cdn",
+            ],
+            "description": "SEO and web performance optimization",
+        },
     }
 
     def __init__(self, include_marketplace: bool = True):
