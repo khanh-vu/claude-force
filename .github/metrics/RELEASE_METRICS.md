@@ -1,7 +1,7 @@
 # Release Automation Metrics Report
 
 **Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-**Period**: Last 30 days (2025-10-16 to 2025-11-15)
+**Period**: Last 30 days (2025-10-18 to 2025-11-17)
 
 ---
 
@@ -19,7 +19,7 @@
 
 | Workflow | Total Runs | Success | Failure | Success Rate | Avg Duration |
 |----------|------------|---------|---------|--------------|--------------|
-| **Production Release** | 17 | 1 | $((17 - 1)) | 5.9% | 4.46 min |
+| **Production Release** | 18 | 1 | $((18 - 1)) | 5.6% | 4.23 min |
 | **Release Candidate** | 1 | 0 | $((1 - 0)) | 0.0% | 12.48 min |
 | **RC Promotion** | 0 | 0 | $((0 - 0)) | 0% | 0 min |
 
@@ -29,16 +29,16 @@
 
 ### Overall Health
 
-- **Overall Success Rate**: 5.5%
-- **Total Workflow Runs**: 18
+- **Overall Success Rate**: 5.2%
+- **Total Workflow Runs**: 19
 - **Total Successful Runs**: 1
-- **Total Failed Runs**: 17
+- **Total Failed Runs**: 18
 
 ❌ **Status**: Needs Attention - Success rate below target
 
 ### Performance Analysis
 
-- **Production Release**: Average 4.46 minutes
+- **Production Release**: Average 4.23 minutes
   - ✅ Excellent performance (< 10 min target)
 - **Release Candidate**: Average 12.48 minutes
 
