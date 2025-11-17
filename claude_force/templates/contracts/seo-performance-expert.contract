@@ -20,7 +20,7 @@ This agent has FINAL authority over:
    - URL structure and permalink optimization
 
 2. **Web Performance Optimization**
-   - Core Web Vitals optimization (LCP, FID, CLS)
+   - Core Web Vitals optimization (LCP, INP, CLS)
    - JavaScript and CSS bundle optimization
    - Code splitting and lazy loading strategies
    - Image and media optimization
@@ -46,7 +46,7 @@ This agent has FINAL authority over:
 
 2. **Implement technical SEO optimizations** including meta tags, structured data, sitemaps, robots.txt, and canonical tags
 
-3. **Optimize Core Web Vitals** to achieve LCP < 2.5s, FID < 100ms, and CLS < 0.1
+3. **Optimize Core Web Vitals** to achieve LCP < 2.5s, INP < 200ms, and CLS < 0.1
 
 4. **Implement performance optimizations** including code splitting, lazy loading, image optimization, and caching strategies
 
@@ -168,7 +168,7 @@ This agent MUST deliver to `.claude/work.md` under the `[SEO & PERFORMANCE EXPER
   - Lighthouse Performance Score: [e.g., > 90]
   - Lighthouse SEO Score: [e.g., > 95]
   - LCP: [e.g., < 2.5s]
-  - FID: [e.g., < 100ms]
+  - INP: [e.g., < 200ms]
   - CLS: [e.g., < 0.1]
 - **Priority Focus**: [SEO, Performance, or Both]
 - **Target Audience**: [Geographic locations, languages, devices]
@@ -239,7 +239,7 @@ All items listed in the "Deliverables" section above must be present and complet
 
 ### Performance Optimization
 - [ ] LCP < 2.5s
-- [ ] FID < 100ms
+- [ ] INP < 200ms
 - [ ] CLS < 0.1
 - [ ] Images optimized (WebP/AVIF, lazy loading)
 - [ ] JavaScript code split and optimized
@@ -268,7 +268,7 @@ All items listed in the "Deliverables" section above must be present and complet
 | SEO | Sitemap accessible | PASS/FAIL | |
 | SEO | Mobile-friendly | PASS/FAIL | |
 | Performance | LCP target met | PASS/FAIL | |
-| Performance | FID target met | PASS/FAIL | |
+| Performance | INP target met | PASS/FAIL | |
 | Performance | CLS target met | PASS/FAIL | |
 | Performance | Bundle size optimized | PASS/FAIL | |
 | Validation | Lighthouse SEO > 90 | PASS/FAIL | |
@@ -449,7 +449,7 @@ Work is considered COMPLETE and SUCCESSFUL when:
 ### ✅ Quality Gates Pass
 - [ ] Lighthouse SEO score > 90
 - [ ] Lighthouse Performance score > 90
-- [ ] Core Web Vitals: LCP < 2.5s, FID < 100ms, CLS < 0.1
+- [ ] Core Web Vitals: LCP < 2.5s, INP < 200ms, CLS < 0.1
 - [ ] Schema validation passes (Rich Results Test)
 - [ ] Mobile-friendly test passes
 - [ ] Accessibility audit passes (minimum WCAG AA)
@@ -492,7 +492,7 @@ This agent's success is measured by:
 - **Lighthouse Performance Score**: Must achieve > 90
 - **Core Web Vitals**:
   - Largest Contentful Paint (LCP): < 2.5 seconds
-  - First Input Delay (FID): < 100 milliseconds
+  - Interaction to Next Paint (INP): < 200 milliseconds
   - Cumulative Layout Shift (CLS): < 0.1
 
 ### Secondary Metrics
@@ -582,7 +582,7 @@ LCP Optimization:
 - [ ] Remove render-blocking resources
 - [ ] Use SSR/SSG for above-fold content
 
-FID Optimization:
+INP Optimization:
 - [ ] Reduce JavaScript execution time
 - [ ] Code split and lazy load
 - [ ] Defer non-critical scripts
