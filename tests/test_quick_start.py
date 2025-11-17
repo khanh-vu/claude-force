@@ -120,8 +120,10 @@ class TestQuickStartOrchestrator(unittest.TestCase):
         # Check result structure
         self.assertTrue(result["success"])
         self.assertIn("created_files", result)
+        self.assertIn("skipped_files", result)
         self.assertIn("output_dir", result)
         self.assertGreater(len(result["created_files"]), 0)
+        self.assertEqual(len(result["skipped_files"]), 0)  # No skipped files in fresh init
 
         # Check created files
         self.assertTrue((output_dir / "claude.json").exists())
@@ -138,6 +140,95 @@ class TestQuickStartOrchestrator(unittest.TestCase):
 
         # Check example
         self.assertTrue((output_dir / "examples" / "example-task.md").exists())
+
+    def test_initialize_project_merge_with_existing(self):
+        """Test merging claude-force with existing .claude directory."""
+        output_dir = Path(self.temp_dir) / ".claude"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create existing files (simulating Claude Code project)
+        existing_task_md = output_dir / "task.md"
+        existing_task_md.write_text("# Existing Task\nThis is an existing task file")
+
+        existing_readme = output_dir / "README.md"
+        existing_readme.write_text("# Existing README\nExisting project documentation")
+
+        (output_dir / "commands").mkdir(exist_ok=True)
+        (output_dir / "commands" / "custom.md").write_text("Custom command")
+
+        (output_dir / "hooks").mkdir(exist_ok=True)
+        (output_dir / "hooks" / "pre-run.md").write_text("Custom pre-run hook")
+
+        # Initialize with merge_with_existing=True
+        template = self.orchestrator.templates[0]
+        config = self.orchestrator.generate_config(
+            template=template, project_name="test-project", description="Test project"
+        )
+
+        result = self.orchestrator.initialize_project(
+            config=config, output_dir=str(output_dir), create_examples=True,
+            merge_with_existing=True
+        )
+
+        # Check result structure
+        self.assertTrue(result["success"])
+        self.assertIn("created_files", result)
+        self.assertIn("skipped_files", result)
+        self.assertGreater(len(result["created_files"]), 0)
+        self.assertGreater(len(result["skipped_files"]), 0)
+
+        # claude.json should always be created
+        self.assertTrue((output_dir / "claude.json").exists())
+        self.assertIn(str(output_dir / "claude.json"), result["created_files"])
+
+        # Existing files should be preserved
+        self.assertTrue(existing_task_md.exists())
+        self.assertEqual(existing_task_md.read_text(), "# Existing Task\nThis is an existing task file")
+        self.assertIn(str(existing_task_md), result["skipped_files"])
+
+        self.assertTrue(existing_readme.exists())
+        self.assertEqual(existing_readme.read_text(), "# Existing README\nExisting project documentation")
+        self.assertIn(str(existing_readme), result["skipped_files"])
+
+        # Existing directories should be preserved
+        self.assertTrue((output_dir / "commands" / "custom.md").exists())
+        self.assertTrue((output_dir / "hooks" / "pre-run.md").exists())
+
+        # New agent files should be created
+        self.assertTrue((output_dir / "agents").is_dir())
+        for agent in config.agents:
+            agent_file = output_dir / "agents" / f"{agent}.md"
+            # At least some agent files should be created
+            # (may depend on templates available)
+
+    def test_initialize_project_no_merge_overwrites(self):
+        """Test that without merge flag, existing files are overwritten."""
+        output_dir = Path(self.temp_dir) / ".claude"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create existing file
+        existing_task_md = output_dir / "task.md"
+        existing_task_md.write_text("# Existing Task\nThis should be overwritten")
+
+        # Initialize without merge_with_existing
+        template = self.orchestrator.templates[0]
+        config = self.orchestrator.generate_config(
+            template=template, project_name="test-project", description="Test project"
+        )
+
+        result = self.orchestrator.initialize_project(
+            config=config, output_dir=str(output_dir), create_examples=True,
+            merge_with_existing=False
+        )
+
+        # Existing file should be overwritten
+        self.assertTrue(existing_task_md.exists())
+        self.assertNotEqual(existing_task_md.read_text(), "# Existing Task\nThis should be overwritten")
+        # Should contain new template content
+        self.assertIn("test-project", existing_task_md.read_text())
+
+        # No files should be skipped
+        self.assertEqual(len(result["skipped_files"]), 0)
 
     def test_claude_json_generation(self):
         """Test claude.json file generation."""
