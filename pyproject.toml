@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "claude-force"
-version = "1.0.0"
+version = "1.1.0"
 description = "Multi-Agent Orchestration System for Claude"
 readme = "README.md"
 authors = [
