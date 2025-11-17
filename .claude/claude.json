@@ -311,7 +311,11 @@
       "high-availability-patterns",
       "order-execution-patterns",
       "state-management-patterns",
-      "secrets-management-production"
+      "secrets-management-production",
+      "seo-audit-checklist",
+      "structured-data-generator",
+      "performance-optimization-patterns",
+      "lighthouse-ci-integration"
     ]
   },
   
