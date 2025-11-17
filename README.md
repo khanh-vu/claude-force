@@ -245,6 +245,25 @@ Initialize projects with pre-configured templates:
 claude-force init my-project --template llm-app
 ```
 
+**Smart Integration with Existing Projects:**
+
+Claude Force can seamlessly integrate with existing `.claude` directories (e.g., from Claude Code):
+
+```bash
+# Integrate with existing Claude Code project
+cd my-existing-project  # Has .claude/ directory but no claude.json
+claude-force init --description "My existing project"
+# ✓ Preserves existing files (commands/, hooks/, task.md, etc.)
+# ✓ Adds claude-force configuration (claude.json, agents/, contracts/)
+# ✓ Shows what was created vs. preserved
+```
+
+If you already have `claude.json`, use `--force` to reinitialize:
+
+```bash
+claude-force init --force --description "Reinitialize project"
+```
+
 **Available Templates:**
 - `fullstack-web` - Full-stack (React, FastAPI, PostgreSQL)
 - `llm-app` - LLM application (RAG, chatbots)

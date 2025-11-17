@@ -186,16 +186,24 @@ pip install -r requirements.txt
 
 ### Issue: `FileNotFoundError: Configuration file not found: .claude/claude.json`
 
-**Solution**: You need to be in a claude-force repository
+**Solution 1**: Initialize a new project
+```bash
+# In a new or existing project directory
+claude-force init --description "My project description"
+```
+
+**Solution 2**: Navigate to an existing claude-force project
 ```bash
 cd path/to/claude-force  # Navigate to repo root
 claude-force run agent ...
 ```
 
-Or specify config location:
+**Solution 3**: Specify config location
 ```bash
 claude-force --config /path/to/.claude/claude.json run agent ...
 ```
+
+**Note**: If you have an existing `.claude` directory (e.g., from Claude Code), `claude-force init` will automatically preserve your existing files while adding the required configuration.
 
 ### Issue: Tests fail on Windows (Path issues)
 

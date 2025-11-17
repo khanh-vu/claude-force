@@ -145,6 +145,47 @@ claude-force info security-specialist
 # Shows detailed capabilities and use cases
 ```
 
+### Can I integrate claude-force with an existing project?
+
+Yes! Claude Force can seamlessly integrate with existing `.claude` directories (e.g., from Claude Code projects):
+
+```bash
+# Navigate to your existing project
+cd my-existing-project
+
+# Initialize claude-force (preserves existing files)
+claude-force init --description "My existing project"
+```
+
+**What happens:**
+- ✅ **Preserves** existing files (task.md, README.md, commands/, hooks/, etc.)
+- ✅ **Adds** claude-force configuration (claude.json, agents/, contracts/)
+- ✅ **Shows** what was created vs. preserved
+
+**Example output:**
+```
+📁 Detected existing .claude directory (Claude Code project)
+   Preserving existing files and adding claude-force configuration
+
+✅ Project initialized successfully!
+
+📂 Created 2 files:
+   ✓ .claude/claude.json
+   ✓ .claude/examples/example-task.md
+
+📌 Preserved 15 existing files:
+   ⊙ .claude/task.md
+   ⊙ .claude/README.md
+   ⊙ .claude/commands/custom-command.md
+   ...
+```
+
+**If you already have `claude.json`:**
+```bash
+# Use --force to reinitialize
+claude-force init --force --description "Reinitialize project"
+```
+
 ### How do I run a workflow?
 
 ```bash
