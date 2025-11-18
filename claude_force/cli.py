@@ -2233,7 +2233,7 @@ def cmd_pick_agent(args):
                 sys.exit(1)
 
         # Get source path (built-in agents)
-        source_path = get_builtin_agents_path().parent
+        source_path = get_builtin_agents_path()
 
         # Create command and copy agents
         command = PickAgentCommand(source_path, target_path)

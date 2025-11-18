@@ -209,7 +209,32 @@ class PickAgentCommand:
         if self.source_project.resolve() == self.target_project.resolve():
             raise ValueError("Source and target must be different directories")
 
-        self.source_claude = self.source_project / ".claude"
+        # Detect source structure:
+        # - If source has agents/ and contracts/ directly (templates structure), use it as-is
+        # - Otherwise, assume standard project structure with .claude/ subdirectory
+        source_has_agents = (self.source_project / "agents").exists()
+        source_has_contracts = (self.source_project / "contracts").exists()
+
+        if source_has_agents and source_has_contracts:
+            # Templates structure: agents/ and contracts/ are directly under source
+            self.source_claude = self.source_project
+            # For templates, check if there's a .claude directory with claude.json
+            # Try parent's sibling first: /path/to/templates -> /path/to/.claude/claude.json
+            # Then try grandparent's child: /path/to/package/templates -> /path/to/.claude/claude.json
+            sibling_claude = self.source_project.parent / ".claude"
+            grandparent_claude = self.source_project.parent.parent / ".claude"
+
+            if (sibling_claude / "claude.json").exists():
+                self.source_config_dir = sibling_claude
+            elif (grandparent_claude / "claude.json").exists():
+                self.source_config_dir = grandparent_claude
+            else:
+                self.source_config_dir = None
+        else:
+            # Standard project structure: agents/ and contracts/ are under .claude/
+            self.source_claude = self.source_project / ".claude"
+            self.source_config_dir = self.source_claude
+
         self.target_claude = self.target_project / ".claude"
 
     def list_available_agents(self) -> List[str]:
@@ -417,9 +442,17 @@ class PickAgentCommand:
 
         try:
             # Load source config to get agent definitions
-            source_config_path = self.source_claude / "claude.json"
+            # Use source_config_dir if available (for templates), otherwise use source_claude
+            if self.source_config_dir:
+                source_config_path = self.source_config_dir / "claude.json"
+            else:
+                source_config_path = self.source_claude / "claude.json"
+
             if not source_config_path.exists():
-                return {"success": False, "error": "Source claude.json not found"}
+                # If no source config found, we can still succeed but won't add metadata
+                # This allows copying agents without configuration metadata
+                logger.warning(f"Source claude.json not found at {source_config_path}, skipping config metadata")
+                return {"success": True, "agents_added": 0}
 
             with open(source_config_path, "r") as f:
                 source_config = json.load(f)
