@@ -188,6 +188,19 @@ PathValidationError: Path does not exist: .vercel/output/functions/__sitemap__/_
 
 ---
 
+### 4. Git Fallback Could Select User's Project (Code review feedback)
+**Problem:** Git fallback could return user's project .claude folder instead of built-in agents when virtualenv lives inside user's git project.
+
+**Fix:** Added validation to prevent selecting user's project .claude:
+- Created `_is_builtin_agents_dir()` function to verify .claude contains built-in agents
+- Check for marker files (code-reviewer.md, python-expert.md, qc-automation-expert.md)
+- Only use git fallback if package is inside repository (prevents selecting user's project)
+- Added comprehensive debug logging for diagnosing agent discovery issues
+
+**Tests:** All 102 existing tests pass with new validation logic
+
+---
+
 ## 🔐 Security Features
 
 All commands include comprehensive security validation:
@@ -459,6 +472,7 @@ The following minor issues were deferred as non-critical:
 20. `fix: report failure when config update fails`
 21. `fix: handle broken symlinks and improve CLI usability`
 22. `feat: redesign pick-agent for better UX (interactive mode)`
+23. `fix: add git fallback to find built-in agents in development mode`
 
 ---
 
