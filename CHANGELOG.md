@@ -5,6 +5,28 @@ All notable changes to claude-force will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2025-11-18
+
+### Security
+
+- Verify all critical security fixes are in place from v1.2.0
+- Confirm file content validation in pick-agent command
+- Confirm backup and rollback mechanisms in restructure command
+
+### Improvements
+
+- Maintain version consistency across all package files
+- Ensure production readiness for existing project support features
+- Validate test coverage for all critical paths
+
+### Maintenance
+
+- Hotfix release to validate production readiness
+- Confirm all critical issues from code review are addressed
+- Ensure stable release for PyPI distribution
+
+---
+
 ## [1.2.1] - 2025-11-18
 
 ### Documentation
