@@ -2207,6 +2207,19 @@ def cmd_pick_agent(args):
 # Functions: main()
 
 
+def _run_shell(args):
+    """
+    Run interactive shell mode.
+
+    Args:
+        args: Parsed arguments (with config, api-key, demo flags)
+    """
+    from .interactive_shell import run_interactive_shell
+
+    # TODO: Pass config_path from args if needed
+    run_interactive_shell()
+
+
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
@@ -2762,6 +2775,14 @@ For more information: https://github.com/khanh-vu/claude-force
         "--verbose", "-v", action="store_true", help="Verbose error output"
     )
     recommend_parser_analytics.set_defaults(func=cmd_analyze_recommend)
+
+    # Shell command (Interactive REPL mode)
+    shell_parser = subparsers.add_parser(
+        "shell",
+        help="Start interactive shell mode (REPL)",
+        description="Enter interactive shell mode where you can run commands without typing 'claude-force' each time."
+    )
+    shell_parser.set_defaults(func=lambda args: _run_shell(args))
 
     # Parse arguments
     args = parser.parse_args()
