@@ -362,15 +362,20 @@ class PickAgentCommand:
         else:
             update_result = {"success": False, "agents_added": 0}
 
+        # Determine overall success: files must be copied AND config must be updated
+        overall_success = copy_result["copied"] > 0 and update_result.get("success", False)
+
         if show_progress:
-            if copy_result["copied"] > 0:
-                print(f"✓ Pick complete: {copy_result['copied']} agent(s) copied")
+            if overall_success:
+                print(f"✓ Pick complete: {copy_result['copied']} agent(s) copied and configured")
+            elif copy_result["copied"] > 0:
+                print(f"⚠ Agents copied but config update failed")
             else:
                 print(f"✗ No agents were copied")
 
         # Return comprehensive result
         return {
-            "success": copy_result["copied"] > 0,
+            "success": overall_success,
             "agents_copied": copy_result["copied"],
             "agents_failed": copy_result["failed"],
             "config_updated": update_result.get("success", False),
