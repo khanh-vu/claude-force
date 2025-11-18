@@ -262,6 +262,9 @@ class ProjectPathValidator:
                     subdir = path / dirname
                     yield from _walk_recursive(subdir, depth + 1)
 
+            except PathValidationError as e:
+                # Skip paths that don't exist (broken symlinks, deleted files, etc.)
+                logger.warning(f"Skipping inaccessible path {path}: {e}")
             except (PermissionError, OSError) as e:
                 logger.warning(f"Error walking directory {path}: {e}")
 

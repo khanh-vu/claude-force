@@ -2126,10 +2126,7 @@ def cmd_pick_agent(args):
         source_path = Path(args.source if args.source else ".")
         target_path = Path(args.target if args.target else ".")
 
-        # Create command
-        command = PickAgentCommand(source_path, target_path)
-
-        # Handle --list option
+        # Handle --list option (can use default paths for listing)
         if args.list:
             # Check for conflicting usage: --list with agent names
             if args.agents:
@@ -2138,12 +2135,53 @@ def cmd_pick_agent(args):
                 print("          or: pick-agent <agent-names...>", file=sys.stderr)
                 sys.exit(1)
 
-            available = command.list_available_agents()
-            print(f"\n📋 Available Agents ({len(available)} total)\n")
-            for agent in available:
-                print(f"  • {agent}")
-            print()
-            return
+            try:
+                command = PickAgentCommand(source_path, source_path)  # Same path OK for listing
+                available = command.list_available_agents()
+                print(f"\n📋 Available Agents ({len(available)} total)\n")
+                for agent in available:
+                    print(f"  • {agent}")
+                print()
+                return
+            except ValueError as e:
+                # Fallback: just validate source for listing
+                from .security import validate_project_root
+
+                source_path = validate_project_root(source_path)
+                agents_dir = source_path / ".claude" / "agents"
+                if not agents_dir.exists():
+                    print("❌ Error: No .claude/agents directory found", file=sys.stderr)
+                    sys.exit(1)
+
+                agents = [
+                    f.stem
+                    for f in agents_dir.iterdir()
+                    if f.is_file()
+                    and f.suffix == ".md"
+                    and (agents_dir.parent / "contracts" / f"{f.stem}.md").exists()
+                ]
+                print(f"\n📋 Available Agents ({len(agents)} total)\n")
+                for agent in agents:
+                    print(f"  • {agent}")
+                print()
+                return
+
+        # For copying: require different source and target
+        if not args.source or not args.target:
+            print(
+                "❌ Error: Must specify --source and --target when copying agents", file=sys.stderr
+            )
+            print("", file=sys.stderr)
+            print("Usage:", file=sys.stderr)
+            print(
+                "  pick-agent --source /path/to/source --target /path/to/target agent1 agent2",
+                file=sys.stderr,
+            )
+            print("  pick-agent --list --source /path/to/source", file=sys.stderr)
+            sys.exit(1)
+
+        # Create command
+        command = PickAgentCommand(source_path, target_path)
 
         # Get agent names from positional arguments
         agent_names = args.agents
