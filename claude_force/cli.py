@@ -828,7 +828,8 @@ def cmd_init(args):
                 # claude-force is already initialized
                 if not args.force:
                     print(
-                        f"❌ Error: claude-force is already initialized in {target_dir}", file=sys.stderr
+                        f"❌ Error: claude-force is already initialized in {target_dir}",
+                        file=sys.stderr,
                     )
                     print(f"   Found: {claude_json_path}", file=sys.stderr)
                     print("   Use --force to reinitialize", file=sys.stderr)
@@ -942,8 +943,10 @@ def cmd_init(args):
         # Initialize project
         print("📁 Creating project structure...\n")
         result = orchestrator.initialize_project(
-            config=config, output_dir=str(claude_dir), create_examples=not args.no_examples,
-            merge_with_existing=merge_with_existing
+            config=config,
+            output_dir=str(claude_dir),
+            create_examples=not args.no_examples,
+            merge_with_existing=merge_with_existing,
         )
 
         # Display results
