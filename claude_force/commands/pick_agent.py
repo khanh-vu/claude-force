@@ -75,7 +75,16 @@ def get_builtin_agents_path() -> Optional[Path]:
     package_dir = Path(claude_force.__file__).parent
     logger.debug(f"Searching for built-in agents, package_dir: {package_dir}")
 
-    # Try 1: Package directory (installed with package data)
+    # Try 0: Package templates directory (pip installed package)
+    # This is where agents are stored when installed via pip
+    templates_dir = package_dir / "templates"
+    logger.debug(f"Try 0: Checking {templates_dir}")
+    if _is_builtin_agents_dir(templates_dir):
+        logger.info(f"Found built-in agents at: {templates_dir}")
+        return templates_dir
+    logger.debug(f"Try 0: Not found at {templates_dir}")
+
+    # Try 1: Package directory (alternative package data location)
     claude_dir = package_dir / ".claude"
     logger.debug(f"Try 1: Checking {claude_dir}")
     if _is_builtin_agents_dir(claude_dir):
