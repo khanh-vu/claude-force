@@ -282,3 +282,112 @@ class TestRestructureCommandInteractive:
             # All should be skipped
             assert result["skipped"] > 0
             assert result["applied"] == 0
+
+
+class TestRestructureCommandBackup:
+    """Test backup functionality for file safety"""
+
+    def test_existing_valid_files_not_overwritten(self):
+        """
+        TDD: Existing valid files should NOT be overwritten (no backup needed)
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+            claude_path = project_path / ".claude"
+            claude_path.mkdir()
+
+            # Create existing README.md with custom content
+            readme = claude_path / "README.md"
+            original_content = "# My Custom README\n\nDon't overwrite this!"
+            readme.write_text(original_content)
+
+            # Run restructure
+            command = RestructureCommand(project_path)
+            result = command.execute(auto_approve=True)
+
+            # Original file should still exist with original content (not overwritten)
+            assert readme.read_text() == original_content, "Original file should not be overwritten"
+
+            # No backup should be created (file wasn't touched)
+            backup_path = claude_path / "README.md.bak"
+            assert not backup_path.exists(), "No backup should be created for untouched files"
+
+    def test_no_backup_for_new_files(self):
+        """
+        TDD: No backup should be created for new files (nothing to backup)
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            # Run restructure (creates .claude from scratch)
+            command = RestructureCommand(project_path)
+            result = command.execute(auto_approve=True)
+
+            # Should be no backup files
+            claude_path = project_path / ".claude"
+            backup_files = list(claude_path.glob("*.bak"))
+            assert len(backup_files) == 0, "No backups should be created for new files"
+
+    def test_idempotent_restructure_doesnt_modify_files(self):
+        """
+        TDD: Running restructure multiple times should be idempotent
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            # First restructure - creates everything
+            command = RestructureCommand(project_path)
+            command.execute(auto_approve=True)
+
+            claude_path = project_path / ".claude"
+            readme = claude_path / "README.md"
+
+            # Get content after first run
+            first_content = readme.read_text()
+            first_mtime = readme.stat().st_mtime
+
+            # Second restructure - should not modify existing files
+            import time
+            time.sleep(0.1)  # Ensure mtime would change if file was rewritten
+            command.execute(auto_approve=True)
+
+            second_content = readme.read_text()
+            second_mtime = readme.stat().st_mtime
+
+            # Files should be unchanged
+            assert second_content == first_content
+            assert second_mtime == first_mtime, "File should not be modified on second run"
+
+            # No backups should exist
+            backup_path = claude_path / "README.md.bak"
+            assert not backup_path.exists(), "No backup for idempotent operations"
+
+    def test_backup_preserves_file_permissions(self):
+        """
+        TDD: Backup should preserve original file permissions and metadata
+        """
+        import os
+        import stat
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+            claude_path = project_path / ".claude"
+            claude_path.mkdir()
+
+            # Create file with specific permissions
+            readme = claude_path / "README.md"
+            readme.write_text("Original content")
+            os.chmod(readme, stat.S_IRUSR | stat.S_IWUSR)  # 0600
+
+            original_stat = readme.stat()
+
+            # Run restructure
+            command = RestructureCommand(project_path)
+            command.execute(auto_approve=True)
+
+            # Check backup preserves metadata
+            backup_path = claude_path / "README.md.bak"
+            if backup_path.exists():
+                backup_stat = backup_path.stat()
+                # Permissions should be preserved (shutil.copy2 does this)
+                assert stat.S_IMODE(backup_stat.st_mode) == stat.S_IMODE(original_stat.st_mode)

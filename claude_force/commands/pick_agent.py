@@ -64,6 +64,18 @@ class PickAgentCommand:
 
         return sorted(agents)
 
+    def _create_backup(self, filepath: Path) -> None:
+        """
+        Create backup of existing file before overwriting.
+
+        Args:
+            filepath: Path to file to backup
+        """
+        if filepath.exists():
+            backup_path = filepath.with_suffix(filepath.suffix + '.bak')
+            # Use shutil.copy2 to preserve metadata (permissions, timestamps)
+            shutil.copy2(filepath, backup_path)
+
     def copy_agent(self, agent_name: str) -> Dict:
         """
         Copy a single agent to target project.
@@ -86,6 +98,10 @@ class PickAgentCommand:
             # Ensure target directories exist
             target_agent.parent.mkdir(parents=True, exist_ok=True)
             target_contract.parent.mkdir(parents=True, exist_ok=True)
+
+            # Create backups before overwriting
+            self._create_backup(target_agent)
+            self._create_backup(target_contract)
 
             # Copy files
             shutil.copy2(source_agent, target_agent)

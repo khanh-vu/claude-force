@@ -397,3 +397,121 @@ class TestPickAgentCommandFormatting:
             assert isinstance(json_output, str)
             parsed = json.loads(json_output)
             assert "success" in parsed
+
+
+class TestPickAgentCommandBackup:
+    """Test backup functionality for file safety"""
+
+    def test_backup_created_before_overwriting_existing_agent(self):
+        """
+        TDD: Backup should be created before overwriting existing agent files
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_path = Path(tmpdir) / "source"
+            target_path = Path(tmpdir) / "target"
+            source_path.mkdir()
+            target_path.mkdir()
+
+            # Setup source project with agent
+            source_claude = source_path / ".claude"
+            source_claude.mkdir()
+            (source_claude / "agents").mkdir()
+            (source_claude / "contracts").mkdir()
+
+            # Create source agent
+            (source_claude / "agents" / "test-agent.md").write_text("# New Agent\n\nNew version")
+            (source_claude / "contracts" / "test-agent.contract").write_text("contract: new")
+
+            source_config = {
+                "agents": {"test-agent": {"skills": ["test"]}},
+                "workflows": {},
+                "governance": {},
+                "paths": {},
+                "rules": {}
+            }
+            (source_claude / "claude.json").write_text(json.dumps(source_config))
+
+            # Setup target project with EXISTING agent (custom version)
+            target_claude = target_path / ".claude"
+            target_claude.mkdir()
+            (target_claude / "agents").mkdir()
+            (target_claude / "contracts").mkdir()
+
+            # Create existing agent with custom content
+            original_agent_content = "# My Custom Agent\n\nDon't overwrite this!"
+            original_contract_content = "contract: custom"
+            (target_claude / "agents" / "test-agent.md").write_text(original_agent_content)
+            (target_claude / "contracts" / "test-agent.contract").write_text(original_contract_content)
+
+            target_config = {
+                "agents": {},
+                "workflows": {},
+                "governance": {},
+                "paths": {},
+                "rules": {}
+            }
+            (target_claude / "claude.json").write_text(json.dumps(target_config))
+
+            # Copy agent (should overwrite and create backup)
+            command = PickAgentCommand(source_path, target_path)
+            result = command.copy_agent("test-agent")
+
+            # Should succeed
+            assert result["success"] is True
+
+            # Backups should exist
+            agent_backup = target_claude / "agents" / "test-agent.md.bak"
+            contract_backup = target_claude / "contracts" / "test-agent.contract.bak"
+
+            assert agent_backup.exists(), "Agent backup should be created"
+            assert contract_backup.exists(), "Contract backup should be created"
+
+            # Backups should contain original content
+            assert agent_backup.read_text() == original_agent_content
+            assert contract_backup.read_text() == original_contract_content
+
+            # New files should have new content
+            assert (target_claude / "agents" / "test-agent.md").read_text() == "# New Agent\n\nNew version"
+            assert (target_claude / "contracts" / "test-agent.contract").read_text() == "contract: new"
+
+    def test_no_backup_for_new_agents(self):
+        """
+        TDD: No backup should be created when copying to new location
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_path = Path(tmpdir) / "source"
+            target_path = Path(tmpdir) / "target"
+            source_path.mkdir()
+            target_path.mkdir()
+
+            # Setup both projects
+            for path in [source_path, target_path]:
+                claude = path / ".claude"
+                claude.mkdir()
+                (claude / "agents").mkdir()
+                (claude / "contracts").mkdir()
+                config = {"agents": {}, "workflows": {}, "governance": {}, "paths": {}, "rules": {}}
+                (claude / "claude.json").write_text(json.dumps(config))
+
+            # Add agent to source only
+            source_claude = source_path / ".claude"
+            (source_claude / "agents" / "new-agent.md").write_text("# New Agent")
+            (source_claude / "contracts" / "new-agent.contract").write_text("contract: v1")
+
+            source_config = json.loads((source_claude / "claude.json").read_text())
+            source_config["agents"]["new-agent"] = {"skills": ["test"]}
+            (source_claude / "claude.json").write_text(json.dumps(source_config))
+
+            # Copy agent
+            command = PickAgentCommand(source_path, target_path)
+            result = command.copy_agent("new-agent")
+
+            assert result["success"] is True
+
+            # No backups should exist (agent didn't exist before)
+            target_claude = target_path / ".claude"
+            agent_backup = target_claude / "agents" / "new-agent.md.bak"
+            contract_backup = target_claude / "contracts" / "new-agent.contract.bak"
+
+            assert not agent_backup.exists(), "No backup for new agent file"
+            assert not contract_backup.exists(), "No backup for new contract file"

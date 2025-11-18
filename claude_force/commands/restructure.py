@@ -151,6 +151,20 @@ class RestructureCommand:
         claude_path = self.project_path / ".claude"
         claude_path.mkdir(exist_ok=True)
 
+    def _create_backup(self, filepath: Path) -> None:
+        """
+        Create backup of existing file before overwriting.
+
+        Args:
+            filepath: Path to file to backup
+        """
+        import shutil
+
+        if filepath.exists():
+            backup_path = filepath.with_suffix(filepath.suffix + '.bak')
+            # Use shutil.copy2 to preserve metadata (permissions, timestamps)
+            shutil.copy2(filepath, backup_path)
+
     def _create_file_with_template(self, filepath: Path):
         """Create a file with appropriate template"""
         filename = filepath.name
@@ -173,12 +187,20 @@ class RestructureCommand:
             content = f"# {filename}\n\nCreated by /restructure command\n"
 
         filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        # Create backup before overwriting
+        self._create_backup(filepath)
+
         filepath.write_text(content)
 
     def _create_minimal_claude_json(self, filepath: Path):
         """Create minimal valid claude.json"""
         content = self._get_claude_json_template()
         filepath.parent.mkdir(parents=True, exist_ok=True)
+
+        # Create backup before overwriting
+        self._create_backup(filepath)
+
         filepath.write_text(content)
 
     def execute(self, auto_approve: bool = False) -> Dict:
