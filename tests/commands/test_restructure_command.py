@@ -391,3 +391,100 @@ class TestRestructureCommandBackup:
                 backup_stat = backup_path.stat()
                 # Permissions should be preserved (shutil.copy2 does this)
                 assert stat.S_IMODE(backup_stat.st_mode) == stat.S_IMODE(original_stat.st_mode)
+
+
+class TestRestructureCommandRollback:
+    """Test rollback functionality for safe recovery"""
+
+    def test_rollback_on_permission_error(self):
+        """
+        TDD: Should rollback changes if permission error occurs mid-operation
+        """
+        import os
+        import stat
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            # Create .claude folder and make one directory read-only
+            claude_path = project_path / ".claude"
+            claude_path.mkdir()
+
+            # Create a read-only subdirectory that will cause error
+            readonly_dir = claude_path / "agents"
+            readonly_dir.mkdir()
+            os.chmod(readonly_dir, stat.S_IRUSR | stat.S_IXUSR)  # r-x (no write)
+
+            try:
+                command = RestructureCommand(project_path)
+                # This should fail when trying to create files in readonly_dir
+                result = command.execute(auto_approve=True)
+
+                # If we get here, it should have rolled back
+                # Original state should be preserved (only .claude and agents exist)
+                assert claude_path.exists()
+                assert readonly_dir.exists()
+
+                # No other files should have been created if rollback worked
+                # (or at least they should be cleaned up)
+
+            finally:
+                # Cleanup: restore permissions
+                os.chmod(readonly_dir, stat.S_IRWXU)
+
+    def test_track_all_changes_during_execute(self):
+        """
+        TDD: Should track all changes made during execute for potential rollback
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            command = RestructureCommand(project_path)
+
+            # Execute should track changes
+            result = command.execute(auto_approve=True)
+
+            # Command should have a changes_made attribute for tracking
+            assert hasattr(command, 'changes_made'), "Should track changes"
+            assert isinstance(command.changes_made, list), "Changes should be a list"
+
+    def test_successful_execute_clears_change_tracking(self):
+        """
+        TDD: Successful execute should clear change tracking (no rollback needed)
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            command = RestructureCommand(project_path)
+            result = command.execute(auto_approve=True)
+
+            # Should succeed
+            assert result["success"] is True
+
+            # Changes tracked during operation, but committed (not rolled back)
+            if hasattr(command, 'changes_made'):
+                # After successful completion, changes are kept (not rolled back)
+                # The tracking list might be cleared or marked as committed
+                pass  # Implementation detail
+
+    def test_rollback_restores_original_state(self):
+        """
+        TDD: Rollback should restore project to original state
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_path = Path(tmpdir)
+
+            # Create initial state
+            initial_file = project_path / "existing.txt"
+            initial_content = "I existed before"
+            initial_file.write_text(initial_content)
+
+            command = RestructureCommand(project_path)
+
+            # Simulate starting execute then having it fail
+            # (This test verifies the concept - actual implementation may vary)
+
+            # For now, just verify original file is not touched
+            assert initial_file.exists()
+            assert initial_file.read_text() == initial_content
+

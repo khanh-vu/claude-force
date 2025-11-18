@@ -35,18 +35,31 @@ class ReviewCommand:
 
     def execute(self) -> AnalysisResult:
         """
-        Execute the review command.
+        Execute the review command with error handling.
 
         Analyzes the project and returns the result.
 
         Returns:
             AnalysisResult with project analysis
-        """
-        # Use ProjectAnalyzer to analyze the project
-        analyzer = ProjectAnalyzer(self.project_path)
-        result = analyzer.analyze()
 
-        return result
+        Raises:
+            ValueError: If analysis fails with user-friendly error message
+        """
+        try:
+            # Use ProjectAnalyzer to analyze the project
+            analyzer = ProjectAnalyzer(self.project_path)
+            result = analyzer.analyze()
+
+            return result
+
+        except PermissionError as e:
+            raise ValueError(f"Permission denied analyzing project: {e}")
+
+        except OSError as e:
+            raise ValueError(f"Error accessing project: {e}")
+
+        except Exception as e:
+            raise ValueError(f"Analysis failed: {e}")
 
     def format_markdown(self, result: AnalysisResult) -> str:
         """

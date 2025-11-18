@@ -38,6 +38,9 @@ class RestructureCommand:
         self.project_path = validate_project_root(project_path)
         self.validator = ClaudeValidator(self.project_path)
 
+        # Track changes for rollback capability
+        self.changes_made = []
+
     def validate(self) -> ValidationResult:
         """
         Validate .claude folder structure.
@@ -126,25 +129,103 @@ class RestructureCommand:
         }
 
     def _apply_fix(self, fix: Dict):
-        """Apply a single fix"""
+        """Apply a single fix and track changes for rollback"""
         action = fix["action"]
         path = Path(fix["path"]) if fix["path"] else None
 
         if action == "create_claude_folder":
+            claude_path = self.project_path / ".claude"
+            existed_before = claude_path.exists()
             self._create_claude_folder()
+
+            # Track for rollback
+            if not existed_before:
+                self.changes_made.append({
+                    "action": "created_directory",
+                    "path": claude_path,
+                    "existed_before": False
+                })
 
         elif action == "create_directory":
             if path:
+                existed_before = path.exists()
                 path.mkdir(parents=True, exist_ok=True)
+
+                # Track for rollback
+                if not existed_before:
+                    self.changes_made.append({
+                        "action": "created_directory",
+                        "path": path,
+                        "existed_before": False
+                    })
 
         elif action == "create_file":
             if path:
+                existed_before = path.exists()
+                original_content = path.read_text() if existed_before else None
+
                 self._create_file_with_template(path)
+
+                # Track for rollback
+                self.changes_made.append({
+                    "action": "created_file",
+                    "path": path,
+                    "existed_before": existed_before,
+                    "original_content": original_content
+                })
 
         elif action == "fix_config":
             # For now, just create minimal config if missing
             if path and path.name == "claude.json":
+                existed_before = path.exists()
+                original_content = path.read_text() if existed_before else None
+
                 self._create_minimal_claude_json(path)
+
+                # Track for rollback
+                self.changes_made.append({
+                    "action": "created_file",
+                    "path": path,
+                    "existed_before": existed_before,
+                    "original_content": original_content
+                })
+
+    def _rollback_changes(self):
+        """
+        Rollback all changes made during execute.
+
+        Undoes changes in reverse order (LIFO).
+        """
+        import shutil
+
+        for change in reversed(self.changes_made):
+            try:
+                action = change["action"]
+                path = change["path"]
+
+                if action == "created_file":
+                    if change["existed_before"]:
+                        # Restore original content
+                        if change["original_content"] is not None:
+                            path.write_text(change["original_content"])
+                    else:
+                        # Delete created file
+                        if path.exists():
+                            path.unlink()
+
+                elif action == "created_directory":
+                    if not change["existed_before"]:
+                        # Remove created directory if empty
+                        if path.exists() and not any(path.iterdir()):
+                            path.rmdir()
+
+            except Exception as e:
+                # Log rollback errors but continue rolling back
+                # (Don't want rollback itself to fail)
+                pass
+
+        # Clear changes after rollback
+        self.changes_made = []
 
     def _create_claude_folder(self):
         """Create .claude folder with basic structure"""
@@ -205,55 +286,76 @@ class RestructureCommand:
 
     def execute(self, auto_approve: bool = False) -> Dict:
         """
-        Execute the full restructure workflow.
+        Execute the full restructure workflow with error handling and rollback.
 
         Args:
             auto_approve: If True, apply all fixes without asking
 
         Returns:
             Dictionary with execution results
+
+        Raises:
+            ValueError: If operation fails with user-friendly error message
         """
         total_applied = 0
         total_skipped = 0
 
-        # Iteratively validate and fix until no more fixable issues
-        # (needed because some fixes reveal new issues, e.g., creating .claude folder)
-        max_iterations = 5
-        for iteration in range(max_iterations):
-            # Validate
-            validation = self.validate()
+        try:
+            # Iteratively validate and fix until no more fixable issues
+            # (needed because some fixes reveal new issues, e.g., creating .claude folder)
+            max_iterations = 5
+            for iteration in range(max_iterations):
+                # Validate
+                validation = self.validate()
 
-            # If valid or no fixable issues, we're done
-            if validation.is_valid or len(validation.fixable_issues()) == 0:
-                break
+                # If valid or no fixable issues, we're done
+                if validation.is_valid or len(validation.fixable_issues()) == 0:
+                    break
 
-            # Generate fix plan
-            fix_plan = self.generate_fix_plan(validation)
+                # Generate fix plan
+                fix_plan = self.generate_fix_plan(validation)
 
-            # Apply fixes
-            apply_result = self.apply_fixes(fix_plan, auto_approve=auto_approve)
+                # Apply fixes
+                apply_result = self.apply_fixes(fix_plan, auto_approve=auto_approve)
 
-            total_applied += apply_result["applied"]
-            total_skipped += apply_result["skipped"]
+                total_applied += apply_result["applied"]
+                total_skipped += apply_result["skipped"]
 
-            # If nothing was applied, no point continuing
-            if apply_result["applied"] == 0:
-                break
+                # If nothing was applied, no point continuing
+                if apply_result["applied"] == 0:
+                    break
 
-        # Final validation
-        final_validation = self.validate()
+            # Final validation
+            final_validation = self.validate()
 
-        # Return comprehensive result
-        return {
-            "validation": {
-                "is_valid": final_validation.is_valid,
-                "errors": len(final_validation.errors()),
-                "warnings": len(final_validation.warnings()),
-            },
-            "fixes_applied": total_applied,
-            "fixes_skipped": total_skipped,
-            "success": True,
-        }
+            # Return comprehensive result
+            return {
+                "validation": {
+                    "is_valid": final_validation.is_valid,
+                    "errors": len(final_validation.errors()),
+                    "warnings": len(final_validation.warnings()),
+                },
+                "fixes_applied": total_applied,
+                "fixes_skipped": total_skipped,
+                "success": True,
+            }
+
+        except PermissionError as e:
+            # Rollback on permission errors
+            self._rollback_changes()
+            raise ValueError(f"Permission denied during restructure: {e}")
+
+        except OSError as e:
+            # Rollback on OS errors (disk full, etc.)
+            self._rollback_changes()
+            if e.errno == 28:  # ENOSPC - No space left on device
+                raise ValueError(f"Disk full: Cannot complete restructure")
+            raise ValueError(f"OS error during restructure: {e}")
+
+        except Exception as e:
+            # Rollback on any unexpected error
+            self._rollback_changes()
+            raise ValueError(f"Restructure failed: {e}")
 
     def format_markdown(self, result: Dict) -> str:
         """
