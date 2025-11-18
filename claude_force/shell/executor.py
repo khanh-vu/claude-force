@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from io import StringIO
 import contextlib
+import difflib
 
 
 @dataclass
@@ -57,6 +58,19 @@ class CommandExecutor:
         self.history: List[Dict[str, Any]] = []
         self._parser = None  # Lazy-loaded from cli module
 
+        # Common commands for "did you mean" suggestions
+        self.all_commands = [
+            'list agents', 'list workflows',
+            'info', 'recommend',
+            'run agent', 'run workflow',
+            'metrics summary', 'metrics agents', 'metrics costs',
+            'setup', 'init', 'shell',
+            'marketplace list', 'marketplace search', 'marketplace install',
+            'review', 'restructure', 'pick-agent',
+            'compose', 'analyze', 'diagnose',
+            'import', 'export', 'contribute',
+        ]
+
     @property
     def parser(self):
         """
@@ -83,6 +97,26 @@ class CommandExecutor:
         """
         from claude_force.cli import create_argument_parser
         return create_argument_parser()
+
+    def _suggest_similar_commands(self, command: str, max_suggestions: int = 3) -> List[str]:
+        """
+        Suggest similar commands using fuzzy matching.
+
+        Args:
+            command: The invalid command that was entered
+            max_suggestions: Maximum number of suggestions to return
+
+        Returns:
+            List of similar command suggestions
+        """
+        # Get close matches using difflib
+        suggestions = difflib.get_close_matches(
+            command,
+            self.all_commands,
+            n=max_suggestions,
+            cutoff=0.6  # 60% similarity threshold
+        )
+        return suggestions
 
     def _parse_command(self, command: str) -> List[str]:
         """
@@ -148,18 +182,32 @@ class CommandExecutor:
                         metadata={"help": True}
                     )
                 else:
+                    # Try to suggest similar commands even for parse errors
+                    suggestions = self._suggest_similar_commands(command.split()[0] if command.split() else command)
+                    error_msg = f"Invalid command syntax. Try '/help' for usage."
+                    if suggestions:
+                        error_msg += f"\n\n💡 Did you mean:\n"
+                        for suggestion in suggestions:
+                            error_msg += f"   • {suggestion}\n"
                     return ExecutionResult(
                         success=False,
-                        error=f"Invalid command syntax. Try 'help' for usage.",
-                        metadata={"parse_error": True}
+                        error=error_msg,
+                        metadata={"parse_error": True, "suggestions": suggestions}
                     )
 
             # Check if command has a handler function
             if not hasattr(args, 'func'):
+                # Suggest similar commands
+                suggestions = self._suggest_similar_commands(command)
+                error_msg = f"Unknown command. Try '/help' for available commands."
+                if suggestions:
+                    error_msg += f"\n\n💡 Did you mean:\n"
+                    for suggestion in suggestions:
+                        error_msg += f"   • {suggestion}\n"
                 return ExecutionResult(
                     success=False,
-                    error=f"Unknown command. Try 'help' for available commands.",
-                    metadata={"no_handler": True}
+                    error=error_msg,
+                    metadata={"no_handler": True, "suggestions": suggestions}
                 )
 
             # Capture stdout to get command output
@@ -191,10 +239,42 @@ class CommandExecutor:
                     )
 
                 except Exception as e:
+                    # Provide helpful error messages with recovery suggestions
+                    error_msg = f"Error executing command: {str(e)}"
+                    exception_type = type(e).__name__
+
+                    # Add recovery suggestions for common errors
+                    if "API key" in str(e) or "ANTHROPIC_API_KEY" in str(e):
+                        error_msg += "\n\n💡 Recovery suggestions:"
+                        error_msg += "\n   • Set your API key: export ANTHROPIC_API_KEY='your-key-here'"
+                        error_msg += "\n   • Or run: /setup to configure interactively"
+                    elif "FileNotFoundError" in exception_type or "No such file" in str(e):
+                        error_msg += "\n\n💡 Recovery suggestions:"
+                        error_msg += "\n   • Check that the file path is correct"
+                        error_msg += "\n   • Use absolute paths or ensure you're in the right directory"
+                    elif "Agent not found" in str(e) or "agent" in str(e).lower():
+                        error_msg += "\n\n💡 Recovery suggestions:"
+                        error_msg += "\n   • Run: /list agents (to see available agents)"
+                        error_msg += "\n   • Run: /marketplace search (to find more agents)"
+                        error_msg += "\n   • Run: /reload (to refresh agent list)"
+                    elif "Workflow not found" in str(e) or "workflow" in str(e).lower():
+                        error_msg += "\n\n💡 Recovery suggestions:"
+                        error_msg += "\n   • Run: /list workflows (to see available workflows)"
+                        error_msg += "\n   • Run: /compose (to create a new workflow)"
+                    elif "PermissionError" in exception_type:
+                        error_msg += "\n\n💡 Recovery suggestions:"
+                        error_msg += "\n   • Check file/directory permissions"
+                        error_msg += "\n   • You may need to run with different permissions"
+                    elif "Network" in str(e) or "Connection" in str(e):
+                        error_msg += "\n\n💡 Recovery suggestions:"
+                        error_msg += "\n   • Check your internet connection"
+                        error_msg += "\n   • Verify API endpoints are accessible"
+                        error_msg += "\n   • Try again in a moment"
+
                     result = ExecutionResult(
                         success=False,
-                        error=f"Error executing command: {str(e)}",
-                        metadata={"exception": type(e).__name__}
+                        error=error_msg,
+                        metadata={"exception": exception_type}
                     )
 
             # Store in history

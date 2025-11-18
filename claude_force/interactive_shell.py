@@ -14,6 +14,8 @@ Features:
 
 import os
 import sys
+import time
+import threading
 from pathlib import Path
 from typing import Optional
 from prompt_toolkit import PromptSession
@@ -22,6 +24,39 @@ from prompt_toolkit.history import FileHistory
 from .shell.executor import CommandExecutor, ExecutionResult
 from .shell.completer import ClaudeForceCompleter
 from .orchestrator import AgentOrchestrator
+
+
+class ProgressSpinner:
+    """Simple spinner for showing progress during long operations."""
+
+    def __init__(self, message: str = "Working"):
+        self.message = message
+        self.spinner_chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+        self._stop = False
+        self._thread = None
+
+    def _spin(self):
+        """Spinner animation loop."""
+        idx = 0
+        while not self._stop:
+            sys.stderr.write(f'\r{self.spinner_chars[idx]} {self.message}...')
+            sys.stderr.flush()
+            idx = (idx + 1) % len(self.spinner_chars)
+            time.sleep(0.1)
+        sys.stderr.write('\r' + ' ' * (len(self.message) + 10) + '\r')
+        sys.stderr.flush()
+
+    def start(self):
+        """Start the spinner."""
+        self._stop = False
+        self._thread = threading.Thread(target=self._spin, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        """Stop the spinner."""
+        self._stop = True
+        if self._thread:
+            self._thread.join(timeout=0.5)
 
 
 class InteractiveShell:
@@ -55,6 +90,13 @@ class InteractiveShell:
         history_file = Path(".claude/.shell-history")
         history_file.parent.mkdir(parents=True, exist_ok=True)
 
+        # Create history file with secure permissions (owner read/write only)
+        if not history_file.exists():
+            history_file.touch(mode=0o600)
+        else:
+            # Fix permissions on existing file
+            history_file.chmod(0o600)
+
         # Initialize orchestrator for completer
         try:
             orchestrator = AgentOrchestrator()
@@ -79,6 +121,7 @@ class InteractiveShell:
             'clear': self._cmd_clear,
             'history': self._cmd_history,
             'meta-prompt': self._cmd_meta_prompt,
+            'reload': self._cmd_reload,
         }
 
     def start(self):
@@ -120,6 +163,33 @@ class InteractiveShell:
 
         self._print_goodbye()
 
+    def _validate_input(self, command: str) -> tuple[bool, str]:
+        """
+        Validate and sanitize user input.
+
+        Args:
+            command: Raw command string
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        # Check for null bytes (security risk)
+        if '\x00' in command:
+            return False, "Invalid input: null bytes not allowed"
+
+        # Check maximum length (prevent memory issues)
+        MAX_COMMAND_LENGTH = 10000
+        if len(command) > MAX_COMMAND_LENGTH:
+            return False, f"Command too long (max {MAX_COMMAND_LENGTH} characters)"
+
+        # Check for control characters (except common ones like \n, \t)
+        import unicodedata
+        for char in command:
+            if unicodedata.category(char) == 'Cc' and char not in '\n\t\r':
+                return False, f"Invalid control character in input"
+
+        return True, ""
+
     def _execute_command(self, command: str):
         """
         Execute a command (slash command or prompt).
@@ -137,6 +207,12 @@ class InteractiveShell:
         if not command:
             return
 
+        # Validate input
+        is_valid, error_msg = self._validate_input(command)
+        if not is_valid:
+            print(f"❌ {error_msg}", file=sys.stderr)
+            return
+
         self.command_count += 1
 
         # Check if this is a slash command (starts with /)
@@ -150,8 +226,23 @@ class InteractiveShell:
                 self.builtin_commands[cmd_parts[0]](cmd_parts[1:])
                 return
 
-            # Execute CLI command via executor
-            result = self.executor.execute(command)
+            # Show spinner for potentially long-running commands
+            show_spinner = any(command.startswith(cmd) for cmd in [
+                'run agent', 'run workflow', 'recommend', 'marketplace install',
+                'import', 'export', 'compose', 'analyze'
+            ])
+
+            spinner = None
+            if show_spinner:
+                spinner = ProgressSpinner("Executing")
+                spinner.start()
+
+            try:
+                # Execute CLI command via executor
+                result = self.executor.execute(command)
+            finally:
+                if spinner:
+                    spinner.stop()
 
             # Display result
             if result.success:
@@ -254,6 +345,7 @@ class InteractiveShell:
             print("  /exit, /quit         Exit the shell")
             print("  /clear               Clear the screen")
             print("  /history             Show command history")
+            print("  /reload              Refresh agent/workflow lists")
             print()
             print("Agent Commands:")
             print("  /list agents         List all available agents")
@@ -280,6 +372,16 @@ class InteractiveShell:
     def _cmd_clear(self, args):
         """Clear the screen."""
         os.system('clear' if os.name != 'nt' else 'cls')
+
+    def _cmd_reload(self, args):
+        """
+        Reload agent and workflow lists.
+
+        Useful after installing new agents or workflows during a session.
+        """
+        print("\n🔄 Reloading agent and workflow lists...")
+        self.completer.invalidate_cache()
+        print("✅ Cache cleared. Tab completion will refresh on next use.\n")
 
     def _cmd_history(self, args):
         """Show command history."""

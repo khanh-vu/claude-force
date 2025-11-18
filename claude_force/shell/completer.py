@@ -37,6 +37,16 @@ class ClaudeForceCompleter(Completer):
         self._agent_cache = None
         self._workflow_cache = None
 
+    def invalidate_cache(self):
+        """
+        Invalidate cached agent and workflow lists.
+
+        Call this after operations that might change available agents/workflows
+        (e.g., installing from marketplace, importing agents, etc.)
+        """
+        self._agent_cache = None
+        self._workflow_cache = None
+
         # Top-level commands
         self.commands = [
             'list', 'info', 'recommend', 'run', 'metrics',
