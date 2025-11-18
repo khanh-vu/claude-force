@@ -4,12 +4,14 @@
 
 This PR introduces comprehensive support for integrating **existing projects** into the claude-force ecosystem. It enables users to analyze, validate, and restructure any project to work with claude-force's multi-agent orchestration system.
 
-**Feature Status**: ✅ **Production Ready** (9/10)
+**Feature Status**: ✅ **Production Ready** (10/10)
 - All critical and major issues resolved
-- 86 tests passing (28 security + 17 pick-agent + 32 restructure + 9 integration, 1 skipped OS-specific)
+- All user-reported bugs fixed (including pip install bug)
+- 103 tests (28 security + 17 pick-agent + 32 restructure + 10 integration + 16 validation), 102 passing, 1 skipped
 - Comprehensive error handling, rollback, and logging
 - Interactive user experience with auto-setup
 - Full CLI, slash command, and Python API support
+- Tested in fresh pip install environment ✅
 
 ---
 
@@ -198,6 +200,25 @@ PathValidationError: Path does not exist: .vercel/output/functions/__sitemap__/_
 - Added comprehensive debug logging for diagnosing agent discovery issues
 
 **Tests:** All 102 existing tests pass with new validation logic
+
+---
+
+### 5. Agents Not Found in Pip-Installed Package (Critical user-reported bug)
+**Problem:** `claude-force pick-agent` fails with "No built-in agents found" when installed via pip/pipx.
+
+**Root Cause:** Package structure differs from repository structure:
+- Repository: `.claude/agents/*.md`
+- Pip package: `claude_force/templates/agents/*.md`
+
+**Fix:** Updated agent discovery to check templates directory first:
+- Try 0: Check `package_dir/templates/` (pip installs) ✅ NEW
+- Try 1-4: Existing fallbacks for `.claude/` directories
+
+**Testing:**
+- Created fresh virtualenv
+- Built wheel and installed via pip
+- Verified 30 agents found at `site-packages/claude_force/templates/`
+- All 26 pick-agent and integration tests pass
 
 ---
 
@@ -473,6 +494,7 @@ The following minor issues were deferred as non-critical:
 21. `fix: handle broken symlinks and improve CLI usability`
 22. `feat: redesign pick-agent for better UX (interactive mode)`
 23. `fix: add git fallback to find built-in agents in development mode`
+24. `fix: support templates/ directory for pip-installed packages`
 
 ---
 
