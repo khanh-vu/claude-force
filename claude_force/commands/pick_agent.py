@@ -34,10 +34,29 @@ def get_builtin_agents_path() -> Optional[Path]:
     if claude_dir.exists() and (claude_dir / "agents").exists():
         return claude_dir
 
-    # Fallback: check parent directory (for development)
+    # Fallback 1: check parent directory (for development)
     dev_claude_dir = package_dir.parent / ".claude"
     if dev_claude_dir.exists() and (dev_claude_dir / "agents").exists():
         return dev_claude_dir
+
+    # Fallback 2: check if we're in a git repo (development mode)
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=package_dir,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode == 0:
+            repo_root = Path(result.stdout.strip())
+            repo_claude_dir = repo_root / ".claude"
+            if repo_claude_dir.exists() and (repo_claude_dir / "agents").exists():
+                return repo_claude_dir
+    except Exception:
+        pass  # Git not available or not in a repo
 
     return None
 
