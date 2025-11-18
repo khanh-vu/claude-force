@@ -77,6 +77,7 @@ class InteractiveShell:
             'help': self._cmd_help,
             'clear': self._cmd_clear,
             'history': self._cmd_history,
+            'meta-prompt': self._cmd_meta_prompt,
         }
 
     def start(self):
@@ -120,7 +121,11 @@ class InteractiveShell:
 
     def _execute_command(self, command: str):
         """
-        Execute a command (built-in or CLI command).
+        Execute a command (slash command or prompt).
+
+        Behavior:
+        - Commands starting with '/' are executed as CLI commands
+        - Commands without '/' are treated as prompts (sent to meta-prompt)
 
         Args:
             command: Command string to execute
@@ -133,31 +138,40 @@ class InteractiveShell:
 
         self.command_count += 1
 
-        # Check for built-in commands first
-        cmd_parts = command.split()
-        if cmd_parts[0] in self.builtin_commands:
-            self.builtin_commands[cmd_parts[0]](cmd_parts[1:])
-            return
+        # Check if this is a slash command (starts with /)
+        if command.startswith('/'):
+            # Remove the forward slash and execute as command
+            command = command[1:].strip()
 
-        # Execute CLI command via executor
-        result = self.executor.execute(command)
+            # Check for built-in commands first
+            cmd_parts = command.split()
+            if cmd_parts[0] in self.builtin_commands:
+                self.builtin_commands[cmd_parts[0]](cmd_parts[1:])
+                return
 
-        # Display result
-        if result.success:
-            self.success_count += 1
-            if result.output:
-                print(result.output, end='')
+            # Execute CLI command via executor
+            result = self.executor.execute(command)
+
+            # Display result
+            if result.success:
+                self.success_count += 1
+                if result.output:
+                    print(result.output, end='')
+            else:
+                self.failure_count += 1
+                if result.error:
+                    print(f"❌ {result.error}", file=sys.stderr)
         else:
-            self.failure_count += 1
-            if result.error:
-                print(f"❌ {result.error}", file=sys.stderr)
+            # No backslash - treat as prompt input
+            self._handle_prompt(command)
 
     def _print_welcome(self):
         """Print welcome banner."""
         print()
         print("╔══════════════════════════════════════════════════════╗")
         print("║   Claude Force Interactive Shell v1.3.0             ║")
-        print("║   Type 'help' for commands, 'exit' to quit          ║")
+        print("║   Commands start with / (e.g., /help)               ║")
+        print("║   Plain text is sent as prompt to meta-prompt       ║")
         print("╚══════════════════════════════════════════════════════╝")
         print()
 
@@ -172,6 +186,18 @@ class InteractiveShell:
         print(f"  Failed: {self.failure_count}")
         print()
 
+    def _handle_prompt(self, prompt: str):
+        """
+        Handle prompt input (text without forward slash).
+
+        Args:
+            prompt: User's prompt text
+        """
+        # Send to meta-prompt by default
+        print(f"\n💭 Prompt: {prompt}")
+        print(f"ℹ️  Use /meta-prompt for explicit meta-prompt generation")
+        print(f"ℹ️  Or use /run agent <agent-name> --task \"{prompt}\" to run an agent\n")
+
     # =========================================================================
     # Built-in Commands
     # =========================================================================
@@ -180,42 +206,59 @@ class InteractiveShell:
         """Exit the shell."""
         self.running = False
 
+    def _cmd_meta_prompt(self, args):
+        """Generate meta-prompt from user input."""
+        if not args:
+            print("❌ Usage: /meta-prompt <your prompt here>")
+            return
+
+        prompt = ' '.join(args)
+        print(f"\n🔮 Generating meta-prompt for: {prompt}")
+        print(f"ℹ️  Meta-prompt functionality to be fully implemented")
+        print(f"ℹ️  Use /run agent prompt-engineer --task \"{prompt}\" for now\n")
+
     def _cmd_help(self, args):
         """Show help for commands."""
         if args:
             # Help for specific command
             command = args[0]
-            print(f"\nHelp for '{command}':")
+            print(f"\nHelp for '/{command}':")
             print(f"  (Detailed help to be implemented)")
             print()
         else:
             # General help
             print("\nClaude Force Interactive Shell - Available Commands\n")
+            print("💡 Usage Modes:")
+            print("  • Commands start with / (forward slash)")
+            print("  • Plain text without / is treated as a prompt")
+            print()
             print("Built-in Commands:")
-            print("  help [command]       Show this help or help for specific command")
-            print("  exit, quit           Exit the shell")
-            print("  clear                Clear the screen")
-            print("  history              Show command history")
+            print("  /help [command]      Show this help or help for specific command")
+            print("  /exit, /quit         Exit the shell")
+            print("  /clear               Clear the screen")
+            print("  /history             Show command history")
+            print("  /meta-prompt <text>  Generate meta-prompt")
             print()
             print("Agent Commands:")
-            print("  list agents          List all available agents")
-            print("  list workflows       List all workflows")
-            print("  info <agent>         Show agent information")
-            print("  recommend --task     Recommend agents for task")
+            print("  /list agents         List all available agents")
+            print("  /list workflows      List all workflows")
+            print("  /info <agent>        Show agent information")
+            print("  /recommend --task    Recommend agents for task")
             print()
             print("Execution Commands:")
-            print("  run agent <name> --task <task>       Run an agent")
-            print("  run workflow <name> --task <task>    Run a workflow")
+            print("  /run agent <name> --task <task>      Run an agent")
+            print("  /run workflow <name> --task <task>   Run a workflow")
             print()
             print("Metrics Commands:")
-            print("  metrics summary      Show metrics summary")
-            print("  metrics agents       Show agent performance")
-            print("  metrics costs        Show cost breakdown")
+            print("  /metrics summary     Show metrics summary")
+            print("  /metrics agents      Show agent performance")
+            print("  /metrics costs       Show cost breakdown")
             print()
             print("Examples:")
-            print("  list agents")
-            print("  run agent code-reviewer --task 'Review this code'")
-            print("  recommend --task 'Fix authentication bug'")
+            print("  /list agents")
+            print("  /run agent code-reviewer --task 'Review this code'")
+            print("  Review this code for security issues     (prompt)")
+            print("  /meta-prompt Help me design a REST API")
             print()
 
     def _cmd_clear(self, args):
