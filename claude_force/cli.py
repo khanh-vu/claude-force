@@ -2059,6 +2059,146 @@ def cmd_diagnose(args):
 
 
 # =============================================================================
+# PROJECT ANALYSIS COMMANDS
+# =============================================================================
+# Functions: cmd_review, cmd_restructure, cmd_pick_agent
+
+
+def cmd_review(args):
+    """Analyze existing project for claude-force compatibility"""
+    try:
+        from pathlib import Path
+        from .commands.review import ReviewCommand
+
+        # Determine project path
+        project_path = Path(args.path if args.path else ".")
+
+        # Create command
+        command = ReviewCommand(project_path)
+
+        # Execute analysis
+        result = command.execute()
+
+        # Output based on format
+        if args.format == "json":
+            print(command.format_json(result))
+        else:
+            print(command.format_markdown(result))
+
+    except ValueError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            import traceback
+
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_restructure(args):
+    """Validate and fix .claude folder structure"""
+    try:
+        from pathlib import Path
+        from .commands.restructure import RestructureCommand
+
+        # Determine project path
+        project_path = Path(args.path if args.path else ".")
+
+        # Create command
+        command = RestructureCommand(project_path)
+
+        # Execute restructure
+        result = command.execute(auto_approve=args.auto)
+
+        # Output based on format
+        if args.format == "json":
+            print(command.format_json(result))
+        else:
+            print(command.format_markdown(result))
+
+        # Exit with error code if not successful
+        if not result.get("success"):
+            sys.exit(1)
+
+    except ValueError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            import traceback
+
+            traceback.print_exc()
+        sys.exit(1)
+
+
+def cmd_pick_agent(args):
+    """Copy agent packs from source to target project"""
+    try:
+        from pathlib import Path
+        from .commands.pick_agent import PickAgentCommand
+
+        # Determine source and target paths
+        source_path = Path(args.source if args.source else ".")
+        target_path = Path(args.target if args.target else ".")
+
+        # Create command
+        command = PickAgentCommand(source_path, target_path)
+
+        # Handle --list option
+        if args.list:
+            # Check for conflicting usage: --list with agent names
+            if args.agents:
+                print("❌ Error: Cannot use --list with agent names", file=sys.stderr)
+                print("   Use either: pick-agent --list", file=sys.stderr)
+                print("          or: pick-agent <agent-names...>", file=sys.stderr)
+                sys.exit(1)
+
+            available = command.list_available_agents()
+            print(f"\n📋 Available Agents ({len(available)} total)\n")
+            for agent in available:
+                print(f"  • {agent}")
+            print()
+            return
+
+        # Get agent names from positional arguments
+        agent_names = args.agents
+
+        if not agent_names:
+            print(
+                "❌ Error: No agents specified. Use --list to see available agents.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        # Execute copy
+        result = command.execute(agent_names)
+
+        # Output based on format
+        if args.format == "json":
+            print(command.format_json(result))
+        else:
+            print(command.format_markdown(result))
+
+        # Exit with error code if not successful
+        if not result.get("success"):
+            sys.exit(1)
+
+    except ValueError as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            import traceback
+
+            traceback.print_exc()
+        sys.exit(1)
+
+
+# =============================================================================
 # MAIN ENTRY POINT
 # =============================================================================
 # Functions: main()
@@ -2097,6 +2237,13 @@ Examples:
   claude-force metrics summary
   claude-force metrics agents
   claude-force metrics costs
+
+  # Existing project support
+  claude-force review                    # Analyze current directory
+  claude-force review /path/to/project   # Analyze specific project
+  claude-force restructure --auto        # Fix .claude folder structure
+  claude-force pick-agent --list         # List available agents
+  claude-force pick-agent python-expert code-reviewer  # Copy agents
 
 For more information: https://github.com/khanh-vu/claude-force
         """,
@@ -2502,6 +2649,64 @@ For more information: https://github.com/khanh-vu/claude-force
     )
     diagnose_parser.add_argument("--json", action="store_true", help="Output diagnostics as JSON")
     diagnose_parser.set_defaults(func=cmd_diagnose)
+
+    # Review command (existing project support)
+    review_parser = subparsers.add_parser(
+        "review", help="Analyze existing project for claude-force compatibility"
+    )
+    review_parser.add_argument(
+        "path", nargs="?", default=None, help="Project path to analyze (default: current directory)"
+    )
+    review_parser.add_argument(
+        "--format", choices=["markdown", "json"], default="markdown", help="Output format"
+    )
+    review_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
+    review_parser.set_defaults(func=cmd_review)
+
+    # Restructure command (existing project support)
+    restructure_parser = subparsers.add_parser(
+        "restructure", help="Validate and fix .claude folder structure"
+    )
+    restructure_parser.add_argument(
+        "path",
+        nargs="?",
+        default=None,
+        help="Project path to restructure (default: current directory)",
+    )
+    restructure_parser.add_argument(
+        "--auto", action="store_true", help="Auto-approve all fixes without prompting"
+    )
+    restructure_parser.add_argument(
+        "--format", choices=["markdown", "json"], default="markdown", help="Output format"
+    )
+    restructure_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose error output"
+    )
+    restructure_parser.set_defaults(func=cmd_restructure)
+
+    # Pick-agent command (existing project support)
+    pick_agent_parser = subparsers.add_parser(
+        "pick-agent", help="Copy agent packs from source to target project"
+    )
+    pick_agent_parser.add_argument(
+        "agents", nargs="*", help="Agent names to copy (e.g., python-expert code-reviewer)"
+    )
+    pick_agent_parser.add_argument(
+        "--source", help="Source project path (default: current directory)"
+    )
+    pick_agent_parser.add_argument(
+        "--target", help="Target project path (default: current directory)"
+    )
+    pick_agent_parser.add_argument(
+        "--list", action="store_true", help="List available agents from source"
+    )
+    pick_agent_parser.add_argument(
+        "--format", choices=["markdown", "json"], default="markdown", help="Output format"
+    )
+    pick_agent_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose error output"
+    )
+    pick_agent_parser.set_defaults(func=cmd_pick_agent)
 
     # Workflow Composer commands
     compose_parser = subparsers.add_parser(
