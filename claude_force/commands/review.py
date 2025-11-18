@@ -6,12 +6,15 @@ Minimal implementation following TDD.
 """
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Dict, Optional
 
 from claude_force.project_analysis import ProjectAnalyzer, AnalysisResult
 from claude_force.security import validate_project_root
+
+logger = logging.getLogger(__name__)
 
 
 class ReviewCommand:
@@ -61,6 +64,9 @@ class ReviewCommand:
         """
         start_time = time.time() if timeout else None
 
+        logger.info(f"Starting project review: {self.project_path}")
+        logger.debug(f"Review settings - show_progress: {show_progress}, timeout: {timeout}")
+
         try:
             if show_progress:
                 print(f"🔍 Analyzing project: {self.project_path}")
@@ -72,7 +78,12 @@ class ReviewCommand:
 
             # Check timeout after analysis
             if timeout and (time.time() - start_time) > timeout:
+                logger.warning(f"Analysis exceeded timeout of {timeout}s")
                 raise TimeoutError(f"Analysis exceeded timeout of {timeout}s")
+
+            logger.info(f"Analysis complete: {result.stats.total_files} files, {result.stats.total_lines} lines")
+            logger.debug(f"Languages detected: {result.tech_stack.languages}")
+            logger.debug(f"Recommended agents: {len(result.recommended_agents)}")
 
             if show_progress:
                 print(f"✓ Analysis complete: {result.stats.total_files} files analyzed")
@@ -84,9 +95,11 @@ class ReviewCommand:
             return result
 
         except PermissionError as e:
+            logger.error(f"Permission denied during analysis: {e}")
             raise ValueError(f"Permission denied analyzing project: {e}")
 
         except OSError as e:
+            logger.error(f"OS error during analysis: {e}")
             raise ValueError(f"Error accessing project: {e}")
 
         except TimeoutError:
@@ -94,6 +107,7 @@ class ReviewCommand:
             raise
 
         except Exception as e:
+            logger.error(f"Unexpected error during analysis: {e}", exc_info=True)
             raise ValueError(f"Analysis failed: {e}")
 
     def format_markdown(self, result: AnalysisResult) -> str:

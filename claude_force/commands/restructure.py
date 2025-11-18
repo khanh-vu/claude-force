@@ -6,6 +6,7 @@ Minimal implementation following TDD.
 """
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Callable
@@ -16,6 +17,17 @@ from claude_force.project_analysis.claude_validator import (
     ValidationIssue,
 )
 from claude_force.security import validate_project_root
+from claude_force.commands.templates import (
+    README_TEMPLATE,
+    TASK_TEMPLATE,
+    SCORECARD_TEMPLATE,
+    WORK_TEMPLATE,
+    COMMANDS_TEMPLATE,
+    WORKFLOWS_TEMPLATE,
+    get_claude_json_template,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class RestructureCommand:
@@ -24,6 +36,10 @@ class RestructureCommand:
 
     Validates and fixes .claude folder structure.
     """
+
+    # Configuration constants
+    MAX_RESTRUCTURE_ITERATIONS = 5  # Maximum iterative fix attempts
+    DEFAULT_TIMEOUT = 300.0  # Default timeout in seconds (5 minutes)
 
     def __init__(self, project_path: Path):
         """
@@ -252,19 +268,19 @@ class RestructureCommand:
         filename = filepath.name
 
         if filename == "README.md":
-            content = self._get_readme_template()
+            content = README_TEMPLATE
         elif filename == "claude.json":
-            content = self._get_claude_json_template()
+            content = get_claude_json_template()
         elif filename == "task.md":
-            content = self._get_task_template()
+            content = TASK_TEMPLATE
         elif filename == "scorecard.md":
-            content = self._get_scorecard_template()
+            content = SCORECARD_TEMPLATE
         elif filename == "work.md":
-            content = self._get_work_template()
+            content = WORK_TEMPLATE
         elif filename == "commands.md":
-            content = self._get_commands_template()
+            content = COMMANDS_TEMPLATE
         elif filename == "workflows.md":
-            content = self._get_workflows_template()
+            content = WORKFLOWS_TEMPLATE
         else:
             content = f"# {filename}\n\nCreated by /restructure command\n"
 
@@ -277,7 +293,7 @@ class RestructureCommand:
 
     def _create_minimal_claude_json(self, filepath: Path):
         """Create minimal valid claude.json"""
-        content = self._get_claude_json_template()
+        content = get_claude_json_template()
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
         # Create backup before overwriting
@@ -321,8 +337,7 @@ class RestructureCommand:
 
             # Iteratively validate and fix until no more fixable issues
             # (needed because some fixes reveal new issues, e.g., creating .claude folder)
-            max_iterations = 5
-            for iteration in range(max_iterations):
+            for iteration in range(self.MAX_RESTRUCTURE_ITERATIONS):
                 # Check timeout at start of each iteration
                 if timeout and (time.time() - start_time) > timeout:
                     raise TimeoutError(f"Restructure exceeded timeout of {timeout}s")
@@ -451,222 +466,3 @@ class RestructureCommand:
             JSON-formatted string
         """
         return json.dumps(result, indent=2)
-
-    # Template methods
-
-    def _get_readme_template(self) -> str:
-        """Get README.md template"""
-        return """# Claude Multi-Agent System
-
-A professional multi-agent orchestration system for Claude.
-
-## 🎯 Purpose
-
-This system enables you to:
-- Break complex tasks into specialized agent workflows
-- Maintain clear separation of concerns
-- Enforce quality gates and governance
-- Track progress across multi-step projects
-
-## 📁 Directory Structure
-
-```
-.claude/
-├── README.md           # This file
-├── claude.json         # Configuration
-├── task.md             # Current task
-├── work.md             # Agent outputs
-├── scorecard.md        # Quality checklist
-├── agents/             # Agent definitions
-├── contracts/          # Agent contracts
-├── hooks/              # Governance hooks
-├── macros/             # Reusable instructions
-└── tasks/              # Task context
-```
-
-## 🚀 Quick Start
-
-1. Edit `task.md` with your objective
-2. Run appropriate agent
-3. Review output in `work.md`
-4. Validate against scorecard
-
----
-
-Created by claude-force /restructure command
-"""
-
-    def _get_claude_json_template(self) -> str:
-        """Get claude.json template"""
-        config = {
-            "version": "1.0.0",
-            "name": "Claude Multi-Agent System",
-            "description": "Orchestration system for specialized development agents",
-            "agents": {},
-            "workflows": {},
-            "governance": {
-                "hooks_enabled": True,
-                "pre_run_required": False,
-                "post_run_validation": False,
-                "validators": []
-            },
-            "paths": {
-                "task": "task.md",
-                "work": "work.md",
-                "scorecard": "scorecard.md",
-                "agents": "agents/",
-                "contracts": "contracts/",
-                "hooks": "hooks/",
-                "macros": "macros/",
-                "skills": "skills/"
-            },
-            "rules": {
-                "task_md_readonly": True,
-                "require_write_zone_update": False,
-                "no_secrets_in_output": True,
-                "minimal_diffs_only": False,
-                "scorecard_must_pass": False
-            }
-        }
-        return json.dumps(config, indent=2)
-
-    def _get_task_template(self) -> str:
-        """Get task.md template"""
-        return """# Task: [Task Title]
-
-## Objective
-[Describe what needs to be accomplished]
-
-## Requirements
-- [Requirement 1]
-- [Requirement 2]
-- [Requirement 3]
-
-## Acceptance Criteria
-- [ ] [Criteria 1]
-- [ ] [Criteria 2]
-- [ ] [Criteria 3]
-
-## Context
-[Any additional context or constraints]
-
----
-
-Created by claude-force /restructure command
-"""
-
-    def _get_scorecard_template(self) -> str:
-        """Get scorecard.md template"""
-        return """# Quality Scorecard
-
-## Requirements Met
-- [ ] All requirements from task.md addressed
-- [ ] Acceptance criteria fulfilled
-- [ ] Edge cases considered
-
-## Code Quality
-- [ ] Clean, readable code
-- [ ] Proper error handling
-- [ ] Security best practices followed
-
-## Documentation
-- [ ] Code commented where necessary
-- [ ] README updated (if applicable)
-- [ ] API documented (if applicable)
-
-## Testing
-- [ ] Unit tests included (if applicable)
-- [ ] Integration tests considered
-- [ ] Test coverage adequate
-
-## Performance
-- [ ] No obvious performance issues
-- [ ] Scalability considered
-- [ ] Resource usage reasonable
-
----
-
-Created by claude-force /restructure command
-"""
-
-    def _get_work_template(self) -> str:
-        """Get work.md template"""
-        return """# Work Output
-
-## Agent: [Agent Name]
-**Date**: [Date]
-
-### Deliverables
-
-[Agent outputs go here]
-
-### Write Zone
-[Context and summary for next agents]
-
----
-
-Created by claude-force /restructure command
-"""
-
-    def _get_commands_template(self) -> str:
-        """Get commands.md template"""
-        return """# Common Commands
-
-## Running Agents
-
-```bash
-# Run a single agent
-claude-force run agent <agent-name> --task "description"
-
-# Run a workflow
-claude-force run workflow <workflow-name> --task-file task.md
-```
-
-## Validation
-
-```bash
-# Validate current output
-claude-force validate
-
-# Review project structure
-claude-force review
-```
-
----
-
-Created by claude-force /restructure command
-"""
-
-    def _get_workflows_template(self) -> str:
-        """Get workflows.md template"""
-        return """# Multi-Agent Workflows
-
-## Available Workflows
-
-### Full-Stack Feature
-```
-1. frontend-architect
-2. backend-architect
-3. database-architect
-4. implementation agents
-5. qc-automation-expert
-6. code-reviewer
-```
-
-### Bug Fix
-```
-1. bug-investigator
-2. code-reviewer
-3. qc-automation-expert
-```
-
-### Documentation
-```
-1. document-writer-expert
-2. api-documenter
-```
-
----
-
-Created by claude-force /restructure command
-"""

@@ -6,6 +6,7 @@ Minimal implementation following TDD.
 """
 
 import json
+import logging
 import shutil
 import time
 from pathlib import Path
@@ -14,6 +15,8 @@ from typing import List, Dict, Optional
 from claude_force.security import validate_project_root
 from claude_force.security.sensitive_file_detector import SensitiveFileDetector
 
+logger = logging.getLogger(__name__)
+
 
 class PickAgentCommand:
     """
@@ -21,6 +24,10 @@ class PickAgentCommand:
 
     Copies agent definitions and contracts from source to target project.
     """
+
+    # Configuration constants
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # Maximum agent file size (10MB)
+    DEFAULT_TIMEOUT = 300.0  # Default timeout in seconds (5 minutes)
 
     def __init__(self, source_project: Path, target_project: Path):
         """
@@ -94,14 +101,11 @@ class PickAgentCommand:
         """
         import re
 
-        # Maximum file size: 10MB
-        MAX_FILE_SIZE = 10 * 1024 * 1024
-
         # 1. Check file size
         file_size = filepath.stat().st_size
-        if file_size > MAX_FILE_SIZE:
+        if file_size > self.MAX_FILE_SIZE:
             raise ValueError(
-                f"File too large: {file_size:,} bytes (max {MAX_FILE_SIZE:,} bytes)"
+                f"File too large: {file_size:,} bytes (max {self.MAX_FILE_SIZE:,} bytes)"
             )
 
         # 2. Read and validate content

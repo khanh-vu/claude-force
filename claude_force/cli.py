@@ -2129,6 +2129,13 @@ def cmd_pick_agent(args):
 
         # Handle --list option
         if args.list:
+            # Check for conflicting usage: --list with agent names
+            if args.agents:
+                print("❌ Error: Cannot use --list with agent names", file=sys.stderr)
+                print("   Use either: pick-agent --list", file=sys.stderr)
+                print("          or: pick-agent <agent-names...>", file=sys.stderr)
+                sys.exit(1)
+
             available = command.list_available_agents()
             print(f"\n📋 Available Agents ({len(available)} total)\n")
             for agent in available:
