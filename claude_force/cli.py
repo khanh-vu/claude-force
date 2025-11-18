@@ -2117,90 +2117,123 @@ def cmd_restructure(args):
 
 
 def cmd_pick_agent(args):
-    """Copy agent packs from source to target project"""
+    """Copy built-in agents to current project (interactive)"""
     try:
         from pathlib import Path
-        from .commands.pick_agent import PickAgentCommand
+        from .commands.pick_agent import (
+            PickAgentCommand,
+            list_builtin_agents,
+            get_builtin_agents_path,
+        )
+        from .commands.restructure import RestructureCommand
 
-        # Determine source and target paths
-        source_path = Path(args.source if args.source else ".")
-        target_path = Path(args.target if args.target else ".")
-
-        # Handle --list option (can use default paths for listing)
-        if args.list:
-            # Check for conflicting usage: --list with agent names
-            if args.agents:
-                print("❌ Error: Cannot use --list with agent names", file=sys.stderr)
-                print("   Use either: pick-agent --list", file=sys.stderr)
-                print("          or: pick-agent <agent-names...>", file=sys.stderr)
-                sys.exit(1)
-
-            try:
-                command = PickAgentCommand(source_path, source_path)  # Same path OK for listing
-                available = command.list_available_agents()
-                print(f"\n📋 Available Agents ({len(available)} total)\n")
-                for agent in available:
-                    print(f"  • {agent}")
-                print()
-                return
-            except ValueError as e:
-                # Fallback: just validate source for listing
-                from .security import validate_project_root
-
-                source_path = validate_project_root(source_path)
-                agents_dir = source_path / ".claude" / "agents"
-                if not agents_dir.exists():
-                    print("❌ Error: No .claude/agents directory found", file=sys.stderr)
-                    sys.exit(1)
-
-                agents = [
-                    f.stem
-                    for f in agents_dir.iterdir()
-                    if f.is_file()
-                    and f.suffix == ".md"
-                    and (agents_dir.parent / "contracts" / f"{f.stem}.md").exists()
-                ]
-                print(f"\n📋 Available Agents ({len(agents)} total)\n")
-                for agent in agents:
-                    print(f"  • {agent}")
-                print()
-                return
-
-        # For copying: require different source and target
-        if not args.source or not args.target:
+        # Get built-in agents
+        builtin_agents = list_builtin_agents()
+        if not builtin_agents:
             print(
-                "❌ Error: Must specify --source and --target when copying agents", file=sys.stderr
+                "❌ Error: No built-in agents found in claude-force installation", file=sys.stderr
             )
             print("", file=sys.stderr)
-            print("Usage:", file=sys.stderr)
             print(
-                "  pick-agent --source /path/to/source --target /path/to/target agent1 agent2",
+                "This might be a broken installation. Please reinstall claude-force.",
                 file=sys.stderr,
             )
-            print("  pick-agent --list --source /path/to/source", file=sys.stderr)
             sys.exit(1)
 
-        # Create command
+        # Determine target project (current directory or --target)
+        target_path = Path(args.target if args.target else ".")
+        target_path = target_path.resolve()
+
+        # Interactive mode: show agents and let user select
+        if not args.agents:
+            print("\n✨ Pick Agents from claude-force\n")
+            print(f"📂 Target: {target_path}\n")
+
+            # Display numbered list
+            for idx, agent in enumerate(builtin_agents, 1):
+                print(f"  {idx:2d}. {agent}")
+
+            print(f"\nTotal: {len(builtin_agents)} agents available")
+            print("\n💡 Enter numbers separated by spaces (e.g., 1 3 5)")
+            print("   Or 'all' to select all agents")
+            print("   Or 'q' to quit\n")
+
+            # Get user selection
+            selection = input("Select agents: ").strip()
+
+            if selection.lower() == "q":
+                print("Cancelled.")
+                return
+
+            if selection.lower() == "all":
+                selected_agents = builtin_agents
+            else:
+                try:
+                    indices = [int(x.strip()) for x in selection.split()]
+                    selected_agents = []
+                    for idx in indices:
+                        if 1 <= idx <= len(builtin_agents):
+                            selected_agents.append(builtin_agents[idx - 1])
+                        else:
+                            print(f"⚠ Warning: Ignoring invalid number: {idx}")
+                except ValueError:
+                    print(
+                        "❌ Error: Invalid input. Please enter numbers separated by spaces.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+
+            if not selected_agents:
+                print("No agents selected. Cancelled.")
+                return
+
+            print(f"\n✅ Selected {len(selected_agents)} agent(s):")
+            for agent in selected_agents:
+                print(f"   • {agent}")
+            print()
+        else:
+            # Direct mode: agents specified as arguments
+            selected_agents = args.agents
+            print(f"\n📦 Copying {len(selected_agents)} agent(s) to {target_path}...\n")
+
+        # Check if .claude folder exists, create if needed
+        target_claude = target_path / ".claude"
+        if not target_claude.exists():
+            print(f"⚙️  No .claude folder found. Creating...")
+
+            # Create .claude structure
+            restructure = RestructureCommand(target_path)
+            result = restructure.execute(auto_approve=True, show_progress=False)
+
+            if result["success"]:
+                print(f"✅ Created .claude folder structure")
+            else:
+                print(f"❌ Failed to create .claude folder", file=sys.stderr)
+                sys.exit(1)
+
+        # Get source path (built-in agents)
+        source_path = get_builtin_agents_path().parent
+
+        # Create command and copy agents
         command = PickAgentCommand(source_path, target_path)
 
-        # Get agent names from positional arguments
-        agent_names = args.agents
-
-        if not agent_names:
-            print(
-                "❌ Error: No agents specified. Use --list to see available agents.",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-
         # Execute copy
-        result = command.execute(agent_names)
+        result = command.execute(selected_agents, show_progress=True)
 
-        # Output based on format
-        if args.format == "json":
-            print(command.format_json(result))
+        # Show results
+        print()
+        if result.get("success"):
+            print(f"✅ Successfully copied {result['agents_copied']} agent(s)")
+            if result.get("config_updated"):
+                print(
+                    f"✅ Configuration updated ({result.get('agents_added_to_config', 0)} agents added)"
+                )
         else:
-            print(command.format_markdown(result))
+            print(f"❌ Failed to copy agents", file=sys.stderr)
+            if result.get("errors"):
+                print(f"\nErrors:", file=sys.stderr)
+                for error in result["errors"]:
+                    print(f"  • {error.get('agent')}: {error.get('error')}", file=sys.stderr)
 
         # Exit with error code if not successful
         if not result.get("success"):
@@ -2706,22 +2739,16 @@ For more information: https://github.com/khanh-vu/claude-force
 
     # Pick-agent command (existing project support)
     pick_agent_parser = subparsers.add_parser(
-        "pick-agent", help="Copy agent packs from source to target project"
+        "pick-agent", help="Copy built-in agents to current project (interactive)"
     )
     pick_agent_parser.add_argument(
-        "agents", nargs="*", help="Agent names to copy (e.g., python-expert code-reviewer)"
+        "agents",
+        nargs="*",
+        help="Agent names to copy (omit for interactive selection)",
     )
     pick_agent_parser.add_argument(
-        "--source", help="Source project path (default: current directory)"
-    )
-    pick_agent_parser.add_argument(
-        "--target", help="Target project path (default: current directory)"
-    )
-    pick_agent_parser.add_argument(
-        "--list", action="store_true", help="List available agents from source"
-    )
-    pick_agent_parser.add_argument(
-        "--format", choices=["markdown", "json"], default="markdown", help="Output format"
+        "--target",
+        help="Target project path (default: current directory)",
     )
     pick_agent_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Verbose error output"

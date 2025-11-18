@@ -1,7 +1,7 @@
 """
 Pick Agent Command
 
-Copies agent packs from source project to target project.
+Copies agent packs from built-in claude-force agents to target project.
 Minimal implementation following TDD.
 """
 
@@ -16,6 +16,59 @@ from claude_force.security import validate_project_root
 from claude_force.security.sensitive_file_detector import SensitiveFileDetector
 
 logger = logging.getLogger(__name__)
+
+
+def get_builtin_agents_path() -> Optional[Path]:
+    """
+    Find the built-in agents directory from claude-force installation.
+
+    Returns:
+        Path to built-in agents directory, or None if not found
+    """
+    # Try to find claude_force package directory
+    import claude_force
+
+    package_dir = Path(claude_force.__file__).parent
+    claude_dir = package_dir / ".claude"
+
+    if claude_dir.exists() and (claude_dir / "agents").exists():
+        return claude_dir
+
+    # Fallback: check parent directory (for development)
+    dev_claude_dir = package_dir.parent / ".claude"
+    if dev_claude_dir.exists() and (dev_claude_dir / "agents").exists():
+        return dev_claude_dir
+
+    return None
+
+
+def list_builtin_agents() -> List[str]:
+    """
+    List all built-in agents from claude-force.
+
+    Returns:
+        List of agent names (without .md extension)
+    """
+    claude_dir = get_builtin_agents_path()
+    if not claude_dir:
+        return []
+
+    agents = []
+    agents_dir = claude_dir / "agents"
+    contracts_dir = claude_dir / "contracts"
+
+    # Find all agent files that have matching contracts
+    for agent_file in agents_dir.glob("*.md"):
+        agent_name = agent_file.stem
+
+        # Check if contract also exists (either .md or .contract extension)
+        contract_md = contracts_dir / f"{agent_name}.md"
+        contract_file = contracts_dir / f"{agent_name}.contract"
+
+        if contract_md.exists() or contract_file.exists():
+            agents.append(agent_name)
+
+    return sorted(agents)
 
 
 class PickAgentCommand:
