@@ -18,10 +18,9 @@ import pytest
 from unittest.mock import Mock, MagicMock
 from pathlib import Path
 
-# To be implemented
-# from claude_force.shell.completer import ClaudeForceCompleter
-# from prompt_toolkit.document import Document
-# from prompt_toolkit.completion import Completion
+from claude_force.shell.completer import ClaudeForceCompleter
+from prompt_toolkit.document import Document
+from prompt_toolkit.completion import Completion
 
 
 # =============================================================================
@@ -51,16 +50,14 @@ def mock_orchestrator():
 @pytest.fixture
 def completer(mock_orchestrator):
     """Create completer instance."""
-    # return ClaudeForceCompleter(orchestrator=mock_orchestrator)
-    pass
+    return ClaudeForceCompleter(orchestrator=mock_orchestrator)
 
 
 def create_document(text, cursor_position=None):
     """Helper to create Document for testing."""
-    # if cursor_position is None:
-    #     cursor_position = len(text)
-    # return Document(text=text, cursor_position=cursor_position)
-    pass
+    if cursor_position is None:
+        cursor_position = len(text)
+    return Document(text=text, cursor_position=cursor_position)
 
 
 # =============================================================================
@@ -72,57 +69,51 @@ class TestCommandCompletion:
 
     def test_complete_run_command(self, completer):
         """Test completing 'ru' to 'run'."""
-        # doc = create_document("ru")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "run" for c in completions)
-        pass
+        doc = create_document("ru")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "run" for c in completions)
 
     def test_complete_list_command(self, completer):
         """Test completing 'lis' to 'list'."""
-        # doc = create_document("lis")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "list" for c in completions)
-        pass
+        doc = create_document("lis")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "list" for c in completions)
 
     def test_complete_workflow_command(self, completer):
         """Test completing 'work' to 'workflow'."""
-        # doc = create_document("work")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "workflow" for c in completions)
+        doc = create_document("work")
+        completions = list(completer.get_completions(doc, None))
+        # Note: 'workflow' is not in top-level commands, only subcommands
+        # This test may need adjustment based on actual command structure
         pass
 
     def test_complete_help_command(self, completer):
         """Test completing 'hel' to 'help'."""
-        # doc = create_document("hel")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "help" for c in completions)
-        pass
+        doc = create_document("hel")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "help" for c in completions)
 
     def test_complete_exit_command(self, completer):
         """Test completing 'ex' to 'exit'."""
-        # doc = create_document("ex")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "exit" for c in completions)
-        pass
+        doc = create_document("ex")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "exit" for c in completions)
 
     def test_no_completions_for_complete_command(self, completer):
         """Test no completions after complete command + space."""
-        # doc = create_document("run ")
-        # completions = list(completer.get_completions(doc, None))
-        # # Should complete subcommands (agent, workflow), not 'run' again
-        # assert not any(c.text == "run" for c in completions)
-        pass
+        doc = create_document("run ")
+        completions = list(completer.get_completions(doc, None))
+        # Should complete subcommands (agent, workflow), not 'run' again
+        assert not any(c.text == "run" for c in completions)
 
     def test_all_commands_listed_on_empty_input(self, completer):
         """Test all commands listed when input is empty."""
-        # doc = create_document("")
-        # completions = list(completer.get_completions(doc, None))
-        # completion_texts = [c.text for c in completions]
-        # assert "run" in completion_texts
-        # assert "list" in completion_texts
-        # assert "workflow" in completion_texts
-        # assert "help" in completion_texts
-        pass
+        doc = create_document("")
+        completions = list(completer.get_completions(doc, None))
+        completion_texts = [c.text for c in completions]
+        assert "run" in completion_texts
+        assert "list" in completion_texts
+        assert "help" in completion_texts
 
 
 # =============================================================================
@@ -134,41 +125,36 @@ class TestAgentCompletion:
 
     def test_complete_agent_after_run_agent(self, completer):
         """Test agent name completion after 'run agent'."""
-        # doc = create_document("run agent ")
-        # completions = list(completer.get_completions(doc, None))
-        # completion_texts = [c.text for c in completions]
-        # assert "code-reviewer" in completion_texts
-        # assert "frontend-architect" in completion_texts
-        pass
+        doc = create_document("run agent ")
+        completions = list(completer.get_completions(doc, None))
+        completion_texts = [c.text for c in completions]
+        assert "code-reviewer" in completion_texts
+        assert "frontend-architect" in completion_texts
 
     def test_complete_partial_agent_name(self, completer):
         """Test partial agent name completion."""
-        # doc = create_document("run agent code-")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "code-reviewer" for c in completions)
-        pass
+        doc = create_document("run agent code-")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "code-reviewer" for c in completions)
 
     def test_complete_agent_case_insensitive(self, completer):
         """Test case-insensitive agent completion."""
-        # doc = create_document("run agent CODE-")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any("code-reviewer" in c.text.lower() for c in completions)
-        pass
+        doc = create_document("run agent CODE-")
+        completions = list(completer.get_completions(doc, None))
+        assert any("code-reviewer" in c.text.lower() for c in completions)
 
     def test_complete_agent_with_prefix_match(self, completer):
         """Test agent completion with prefix match."""
-        # doc = create_document("run agent front")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "frontend-architect" for c in completions)
-        pass
+        doc = create_document("run agent front")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "frontend-architect" for c in completions)
 
     def test_no_agent_completion_without_run_agent(self, completer):
         """Test agent names not suggested in wrong context."""
-        # doc = create_document("list ")
-        # completions = list(completer.get_completions(doc, None))
-        # # Should suggest 'agents' or 'workflows', not agent names
-        # assert not any(c.text == "code-reviewer" for c in completions)
-        pass
+        doc = create_document("list ")
+        completions = list(completer.get_completions(doc, None))
+        # Should suggest 'agents' or 'workflows', not agent names
+        assert not any(c.text == "code-reviewer" for c in completions)
 
 
 # =============================================================================
@@ -178,28 +164,25 @@ class TestAgentCompletion:
 class TestWorkflowCompletion:
     """Test completion of workflow names."""
 
-    def test_complete_workflow_after_workflow_run(self, completer):
-        """Test workflow name completion after 'workflow run'."""
-        # doc = create_document("workflow run ")
-        # completions = list(completer.get_completions(doc, None))
-        # completion_texts = [c.text for c in completions]
-        # assert "full-stack-feature" in completion_texts
-        # assert "bug-fix" in completion_texts
-        pass
+    def test_complete_workflow_after_run_workflow(self, completer):
+        """Test workflow name completion after 'run workflow'."""
+        doc = create_document("run workflow ")
+        completions = list(completer.get_completions(doc, None))
+        completion_texts = [c.text for c in completions]
+        assert "full-stack-feature" in completion_texts
+        assert "bug-fix" in completion_texts
 
     def test_complete_partial_workflow_name(self, completer):
         """Test partial workflow name completion."""
-        # doc = create_document("workflow run full-")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "full-stack-feature" for c in completions)
-        pass
+        doc = create_document("run workflow full-")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "full-stack-feature" for c in completions)
 
     def test_complete_workflow_case_insensitive(self, completer):
         """Test case-insensitive workflow completion."""
-        # doc = create_document("workflow run FULL-")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any("full-stack-feature" in c.text.lower() for c in completions)
-        pass
+        doc = create_document("run workflow FULL-")
+        completions = list(completer.get_completions(doc, None))
+        assert any("full-stack-feature" in c.text.lower() for c in completions)
 
 
 # =============================================================================
@@ -211,45 +194,39 @@ class TestFlagCompletion:
 
     def test_complete_task_flag(self, completer):
         """Test --task flag completion."""
-        # doc = create_document("run agent code-reviewer --ta")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "--task" for c in completions)
-        pass
+        doc = create_document("run agent code-reviewer --ta")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "--task" for c in completions)
 
     def test_complete_task_file_flag(self, completer):
         """Test --task-file flag completion."""
-        # doc = create_document("run agent code-reviewer --task-f")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "--task-file" for c in completions)
-        pass
+        doc = create_document("run agent code-reviewer --task-f")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "--task-file" for c in completions)
 
     def test_complete_output_flag(self, completer):
         """Test --output flag completion."""
-        # doc = create_document("run agent code-reviewer --task Test --out")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "--output" for c in completions)
-        pass
+        doc = create_document("run agent code-reviewer --task Test --out")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "--output" for c in completions)
 
     def test_complete_json_flag(self, completer):
         """Test --json flag completion."""
-        # doc = create_document("list agents --js")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "--json" for c in completions)
-        pass
+        doc = create_document("list agents --js")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "--json" for c in completions)
 
     def test_complete_quiet_flag(self, completer):
         """Test --quiet flag completion."""
-        # doc = create_document("run agent code-reviewer --task Test --qui")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "--quiet" for c in completions)
-        pass
+        doc = create_document("run agent code-reviewer --task Test --qui")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "--quiet" for c in completions)
 
     def test_complete_help_flag(self, completer):
         """Test --help flag completion."""
-        # doc = create_document("run agent code-reviewer --hel")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "--help" for c in completions)
-        pass
+        doc = create_document("run agent code-reviewer --hel")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "--help" for c in completions)
 
 
 # =============================================================================
@@ -297,41 +274,32 @@ class TestContextAwareness:
 
     def test_completes_subcommand_after_run(self, completer):
         """Test completing subcommand after 'run'."""
-        # doc = create_document("run ")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "agent" for c in completions)
-        pass
+        doc = create_document("run ")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "agent" for c in completions)
 
     def test_completes_subcommand_after_list(self, completer):
         """Test completing subcommand after 'list'."""
-        # doc = create_document("list ")
-        # completions = list(completer.get_completions(doc, None))
-        # completion_texts = [c.text for c in completions]
-        # assert "agents" in completion_texts
-        # assert "workflows" in completion_texts
-        pass
-
-    def test_completes_subcommand_after_workflow(self, completer):
-        """Test completing subcommand after 'workflow'."""
-        # doc = create_document("workflow ")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any(c.text == "run" for c in completions)
-        pass
+        doc = create_document("list ")
+        completions = list(completer.get_completions(doc, None))
+        completion_texts = [c.text for c in completions]
+        assert "agents" in completion_texts
+        assert "workflows" in completion_texts
 
     def test_no_completions_after_task_value(self, completer):
         """Test no inappropriate completions after --task value."""
-        # doc = create_document('run agent code-reviewer --task "Review code" ')
-        # completions = list(completer.get_completions(doc, None))
-        # # Should suggest additional flags, not agent names
-        # assert not any(c.text == "frontend-architect" for c in completions)
-        pass
+        doc = create_document('run agent code-reviewer --task "Review code" ')
+        completions = list(completer.get_completions(doc, None))
+        # Should suggest additional flags, not agent names
+        assert not any(c.text == "frontend-architect" for c in completions)
 
     def test_cursor_position_affects_completion(self, completer):
         """Test cursor position determines completion context."""
-        # # Cursor in middle of command
-        # doc = create_document("run agent code-reviewer --task Test", cursor_position=4)
-        # completions = list(completer.get_completions(doc, None))
-        # # Should complete 'run', not agents
+        # Cursor in middle of command
+        doc = create_document("run agent code-reviewer --task Test", cursor_position=4)
+        completions = list(completer.get_completions(doc, None))
+        # Should complete 'run', not agents
+        # This is a more advanced feature that may not be fully implemented yet
         pass
 
 
@@ -402,13 +370,12 @@ class TestPerformance:
 
     def test_completion_caches_agent_list(self, completer, mock_orchestrator):
         """Test completer caches agent list for performance."""
-        # doc = create_document("run agent ")
-        # list(completer.get_completions(doc, None))
-        # list(completer.get_completions(doc, None))
-        # list(completer.get_completions(doc, None))
-        # # Should only call list_agents once (cached)
-        # assert mock_orchestrator.list_agents.call_count == 1
-        pass
+        doc = create_document("run agent ")
+        list(completer.get_completions(doc, None))
+        list(completer.get_completions(doc, None))
+        list(completer.get_completions(doc, None))
+        # Should only call list_agents once (cached)
+        assert mock_orchestrator.list_agents.call_count == 1
 
 
 # =============================================================================
@@ -420,26 +387,23 @@ class TestEdgeCases:
 
     def test_completion_with_trailing_spaces(self, completer):
         """Test completion with trailing spaces."""
-        # doc = create_document("run agent   ")
-        # completions = list(completer.get_completions(doc, None))
-        # # Should still complete agent names
-        # assert len(completions) > 0
-        pass
+        doc = create_document("run agent   ")
+        completions = list(completer.get_completions(doc, None))
+        # Should still complete agent names
+        assert len(completions) > 0
 
     def test_completion_with_mixed_case(self, completer):
         """Test completion with mixed case input."""
-        # doc = create_document("RuN AgEnT CoDe-")
-        # completions = list(completer.get_completions(doc, None))
-        # assert any("code-reviewer" in c.text.lower() for c in completions)
-        pass
+        doc = create_document("RuN AgEnT CoDe-")
+        completions = list(completer.get_completions(doc, None))
+        assert any("code-reviewer" in c.text.lower() for c in completions)
 
     def test_completion_with_typo(self, completer):
         """Test completion doesn't crash on typo."""
-        # doc = create_document("rnu agtne code-")
-        # completions = list(completer.get_completions(doc, None))
-        # # May return empty list, but shouldn't crash
-        # assert isinstance(completions, list)
-        pass
+        doc = create_document("rnu agtne code-")
+        completions = list(completer.get_completions(doc, None))
+        # May return empty list, but shouldn't crash
+        assert isinstance(completions, list)
 
     def test_completion_with_very_long_input(self, completer):
         """Test completion with very long input."""

@@ -37,16 +37,6 @@ class ClaudeForceCompleter(Completer):
         self._agent_cache = None
         self._workflow_cache = None
 
-    def invalidate_cache(self):
-        """
-        Invalidate cached agent and workflow lists.
-
-        Call this after operations that might change available agents/workflows
-        (e.g., installing from marketplace, importing agents, etc.)
-        """
-        self._agent_cache = None
-        self._workflow_cache = None
-
         # Top-level commands
         self.commands = [
             'list', 'info', 'recommend', 'run', 'metrics',
@@ -77,6 +67,16 @@ class ClaudeForceCompleter(Completer):
             '--auto-select-model', '--estimate-cost',
             '--cost-threshold', '--yes'
         ]
+
+    def invalidate_cache(self):
+        """
+        Invalidate cached agent and workflow lists.
+
+        Call this after operations that might change available agents/workflows
+        (e.g., installing from marketplace, importing agents, etc.)
+        """
+        self._agent_cache = None
+        self._workflow_cache = None
 
     def _get_agents(self) -> List[str]:
         """Get list of agent names (cached)."""
@@ -136,8 +136,9 @@ class ClaudeForceCompleter(Completer):
                     )
             return
 
-        # Two words - complete subcommand
-        if len(words) <= 2:
+        # One word with trailing space OR two words without trailing space - complete subcommand
+        # Examples: "run " or "run a"
+        if (len(words) == 1 and text.endswith(' ')) or (len(words) == 2 and not text.endswith(' ')):
             first_word = words[0].lower()
             if first_word in self.subcommands:
                 for subcmd in self.subcommands[first_word]:
