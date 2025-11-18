@@ -2220,8 +2220,16 @@ def _run_shell(args):
     run_interactive_shell()
 
 
-def main():
-    """Main CLI entry point"""
+def create_argument_parser():
+    """
+    Create and configure the argument parser.
+
+    This function is shared between the main CLI and the interactive shell
+    to ensure consistent argument parsing without code duplication.
+
+    Returns:
+        argparse.ArgumentParser: Configured argument parser
+    """
     parser = argparse.ArgumentParser(
         prog="claude-force",
         description="Multi-Agent Orchestration System for Claude",
@@ -2783,6 +2791,13 @@ For more information: https://github.com/khanh-vu/claude-force
         description="Enter interactive shell mode where you can run commands without typing 'claude-force' each time."
     )
     shell_parser.set_defaults(func=lambda args: _run_shell(args))
+
+    return parser
+
+
+def main():
+    """Main CLI entry point"""
+    parser = create_argument_parser()
 
     # Parse arguments
     args = parser.parse_args()

@@ -58,7 +58,8 @@ class InteractiveShell:
         # Initialize orchestrator for completer
         try:
             orchestrator = AgentOrchestrator()
-        except:
+        except Exception as e:
+            # If orchestrator fails to initialize, completer will work without agent/workflow lists
             orchestrator = None
 
         # Create completer
@@ -170,8 +171,10 @@ class InteractiveShell:
         print()
         print("╔══════════════════════════════════════════════════════╗")
         print("║   Claude Force Interactive Shell v1.3.0             ║")
-        print("║   Commands start with / (e.g., /help)               ║")
-        print("║   Plain text is sent as prompt to meta-prompt       ║")
+        print("║   • All commands start with / (e.g., /help)         ║")
+        print("║   • Type /help to see available commands            ║")
+        print("║   • Press Tab for auto-completion                   ║")
+        print("║   • Use Ctrl+D or /exit to quit                     ║")
         print("╚══════════════════════════════════════════════════════╝")
         print()
 
@@ -190,13 +193,18 @@ class InteractiveShell:
         """
         Handle prompt input (text without forward slash).
 
+        Currently provides guidance on how to run the prompt as a task.
+        Future enhancement: Could integrate with meta-prompt or recommend agent.
+
         Args:
             prompt: User's prompt text
         """
-        # Send to meta-prompt by default
-        print(f"\n💭 Prompt: {prompt}")
-        print(f"ℹ️  Use /meta-prompt for explicit meta-prompt generation")
-        print(f"ℹ️  Or use /run agent <agent-name> --task \"{prompt}\" to run an agent\n")
+        print(f"\n💡 Did you mean to run a command?")
+        print(f"   Your input: \"{prompt}\"\n")
+        print(f"   To run commands, start with / like:")
+        print(f"   • /run agent <agent-name> --task \"{prompt}\"")
+        print(f"   • /recommend --task \"{prompt}\"")
+        print(f"   • /help for all commands\n")
 
     # =========================================================================
     # Built-in Commands
@@ -207,15 +215,23 @@ class InteractiveShell:
         self.running = False
 
     def _cmd_meta_prompt(self, args):
-        """Generate meta-prompt from user input."""
+        """
+        Generate meta-prompt from user input (placeholder).
+
+        This is a placeholder for future meta-prompt functionality.
+        Currently suggests using the recommend command instead.
+        """
         if not args:
             print("❌ Usage: /meta-prompt <your prompt here>")
             return
 
         prompt = ' '.join(args)
-        print(f"\n🔮 Generating meta-prompt for: {prompt}")
-        print(f"ℹ️  Meta-prompt functionality to be fully implemented")
-        print(f"ℹ️  Use /run agent prompt-engineer --task \"{prompt}\" for now\n")
+        print(f"\n💡 Meta-prompt feature is planned for future release.")
+        print(f"   Your prompt: \"{prompt}\"\n")
+        print(f"   Try these alternatives:")
+        print(f"   • /recommend --task \"{prompt}\" --explain")
+        print(f"   • /run agent <agent-name> --task \"{prompt}\"")
+        print(f"   • /list agents  (to see available agents)\n")
 
     def _cmd_help(self, args):
         """Show help for commands."""
@@ -228,16 +244,16 @@ class InteractiveShell:
         else:
             # General help
             print("\nClaude Force Interactive Shell - Available Commands\n")
-            print("💡 Usage Modes:")
-            print("  • Commands start with / (forward slash)")
-            print("  • Plain text without / is treated as a prompt")
+            print("💡 Usage:")
+            print("  • All commands start with / (forward slash)")
+            print("  • Press Tab for auto-completion")
+            print("  • Use arrow keys to navigate command history")
             print()
             print("Built-in Commands:")
             print("  /help [command]      Show this help or help for specific command")
             print("  /exit, /quit         Exit the shell")
             print("  /clear               Clear the screen")
             print("  /history             Show command history")
-            print("  /meta-prompt <text>  Generate meta-prompt")
             print()
             print("Agent Commands:")
             print("  /list agents         List all available agents")
@@ -257,8 +273,8 @@ class InteractiveShell:
             print("Examples:")
             print("  /list agents")
             print("  /run agent code-reviewer --task 'Review this code'")
-            print("  Review this code for security issues     (prompt)")
-            print("  /meta-prompt Help me design a REST API")
+            print("  /recommend --task 'Design a REST API' --explain")
+            print("  /info code-reviewer")
             print()
 
     def _cmd_clear(self, args):

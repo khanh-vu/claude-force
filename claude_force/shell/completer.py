@@ -74,7 +74,8 @@ class ClaudeForceCompleter(Completer):
             try:
                 agents = self.orchestrator.list_agents()
                 self._agent_cache = [a['name'] if isinstance(a, dict) else a for a in agents]
-            except:
+            except Exception:
+                # If listing agents fails, return empty list (completion still works for commands)
                 self._agent_cache = []
         return self._agent_cache or []
 
@@ -84,7 +85,8 @@ class ClaudeForceCompleter(Completer):
             try:
                 workflows = self.orchestrator.list_workflows()
                 self._workflow_cache = [w['name'] if isinstance(w, dict) else w for w in workflows]
-            except:
+            except Exception:
+                # If listing workflows fails, return empty list (completion still works for commands)
                 self._workflow_cache = []
         return self._workflow_cache or []
 
