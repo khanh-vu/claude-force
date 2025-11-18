@@ -26,6 +26,43 @@ from .shell.completer import ClaudeForceCompleter
 from .orchestrator import AgentOrchestrator
 
 
+class Colors:
+    """ANSI color codes for terminal output."""
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    RESET = '\033[0m'
+    BOLD = '\033[1m'
+    DIM = '\033[2m'
+
+    @staticmethod
+    def success(text: str) -> str:
+        """Format text as success (green)."""
+        return f"{Colors.GREEN}{text}{Colors.RESET}"
+
+    @staticmethod
+    def error(text: str) -> str:
+        """Format text as error (red)."""
+        return f"{Colors.RED}{text}{Colors.RESET}"
+
+    @staticmethod
+    def warning(text: str) -> str:
+        """Format text as warning (yellow)."""
+        return f"{Colors.YELLOW}{text}{Colors.RESET}"
+
+    @staticmethod
+    def info(text: str) -> str:
+        """Format text as info (blue)."""
+        return f"{Colors.BLUE}{text}{Colors.RESET}"
+
+    @staticmethod
+    def dim(text: str) -> str:
+        """Format text as dimmed."""
+        return f"{Colors.DIM}{text}{Colors.RESET}"
+
+
 class ProgressSpinner:
     """Simple spinner for showing progress during long operations."""
 
@@ -113,6 +150,15 @@ class InteractiveShell:
             complete_while_typing=False,  # Only complete on TAB
         )
 
+        # Command aliases for convenience
+        self.command_aliases = {
+            'q': 'quit',
+            'h': 'help',
+            'ls': 'list',
+            '?': 'help',
+            'cls': 'clear',
+        }
+
         # Built-in commands (handled by shell, not CLI)
         self.builtin_commands = {
             'exit': self._cmd_exit,
@@ -122,6 +168,7 @@ class InteractiveShell:
             'history': self._cmd_history,
             'meta-prompt': self._cmd_meta_prompt,
             'reload': self._cmd_reload,
+            'version': self._cmd_version,
         }
 
     def start(self):
@@ -210,7 +257,7 @@ class InteractiveShell:
         # Validate input
         is_valid, error_msg = self._validate_input(command)
         if not is_valid:
-            print(f"❌ {error_msg}", file=sys.stderr)
+            print(Colors.error(f"✗ {error_msg}"), file=sys.stderr)
             return
 
         self.command_count += 1
@@ -219,6 +266,13 @@ class InteractiveShell:
         if command.startswith('/'):
             # Remove the forward slash and execute as command
             command = command[1:].strip()
+
+            # Expand command aliases
+            cmd_parts = command.split(maxsplit=1)
+            if cmd_parts and cmd_parts[0] in self.command_aliases:
+                alias_expanded = self.command_aliases[cmd_parts[0]]
+                command = alias_expanded + (' ' + cmd_parts[1] if len(cmd_parts) > 1 else '')
+                cmd_parts = command.split()
 
             # Check for built-in commands first
             cmd_parts = command.split()
@@ -237,6 +291,9 @@ class InteractiveShell:
                 spinner = ProgressSpinner("Executing")
                 spinner.start()
 
+            # Track execution time
+            start_time = time.time()
+
             try:
                 # Execute CLI command via executor
                 result = self.executor.execute(command)
@@ -244,15 +301,22 @@ class InteractiveShell:
                 if spinner:
                     spinner.stop()
 
-            # Display result
+            elapsed_time = time.time() - start_time
+
+            # Display result with color coding
             if result.success:
                 self.success_count += 1
                 if result.output:
                     print(result.output, end='')
+                # Show elapsed time for longer commands (>1 second)
+                if elapsed_time > 1.0:
+                    print(Colors.dim(f"\n✓ Completed in {elapsed_time:.2f}s"))
             else:
                 self.failure_count += 1
                 if result.error:
-                    print(f"❌ {result.error}", file=sys.stderr)
+                    print(Colors.error(f"✗ {result.error}"), file=sys.stderr)
+                if elapsed_time > 0.5:
+                    print(Colors.dim(f"Failed after {elapsed_time:.2f}s"), file=sys.stderr)
         else:
             # No backslash - treat as prompt input
             self._handle_prompt(command)
@@ -272,12 +336,12 @@ class InteractiveShell:
     def _print_goodbye(self):
         """Print goodbye message with session statistics."""
         print()
-        print("Goodbye! 👋")
+        print(Colors.info("Goodbye! 👋"))
         print()
-        print(f"Session statistics:")
+        print("Session statistics:")
         print(f"  Commands executed: {self.command_count}")
-        print(f"  Successful: {self.success_count}")
-        print(f"  Failed: {self.failure_count}")
+        print(f"  {Colors.success('✓ Successful')}: {self.success_count}")
+        print(f"  {Colors.error('✗ Failed')}: {self.failure_count}")
         print()
 
     def _handle_prompt(self, prompt: str):
@@ -342,10 +406,24 @@ class InteractiveShell:
             print()
             print("Built-in Commands:")
             print("  /help [command]      Show this help or help for specific command")
-            print("  /exit, /quit         Exit the shell")
-            print("  /clear               Clear the screen")
+            print("  /exit, /quit         Exit the shell (alias: /q)")
+            print("  /clear               Clear the screen (alias: /cls)")
             print("  /history             Show command history")
             print("  /reload              Refresh agent/workflow lists")
+            print("  /version             Show version information")
+            print()
+            print("Command Aliases:")
+            print("  /h, /?    →  /help")
+            print("  /q        →  /quit")
+            print("  /ls       →  /list")
+            print("  /cls      →  /clear")
+            print()
+            print("Keyboard Shortcuts:")
+            print("  Tab              Auto-complete commands/agents/workflows")
+            print("  ↑/↓              Navigate command history")
+            print("  Ctrl+C           Cancel current input")
+            print("  Ctrl+D           Exit shell")
+            print("  Ctrl+L           Clear screen (most terminals)")
             print()
             print("Agent Commands:")
             print("  /list agents         List all available agents")
@@ -381,7 +459,14 @@ class InteractiveShell:
         """
         print("\n🔄 Reloading agent and workflow lists...")
         self.completer.invalidate_cache()
-        print("✅ Cache cleared. Tab completion will refresh on next use.\n")
+        print(Colors.success("✓ Cache cleared. Tab completion will refresh on next use.\n"))
+
+    def _cmd_version(self, args):
+        """Show version information."""
+        print("\n" + Colors.info("Claude Force Interactive Shell"))
+        print(f"Version: {Colors.success('v1.3.0')}")
+        print(f"Python: {sys.version.split()[0]}")
+        print(f"Platform: {sys.platform}\n")
 
     def _cmd_history(self, args):
         """Show command history."""
