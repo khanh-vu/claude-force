@@ -5,6 +5,32 @@ All notable changes to claude-force will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-11-18
+
+### Documentation
+
+- Add comprehensive release test report for v1.2.0 (RELEASE_TEST_REPORT_v1.2.0.md)
+  - 360 lines of detailed testing documentation
+  - Complete test coverage analysis (84/85 tests passed)
+  - Security testing results
+  - Performance benchmarks
+  - Real-world testing scenarios
+  - PyPI publishing instructions
+
+### Improvements
+
+- Enhance package metadata and version consistency
+- Update README.md with v1.2.0 feature highlights
+- Improve release documentation and testing procedures
+
+### Infrastructure
+
+- Streamline release testing process
+- Add automated package build verification
+- Enhance version consistency checking
+
+---
+
 ## [1.2.0] - 2025-11-18
 
 ### Bug Fixes
