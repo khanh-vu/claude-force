@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen)](https://github.com/khanh-vu/claude-force/actions)
 [![Status](https://img.shields.io/badge/status-production--ready-blue)](https://github.com/khanh-vu/claude-force)
-[![Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/khanh-vu/claude-force)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](https://github.com/khanh-vu/claude-force)
 
 ## Overview
 
@@ -24,15 +24,26 @@ Claude Force is a comprehensive orchestration platform that enables building sop
 - **9 Templates** - Production-ready project templates
 - **100% Test Coverage** - 331 tests, all passing
 
-### 🆕 TÂCHES Workflow Management (v1.1.0)
+### 🆕 Existing Project Support (v1.2.0)
 
-Intelligent task orchestration and session continuity:
+Seamlessly integrate claude-force with your existing projects:
 
-- **📋 Todo Management** (`/todos`) - AI-optimized task capture with agent recommendations
-- **🔄 Session Handoff** (`/handoff`) - Preserve context across sessions with priority work tracking
-- **🧠 Meta-Prompting** (`/meta-prompt`) - LLM-powered workflow generation with governance validation
+- **🔍 Review Command** (`/review`) - Analyze existing projects for claude-force compatibility
+  - Technology stack detection (12 languages, 9 frameworks, 5 databases)
+  - Agent recommendations based on project analysis
+  - Multiple output formats (markdown, JSON)
 
-See [RELEASE_NOTES_v1.1.0.md](RELEASE_NOTES_v1.1.0.md) for full details.
+- **🔧 Restructure Command** (`/restructure`) - Validate and fix .claude folder structure
+  - Comprehensive validation rules
+  - Automatic fix generation
+  - Interactive and auto-approve modes
+
+- **📦 Pick-Agent Command** (`/pick-agent`) - Copy agent packs between projects
+  - Browse and copy multiple agents
+  - Automatic config updates
+  - Validates agent definitions and contracts
+
+See [EXISTING_PROJECT_SUPPORT.md](EXISTING_PROJECT_SUPPORT.md) for full details.
 
 ## Quick Start
 
@@ -450,7 +461,7 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**Version**: 1.1.0
+**Version**: 1.2.0
 **Status**: Production-Ready ✅
 **Tests**: 331/331 Passing ✅
 **Marketplace**: Integrated ✅

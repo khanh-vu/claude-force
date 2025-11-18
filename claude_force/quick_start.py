@@ -362,8 +362,11 @@ class QuickStartOrchestrator:
         return config
 
     def initialize_project(
-        self, config: ProjectConfig, output_dir: str = ".claude", create_examples: bool = True,
-        merge_with_existing: bool = False
+        self,
+        config: ProjectConfig,
+        output_dir: str = ".claude",
+        create_examples: bool = True,
+        merge_with_existing: bool = False,
     ) -> Dict[str, Any]:
         """
         Initialize .claude/ directory structure.

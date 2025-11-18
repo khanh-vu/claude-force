@@ -21,7 +21,7 @@ if requirements_file.exists():
 
 setup(
     name="claude-force",
-    version="1.1.0",
+    version="1.2.0",
     author="Claude Force Team",
     author_email="",
     description="Multi-Agent Orchestration System for Claude",
