@@ -18,6 +18,51 @@ from claude_force.security.sensitive_file_detector import SensitiveFileDetector
 logger = logging.getLogger(__name__)
 
 
+def _is_builtin_agents_dir(claude_dir: Path) -> bool:
+    """
+    Verify that a .claude directory contains built-in claude-force agents.
+
+    This prevents selecting a user's project .claude folder by checking
+    for known built-in agents that ship with claude-force.
+
+    Args:
+        claude_dir: Path to .claude directory to check
+
+    Returns:
+        True if this contains built-in agents from claude-force
+    """
+    if not claude_dir.exists():
+        logger.debug(f"Validation failed: {claude_dir} does not exist")
+        return False
+
+    agents_dir = claude_dir / "agents"
+    if not agents_dir.exists():
+        logger.debug(f"Validation failed: {agents_dir} does not exist")
+        return False
+
+    # Check for known built-in agents that ship with claude-force
+    # These are unlikely to exist in user projects with the same names
+    builtin_markers = [
+        "code-reviewer.md",
+        "python-expert.md",
+        "qc-automation-expert.md",
+    ]
+
+    found_markers_list = [marker for marker in builtin_markers if (agents_dir / marker).exists()]
+    found_markers = len(found_markers_list)
+
+    logger.debug(
+        f"Validation check for {claude_dir}: found {found_markers}/3 markers: {found_markers_list}"
+    )
+
+    # Require at least 2 of the 3 marker agents
+    # This prevents false positives while being resilient to changes
+    is_valid = found_markers >= 2
+    if not is_valid:
+        logger.debug(f"Validation failed: only {found_markers}/3 markers found (need at least 2)")
+    return is_valid
+
+
 def get_builtin_agents_path() -> Optional[Path]:
     """
     Find the built-in agents directory from claude-force installation.
@@ -25,20 +70,83 @@ def get_builtin_agents_path() -> Optional[Path]:
     Returns:
         Path to built-in agents directory, or None if not found
     """
-    # Try to find claude_force package directory
     import claude_force
 
     package_dir = Path(claude_force.__file__).parent
+    logger.debug(f"Searching for built-in agents, package_dir: {package_dir}")
+
+    # Try 0: Package templates directory (pip installed package)
+    # This is where agents are stored when installed via pip
+    templates_dir = package_dir / "templates"
+    logger.debug(f"Try 0: Checking {templates_dir}")
+    if _is_builtin_agents_dir(templates_dir):
+        logger.info(f"Found built-in agents at: {templates_dir}")
+        return templates_dir
+    logger.debug(f"Try 0: Not found at {templates_dir}")
+
+    # Try 1: Package directory (alternative package data location)
     claude_dir = package_dir / ".claude"
-
-    if claude_dir.exists() and (claude_dir / "agents").exists():
+    logger.debug(f"Try 1: Checking {claude_dir}")
+    if _is_builtin_agents_dir(claude_dir):
+        logger.info(f"Found built-in agents at: {claude_dir}")
         return claude_dir
+    logger.debug(f"Try 1: Not found at {claude_dir}")
 
-    # Fallback: check parent directory (for development)
+    # Try 2: Parent directory (development mode with editable install)
     dev_claude_dir = package_dir.parent / ".claude"
-    if dev_claude_dir.exists() and (dev_claude_dir / "agents").exists():
+    logger.debug(f"Try 2: Checking {dev_claude_dir}")
+    if _is_builtin_agents_dir(dev_claude_dir):
+        logger.info(f"Found built-in agents at: {dev_claude_dir}")
         return dev_claude_dir
+    logger.debug(f"Try 2: Not found at {dev_claude_dir}")
 
+    # Try 3: Site-packages parallel directory (some pip install scenarios)
+    # /path/to/site-packages/claude_force -> /path/to/site-packages/.claude
+    site_packages_claude = package_dir.parent / ".claude"
+    if site_packages_claude != dev_claude_dir:
+        logger.debug(f"Try 3: Checking {site_packages_claude}")
+        if _is_builtin_agents_dir(site_packages_claude):
+            logger.info(f"Found built-in agents at: {site_packages_claude}")
+            return site_packages_claude
+        logger.debug(f"Try 3: Not found at {site_packages_claude}")
+
+    # Try 4: Check if package is in claude-force git repo (development)
+    # Only use git if the package_dir is actually inside the repo
+    try:
+        import subprocess
+
+        logger.debug("Try 4: Attempting git fallback")
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=package_dir,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode == 0:
+            repo_root = Path(result.stdout.strip())
+            logger.debug(f"Try 4: Git repo root: {repo_root}")
+
+            # CRITICAL: Only use this if package_dir is inside the repo
+            # This prevents selecting user's project .claude folder
+            try:
+                package_dir.relative_to(repo_root)
+                # If we get here, package is inside the repo
+                logger.debug(f"Try 4: Package is inside repo, checking {repo_root}/.claude")
+                repo_claude_dir = repo_root / ".claude"
+                if _is_builtin_agents_dir(repo_claude_dir):
+                    logger.info(f"Found built-in agents at: {repo_claude_dir}")
+                    return repo_claude_dir
+                logger.debug(f"Try 4: Not found at {repo_claude_dir}")
+            except ValueError:
+                # package_dir is not inside repo_root, skip this fallback
+                logger.debug(f"Try 4: Package {package_dir} not inside repo {repo_root}, skipping")
+        else:
+            logger.debug(f"Try 4: Git command failed with code {result.returncode}")
+    except Exception as e:
+        logger.debug(f"Try 4: Git fallback failed: {e}")
+
+    logger.warning("Built-in agents not found in any known location")
     return None
 
 
