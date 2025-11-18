@@ -6,6 +6,7 @@ Minimal implementation following TDD.
 """
 
 import json
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Callable
 
@@ -284,36 +285,63 @@ class RestructureCommand:
 
         filepath.write_text(content)
 
-    def execute(self, auto_approve: bool = False) -> Dict:
+    def execute(
+        self,
+        auto_approve: bool = False,
+        show_progress: bool = True,
+        timeout: Optional[float] = None
+    ) -> Dict:
         """
         Execute the full restructure workflow with error handling and rollback.
 
         Args:
             auto_approve: If True, apply all fixes without asking
+            show_progress: Whether to show progress messages (default: True)
+            timeout: Maximum execution time in seconds (None = no timeout)
 
         Returns:
             Dictionary with execution results
 
         Raises:
             ValueError: If operation fails with user-friendly error message
+            TimeoutError: If operation exceeds timeout (best effort)
+
+        Note:
+            Timeout is "best effort" - operation may complete slightly after timeout
+            for operations that cannot be safely interrupted.
         """
         total_applied = 0
         total_skipped = 0
+        start_time = time.time() if timeout else None
 
         try:
+            if show_progress:
+                print(f"🔧 Restructuring project: {self.project_path}")
+                print("   Validating .claude folder structure...")
+
             # Iteratively validate and fix until no more fixable issues
             # (needed because some fixes reveal new issues, e.g., creating .claude folder)
             max_iterations = 5
             for iteration in range(max_iterations):
+                # Check timeout at start of each iteration
+                if timeout and (time.time() - start_time) > timeout:
+                    raise TimeoutError(f"Restructure exceeded timeout of {timeout}s")
+
                 # Validate
                 validation = self.validate()
 
                 # If valid or no fixable issues, we're done
                 if validation.is_valid or len(validation.fixable_issues()) == 0:
+                    if show_progress and iteration > 0:
+                        print(f"✓ Structure validated successfully")
                     break
 
                 # Generate fix plan
                 fix_plan = self.generate_fix_plan(validation)
+
+                if show_progress:
+                    fixable_count = len(validation.fixable_issues())
+                    print(f"   Found {fixable_count} issues to fix...")
 
                 # Apply fixes
                 apply_result = self.apply_fixes(fix_plan, auto_approve=auto_approve)
@@ -321,12 +349,21 @@ class RestructureCommand:
                 total_applied += apply_result["applied"]
                 total_skipped += apply_result["skipped"]
 
+                if show_progress and apply_result["applied"] > 0:
+                    print(f"   Applied {apply_result['applied']} fixes")
+
                 # If nothing was applied, no point continuing
                 if apply_result["applied"] == 0:
                     break
 
             # Final validation
             final_validation = self.validate()
+
+            if show_progress:
+                if total_applied > 0:
+                    print(f"✓ Restructure complete: {total_applied} fixes applied")
+                else:
+                    print(f"✓ Structure already valid")
 
             # Return comprehensive result
             return {
@@ -339,6 +376,12 @@ class RestructureCommand:
                 "fixes_skipped": total_skipped,
                 "success": True,
             }
+
+        except TimeoutError:
+            # Rollback on timeout
+            self._rollback_changes()
+            # Re-raise TimeoutError as-is
+            raise
 
         except PermissionError as e:
             # Rollback on permission errors

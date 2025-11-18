@@ -7,8 +7,9 @@ Minimal implementation following TDD.
 
 import json
 import shutil
+import time
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from claude_force.security import validate_project_root
 from claude_force.security.sensitive_file_detector import SensitiveFileDetector
@@ -30,11 +31,15 @@ class PickAgentCommand:
             target_project: Path to target project to copy agents to
 
         Raises:
-            ValueError: If paths are invalid
+            ValueError: If paths are invalid or source equals target
         """
         # Validate both paths
         self.source_project = validate_project_root(source_project)
         self.target_project = validate_project_root(target_project)
+
+        # Validate source != target
+        if self.source_project.resolve() == self.target_project.resolve():
+            raise ValueError("Source and target must be different directories")
 
         self.source_claude = self.source_project / ".claude"
         self.target_claude = self.target_project / ".claude"
@@ -172,33 +177,80 @@ class PickAgentCommand:
                 "files_copied": 2
             }
 
-        except Exception as e:
+        except FileNotFoundError as e:
+            return {
+                "success": False,
+                "agent": agent_name,
+                "error": f"Agent files not found: {e}"
+            }
+
+        except PermissionError as e:
+            return {
+                "success": False,
+                "agent": agent_name,
+                "error": f"Permission denied: {e}"
+            }
+
+        except ValueError as e:
             return {
                 "success": False,
                 "agent": agent_name,
                 "error": str(e)
             }
 
-    def copy_agents(self, agent_names: List[str]) -> Dict:
+        except OSError as e:
+            return {
+                "success": False,
+                "agent": agent_name,
+                "error": f"File system error: {e}"
+            }
+
+    def copy_agents(
+        self,
+        agent_names: List[str],
+        show_progress: bool = True,
+        timeout: Optional[float] = None,
+        start_time: Optional[float] = None
+    ) -> Dict:
         """
         Copy multiple agents to target project.
 
         Args:
             agent_names: List of agent names to copy
+            show_progress: Whether to show progress messages (default: True)
+            timeout: Maximum execution time in seconds (None = no timeout)
+            start_time: Start time for timeout calculation (internal use)
 
         Returns:
             Dictionary with copy results
+
+        Raises:
+            TimeoutError: If operation exceeds timeout
         """
         copied = 0
         failed = 0
         errors = []
 
-        for agent_name in agent_names:
+        if show_progress and len(agent_names) > 0:
+            print(f"📦 Copying {len(agent_names)} agent(s)...")
+
+        for idx, agent_name in enumerate(agent_names, 1):
+            # Check timeout before each copy
+            if timeout and start_time and (time.time() - start_time) > timeout:
+                raise TimeoutError(f"Copy operation exceeded timeout of {timeout}s")
+
+            if show_progress:
+                print(f"   [{idx}/{len(agent_names)}] {agent_name}...", end=" ")
+
             result = self.copy_agent(agent_name)
             if result["success"]:
                 copied += 1
+                if show_progress:
+                    print("✓")
             else:
                 failed += 1
+                if show_progress:
+                    print(f"✗ ({result.get('error', 'Unknown error')})")
                 errors.append({
                     "agent": agent_name,
                     "error": result.get("error", "Unknown error")
@@ -212,7 +264,10 @@ class PickAgentCommand:
 
     def update_config(self, agent_names: List[str]) -> Dict:
         """
-        Update target project's claude.json with new agents.
+        Update target project's claude.json with new agents atomically.
+
+        Uses atomic write pattern: backup → write to temp → rename.
+        If any step fails, backup is preserved.
 
         Args:
             agent_names: List of agent names to add to config
@@ -220,6 +275,12 @@ class PickAgentCommand:
         Returns:
             Dictionary with update result
         """
+        import os
+        import tempfile
+
+        backup_path = None
+        temp_path = None
+
         try:
             # Load source config to get agent definitions
             source_config_path = self.source_claude / "claude.json"
@@ -240,6 +301,11 @@ class PickAgentCommand:
                     "error": "Target claude.json not found"
                 }
 
+            # Step 1: Create backup of original config
+            backup_path = target_config_path.with_suffix('.json.bak')
+            shutil.copy2(target_config_path, backup_path)
+
+            # Step 2: Load and modify config
             with open(target_config_path, 'r') as f:
                 target_config = json.load(f)
 
@@ -255,9 +321,26 @@ class PickAgentCommand:
                     target_config["agents"][agent_name] = source_config["agents"][agent_name]
                     added += 1
 
-            # Write updated config
-            with open(target_config_path, 'w') as f:
-                json.dump(target_config, f, indent=2)
+            # Step 3: Write to temporary file in same directory
+            # (atomic rename only works within same filesystem)
+            temp_fd, temp_path = tempfile.mkstemp(
+                dir=target_config_path.parent,
+                prefix='.claude.json.',
+                suffix='.tmp'
+            )
+
+            try:
+                with os.fdopen(temp_fd, 'w') as f:
+                    json.dump(target_config, f, indent=2)
+            except Exception:
+                # If write fails, close and remove temp file
+                os.close(temp_fd)
+                raise
+
+            # Step 4: Atomic rename (replaces target file)
+            # On Unix this is atomic; on Windows it's not but close enough
+            os.replace(temp_path, target_config_path)
+            temp_path = None  # Renamed, don't delete
 
             return {
                 "success": True,
@@ -265,29 +348,72 @@ class PickAgentCommand:
             }
 
         except Exception as e:
+            # On failure, backup is preserved for manual recovery
             return {
                 "success": False,
                 "error": str(e)
             }
 
-    def execute(self, agent_names: List[str]) -> Dict:
+        finally:
+            # Cleanup: Remove temp file if it still exists
+            if temp_path and Path(temp_path).exists():
+                try:
+                    os.unlink(temp_path)
+                except Exception:
+                    pass  # Best effort cleanup
+
+    def execute(
+        self,
+        agent_names: List[str],
+        show_progress: bool = True,
+        timeout: Optional[float] = None
+    ) -> Dict:
         """
         Execute the full pick-agent workflow.
 
         Args:
             agent_names: List of agent names to copy
+            show_progress: Whether to show progress messages (default: True)
+            timeout: Maximum execution time in seconds (None = no timeout)
 
         Returns:
             Dictionary with execution results
+
+        Raises:
+            TimeoutError: If operation exceeds timeout (best effort)
+
+        Note:
+            Timeout is "best effort" - operation may complete slightly after timeout
+            for operations that cannot be safely interrupted.
         """
+        start_time = time.time() if timeout else None
+
+        if show_progress:
+            print(f"🎯 Pick Agent: {self.source_project} → {self.target_project}")
+
         # Copy agent files
-        copy_result = self.copy_agents(agent_names)
+        copy_result = self.copy_agents(
+            agent_names,
+            show_progress=show_progress,
+            timeout=timeout,
+            start_time=start_time
+        )
 
         # Update config for successfully copied agents
         if copy_result["copied"] > 0:
+            if show_progress:
+                print(f"   Updating configuration...")
             update_result = self.update_config(agent_names)
+            if show_progress and update_result.get("success"):
+                print(f"✓ Configuration updated")
         else:
             update_result = {"success": False, "agents_added": 0}
+
+        if show_progress:
+            if copy_result["copied"] > 0:
+                print(f"✓ Pick complete: {copy_result['copied']} agent(s) copied")
+            else:
+                print(f"✗ No agents were copied")
 
         # Return comprehensive result
         return {
