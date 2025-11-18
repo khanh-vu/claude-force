@@ -2074,6 +2074,7 @@ def cmd_review(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if getattr(args, "verbose", False):
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -2110,6 +2111,7 @@ def cmd_restructure(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if getattr(args, "verbose", False):
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -2147,7 +2149,10 @@ def cmd_pick_agent(args):
         agent_names = args.agents
 
         if not agent_names:
-            print("❌ Error: No agents specified. Use --list to see available agents.", file=sys.stderr)
+            print(
+                "❌ Error: No agents specified. Use --list to see available agents.",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         # Execute copy
@@ -2170,6 +2175,7 @@ def cmd_pick_agent(args):
         print(f"❌ Error: {e}", file=sys.stderr)
         if getattr(args, "verbose", False):
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 
@@ -2636,9 +2642,7 @@ For more information: https://github.com/khanh-vu/claude-force
     review_parser.add_argument(
         "--format", choices=["markdown", "json"], default="markdown", help="Output format"
     )
-    review_parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Verbose error output"
-    )
+    review_parser.add_argument("--verbose", "-v", action="store_true", help="Verbose error output")
     review_parser.set_defaults(func=cmd_review)
 
     # Restructure command (existing project support)
@@ -2646,7 +2650,10 @@ For more information: https://github.com/khanh-vu/claude-force
         "restructure", help="Validate and fix .claude folder structure"
     )
     restructure_parser.add_argument(
-        "path", nargs="?", default=None, help="Project path to restructure (default: current directory)"
+        "path",
+        nargs="?",
+        default=None,
+        help="Project path to restructure (default: current directory)",
     )
     restructure_parser.add_argument(
         "--auto", action="store_true", help="Auto-approve all fixes without prompting"

@@ -120,8 +120,7 @@ class ProjectAnalyzer:
         try:
             # Walk project directory with safety checks
             for dirpath, dirnames, filenames in self.path_validator.safe_walk(
-                self.project_root,
-                max_depth=self.max_depth
+                self.project_root, max_depth=self.max_depth
             ):
                 for filename in filenames:
                     file_path = dirpath / filename
@@ -152,7 +151,27 @@ class ProjectAnalyzer:
                         stats.files_by_extension[ext] = stats.files_by_extension.get(ext, 0) + 1
 
                         # Count lines (for text files)
-                        if ext in {".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go", ".rs", ".rb", ".php", ".c", ".cpp", ".h", ".md", ".txt", ".yml", ".yaml", ".json", ".xml"}:
+                        if ext in {
+                            ".py",
+                            ".js",
+                            ".ts",
+                            ".jsx",
+                            ".tsx",
+                            ".java",
+                            ".go",
+                            ".rs",
+                            ".rb",
+                            ".php",
+                            ".c",
+                            ".cpp",
+                            ".h",
+                            ".md",
+                            ".txt",
+                            ".yml",
+                            ".yaml",
+                            ".json",
+                            ".xml",
+                        }:
                             try:
                                 content = file_path.read_text(errors="ignore")
                                 stats.total_lines += len(content.splitlines())
@@ -227,12 +246,14 @@ class ProjectAnalyzer:
         recommendations = []
 
         # Always recommend code-reviewer (universal agent)
-        recommendations.append({
-            "agent": "code-reviewer",
-            "confidence": 0.99,
-            "reason": "Essential for all projects - reviews code quality, security, and best practices",
-            "skills_required": ["code-review"],
-        })
+        recommendations.append(
+            {
+                "agent": "code-reviewer",
+                "confidence": 0.99,
+                "reason": "Essential for all projects - reviews code quality, security, and best practices",
+                "skills_required": ["code-review"],
+            }
+        )
 
         # Language-based recommendations
         if "Python" in tech_stack.languages:
@@ -240,73 +261,91 @@ class ProjectAnalyzer:
             py_files = stats.files_by_extension.get(".py", 0)
             confidence = min(0.9, 0.5 + (py_files / max(stats.total_files, 1)) * 0.5)
 
-            recommendations.append({
-                "agent": "python-expert",
-                "confidence": confidence,
-                "reason": f"Python project detected ({py_files} .py files)",
-                "skills_required": ["python", "testing"],
-            })
+            recommendations.append(
+                {
+                    "agent": "python-expert",
+                    "confidence": confidence,
+                    "reason": f"Python project detected ({py_files} .py files)",
+                    "skills_required": ["python", "testing"],
+                }
+            )
 
         if "JavaScript" in tech_stack.languages or "TypeScript" in tech_stack.languages:
-            js_files = stats.files_by_extension.get(".js", 0) + stats.files_by_extension.get(".jsx", 0)
-            ts_files = stats.files_by_extension.get(".ts", 0) + stats.files_by_extension.get(".tsx", 0)
+            js_files = stats.files_by_extension.get(".js", 0) + stats.files_by_extension.get(
+                ".jsx", 0
+            )
+            ts_files = stats.files_by_extension.get(".ts", 0) + stats.files_by_extension.get(
+                ".tsx", 0
+            )
             total_js = js_files + ts_files
 
             confidence = min(0.9, 0.5 + (total_js / max(stats.total_files, 1)) * 0.5)
 
-            recommendations.append({
-                "agent": "frontend-developer",
-                "confidence": confidence,
-                "reason": f"JavaScript/TypeScript project detected ({total_js} files)",
-                "skills_required": ["javascript", "react"],
-            })
+            recommendations.append(
+                {
+                    "agent": "frontend-developer",
+                    "confidence": confidence,
+                    "reason": f"JavaScript/TypeScript project detected ({total_js} files)",
+                    "skills_required": ["javascript", "react"],
+                }
+            )
 
         # Framework-based recommendations
         if "React" in tech_stack.frameworks:
-            recommendations.append({
-                "agent": "ui-components-expert",
-                "confidence": 0.85,
-                "reason": "React framework detected - component design expertise needed",
-                "skills_required": ["react", "component-design"],
-            })
+            recommendations.append(
+                {
+                    "agent": "ui-components-expert",
+                    "confidence": 0.85,
+                    "reason": "React framework detected - component design expertise needed",
+                    "skills_required": ["react", "component-design"],
+                }
+            )
 
         if "FastAPI" in tech_stack.frameworks or "Django" in tech_stack.frameworks:
-            recommendations.append({
-                "agent": "backend-architect",
-                "confidence": 0.85,
-                "reason": f"Backend framework detected: {', '.join(tech_stack.frameworks)}",
-                "skills_required": ["api-design", "backend"],
-            })
+            recommendations.append(
+                {
+                    "agent": "backend-architect",
+                    "confidence": 0.85,
+                    "reason": f"Backend framework detected: {', '.join(tech_stack.frameworks)}",
+                    "skills_required": ["api-design", "backend"],
+                }
+            )
 
         # Database recommendations
         if tech_stack.databases:
-            recommendations.append({
-                "agent": "database-architect",
-                "confidence": 0.80,
-                "reason": f"Databases detected: {', '.join(tech_stack.databases)}",
-                "skills_required": ["database", "sql"],
-            })
+            recommendations.append(
+                {
+                    "agent": "database-architect",
+                    "confidence": 0.80,
+                    "reason": f"Databases detected: {', '.join(tech_stack.databases)}",
+                    "skills_required": ["database", "sql"],
+                }
+            )
 
         # Infrastructure recommendations
         if "Docker" in tech_stack.infrastructure:
-            recommendations.append({
-                "agent": "devops-architect",
-                "confidence": 0.75,
-                "reason": "Docker infrastructure detected",
-                "skills_required": ["docker", "devops"],
-            })
+            recommendations.append(
+                {
+                    "agent": "devops-architect",
+                    "confidence": 0.75,
+                    "reason": "Docker infrastructure detected",
+                    "skills_required": ["docker", "devops"],
+                }
+            )
 
         # Testing recommendation
         if stats.has_tests:
-            recommendations.append({
-                "agent": "qc-automation-expert",
-                "confidence": 0.70,
-                "reason": "Test infrastructure detected",
-                "skills_required": ["testing", "qa"],
-            })
+            recommendations.append(
+                {
+                    "agent": "qc-automation-expert",
+                    "confidence": 0.70,
+                    "reason": "Test infrastructure detected",
+                    "skills_required": ["testing", "qa"],
+                }
+            )
 
         # Sort by confidence (descending)
         recommendations.sort(key=lambda x: x["confidence"], reverse=True)
 
         # Limit to max_recommendations
-        return recommendations[:self.max_recommendations]
+        return recommendations[: self.max_recommendations]

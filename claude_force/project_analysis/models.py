@@ -103,11 +103,13 @@ class AnalysisResult:
         for ext, count in sorted(self.stats.files_by_extension.items()):
             lines.append(f"- `{ext}`: {count} files")
 
-        lines.extend([
-            "",
-            "## Technology Stack",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Technology Stack",
+                "",
+            ]
+        )
 
         if self.tech_stack.primary_language:
             lines.append(f"**Primary Language**: {self.tech_stack.primary_language}")
@@ -122,25 +124,29 @@ class AnalysisResult:
         if self.tech_stack.infrastructure:
             lines.append("**Infrastructure**: " + ", ".join(self.tech_stack.infrastructure))
 
-        lines.extend([
-            "",
-            "## Recommended Agents",
-            "",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Recommended Agents",
+                "",
+            ]
+        )
 
         for i, rec in enumerate(self.recommended_agents, 1):
-            confidence_pct = rec['confidence'] * 100
+            confidence_pct = rec["confidence"] * 100
             lines.append(f"{i}. **{rec['agent']}** ({confidence_pct:.0f}% confidence)")
             lines.append(f"   - {rec['reason']}")
             lines.append("")
 
         if self.sensitive_files_skipped:
-            lines.extend([
-                "## Sensitive Files Skipped",
-                "",
-                f"For privacy and security, {len(self.sensitive_files_skipped)} sensitive files were not analyzed:",
-                "",
-            ])
+            lines.extend(
+                [
+                    "## Sensitive Files Skipped",
+                    "",
+                    f"For privacy and security, {len(self.sensitive_files_skipped)} sensitive files were not analyzed:",
+                    "",
+                ]
+            )
             for file in self.sensitive_files_skipped[:10]:  # Show first 10
                 lines.append(f"- {file}")
             if len(self.sensitive_files_skipped) > 10:

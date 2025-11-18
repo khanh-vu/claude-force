@@ -85,7 +85,7 @@ class PickAgentCommand:
             filepath: Path to file to backup
         """
         if filepath.exists():
-            backup_path = filepath.with_suffix(filepath.suffix + '.bak')
+            backup_path = filepath.with_suffix(filepath.suffix + ".bak")
             # Use shutil.copy2 to preserve metadata (permissions, timestamps)
             shutil.copy2(filepath, backup_path)
 
@@ -110,35 +110,31 @@ class PickAgentCommand:
 
         # 2. Read and validate content
         try:
-            content = filepath.read_text(encoding='utf-8')
+            content = filepath.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             raise ValueError("File contains invalid UTF-8 characters")
 
         # 3. Scan for sensitive data patterns in content
         sensitive_patterns = [
-            (r'sk-[a-zA-Z0-9]{32,}', 'API key (sk-...)'),
-            (r'api[_-]?key\s*[:=]\s*["\'][^"\']+["\']', 'API key assignment'),
-            (r'password\s*[:=]\s*["\'][^"\']+["\']', 'Password assignment'),
-            (r'secret[_-]?key\s*[:=]\s*["\'][^"\']+["\']', 'Secret key assignment'),
-            (r'aws[_-]?access[_-]?key[_-]?id\s*[:=]', 'AWS credentials'),
-            (r'private[_-]?key\s*[:=]', 'Private key'),
-            (r'bearer\s+[a-zA-Z0-9\-._~+/]+=*', 'Bearer token'),
-            (r'token\s*[:=]\s*["\'][^"\']{20,}["\']', 'Access token'),
+            (r"sk-[a-zA-Z0-9]{32,}", "API key (sk-...)"),
+            (r'api[_-]?key\s*[:=]\s*["\'][^"\']+["\']', "API key assignment"),
+            (r'password\s*[:=]\s*["\'][^"\']+["\']', "Password assignment"),
+            (r'secret[_-]?key\s*[:=]\s*["\'][^"\']+["\']', "Secret key assignment"),
+            (r"aws[_-]?access[_-]?key[_-]?id\s*[:=]", "AWS credentials"),
+            (r"private[_-]?key\s*[:=]", "Private key"),
+            (r"bearer\s+[a-zA-Z0-9\-._~+/]+=*", "Bearer token"),
+            (r'token\s*[:=]\s*["\'][^"\']{20,}["\']', "Access token"),
         ]
 
         for pattern, reason in sensitive_patterns:
             if re.search(pattern, content, re.IGNORECASE):
-                raise ValueError(
-                    f"File contains sensitive data ({reason})"
-                )
+                raise ValueError(f"File contains sensitive data ({reason})")
 
         # 4. Check filename for sensitive patterns
         detector = SensitiveFileDetector()
         should_skip, reason = detector.should_skip_content(filepath)
         if should_skip:
-            raise ValueError(
-                f"File is sensitive ({reason})"
-            )
+            raise ValueError(f"File is sensitive ({reason})")
 
     def copy_agent(self, agent_name: str) -> Dict:
         """
@@ -175,46 +171,26 @@ class PickAgentCommand:
             shutil.copy2(source_agent, target_agent)
             shutil.copy2(source_contract, target_contract)
 
-            return {
-                "success": True,
-                "agent": agent_name,
-                "files_copied": 2
-            }
+            return {"success": True, "agent": agent_name, "files_copied": 2}
 
         except FileNotFoundError as e:
-            return {
-                "success": False,
-                "agent": agent_name,
-                "error": f"Agent files not found: {e}"
-            }
+            return {"success": False, "agent": agent_name, "error": f"Agent files not found: {e}"}
 
         except PermissionError as e:
-            return {
-                "success": False,
-                "agent": agent_name,
-                "error": f"Permission denied: {e}"
-            }
+            return {"success": False, "agent": agent_name, "error": f"Permission denied: {e}"}
 
         except ValueError as e:
-            return {
-                "success": False,
-                "agent": agent_name,
-                "error": str(e)
-            }
+            return {"success": False, "agent": agent_name, "error": str(e)}
 
         except OSError as e:
-            return {
-                "success": False,
-                "agent": agent_name,
-                "error": f"File system error: {e}"
-            }
+            return {"success": False, "agent": agent_name, "error": f"File system error: {e}"}
 
     def copy_agents(
         self,
         agent_names: List[str],
         show_progress: bool = True,
         timeout: Optional[float] = None,
-        start_time: Optional[float] = None
+        start_time: Optional[float] = None,
     ) -> Dict:
         """
         Copy multiple agents to target project.
@@ -255,16 +231,9 @@ class PickAgentCommand:
                 failed += 1
                 if show_progress:
                     print(f"✗ ({result.get('error', 'Unknown error')})")
-                errors.append({
-                    "agent": agent_name,
-                    "error": result.get("error", "Unknown error")
-                })
+                errors.append({"agent": agent_name, "error": result.get("error", "Unknown error")})
 
-        return {
-            "copied": copied,
-            "failed": failed,
-            "errors": errors
-        }
+        return {"copied": copied, "failed": failed, "errors": errors}
 
     def update_config(self, agent_names: List[str]) -> Dict:
         """
@@ -289,28 +258,22 @@ class PickAgentCommand:
             # Load source config to get agent definitions
             source_config_path = self.source_claude / "claude.json"
             if not source_config_path.exists():
-                return {
-                    "success": False,
-                    "error": "Source claude.json not found"
-                }
+                return {"success": False, "error": "Source claude.json not found"}
 
-            with open(source_config_path, 'r') as f:
+            with open(source_config_path, "r") as f:
                 source_config = json.load(f)
 
             # Load target config
             target_config_path = self.target_claude / "claude.json"
             if not target_config_path.exists():
-                return {
-                    "success": False,
-                    "error": "Target claude.json not found"
-                }
+                return {"success": False, "error": "Target claude.json not found"}
 
             # Step 1: Create backup of original config
-            backup_path = target_config_path.with_suffix('.json.bak')
+            backup_path = target_config_path.with_suffix(".json.bak")
             shutil.copy2(target_config_path, backup_path)
 
             # Step 2: Load and modify config
-            with open(target_config_path, 'r') as f:
+            with open(target_config_path, "r") as f:
                 target_config = json.load(f)
 
             # Ensure agents section exists
@@ -328,13 +291,11 @@ class PickAgentCommand:
             # Step 3: Write to temporary file in same directory
             # (atomic rename only works within same filesystem)
             temp_fd, temp_path = tempfile.mkstemp(
-                dir=target_config_path.parent,
-                prefix='.claude.json.',
-                suffix='.tmp'
+                dir=target_config_path.parent, prefix=".claude.json.", suffix=".tmp"
             )
 
             try:
-                with os.fdopen(temp_fd, 'w') as f:
+                with os.fdopen(temp_fd, "w") as f:
                     json.dump(target_config, f, indent=2)
             except Exception:
                 # If write fails, close and remove temp file
@@ -346,17 +307,11 @@ class PickAgentCommand:
             os.replace(temp_path, target_config_path)
             temp_path = None  # Renamed, don't delete
 
-            return {
-                "success": True,
-                "agents_added": added
-            }
+            return {"success": True, "agents_added": added}
 
         except Exception as e:
             # On failure, backup is preserved for manual recovery
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
         finally:
             # Cleanup: Remove temp file if it still exists
@@ -367,10 +322,7 @@ class PickAgentCommand:
                     pass  # Best effort cleanup
 
     def execute(
-        self,
-        agent_names: List[str],
-        show_progress: bool = True,
-        timeout: Optional[float] = None
+        self, agent_names: List[str], show_progress: bool = True, timeout: Optional[float] = None
     ) -> Dict:
         """
         Execute the full pick-agent workflow.
@@ -397,10 +349,7 @@ class PickAgentCommand:
 
         # Copy agent files
         copy_result = self.copy_agents(
-            agent_names,
-            show_progress=show_progress,
-            timeout=timeout,
-            start_time=start_time
+            agent_names, show_progress=show_progress, timeout=timeout, start_time=start_time
         )
 
         # Update config for successfully copied agents
@@ -426,7 +375,7 @@ class PickAgentCommand:
             "agents_failed": copy_result["failed"],
             "config_updated": update_result.get("success", False),
             "agents_added_to_config": update_result.get("agents_added", 0),
-            "errors": copy_result.get("errors", [])
+            "errors": copy_result.get("errors", []),
         }
 
     def format_markdown(self, result: Dict) -> str:
@@ -451,7 +400,9 @@ class PickAgentCommand:
         lines.append("")
         lines.append(f"- **Agents Copied**: {result.get('agents_copied', 0)}")
         lines.append(f"- **Agents Failed**: {result.get('agents_failed', 0)}")
-        lines.append(f"- **Config Updated**: {'✅ Yes' if result.get('config_updated') else '❌ No'}")
+        lines.append(
+            f"- **Config Updated**: {'✅ Yes' if result.get('config_updated') else '❌ No'}"
+        )
         lines.append("")
 
         # Status

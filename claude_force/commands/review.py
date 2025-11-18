@@ -38,9 +38,7 @@ class ReviewCommand:
         self.project_path = validate_project_root(project_path)
 
     def execute(
-        self,
-        show_progress: bool = True,
-        timeout: Optional[float] = None
+        self, show_progress: bool = True, timeout: Optional[float] = None
     ) -> AnalysisResult:
         """
         Execute the review command with error handling.
@@ -81,7 +79,9 @@ class ReviewCommand:
                 logger.warning(f"Analysis exceeded timeout of {timeout}s")
                 raise TimeoutError(f"Analysis exceeded timeout of {timeout}s")
 
-            logger.info(f"Analysis complete: {result.stats.total_files} files, {result.stats.total_lines} lines")
+            logger.info(
+                f"Analysis complete: {result.stats.total_files} files, {result.stats.total_lines} lines"
+            )
             logger.debug(f"Languages detected: {result.tech_stack.languages}")
             logger.debug(f"Recommended agents: {len(result.recommended_agents)}")
 

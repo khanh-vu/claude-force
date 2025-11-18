@@ -59,7 +59,7 @@ CLAUDE_JSON_CONFIG = {
         "hooks_enabled": True,
         "pre_run_required": False,
         "post_run_validation": False,
-        "validators": []
+        "validators": [],
     },
     "paths": {
         "task": "task.md",
@@ -69,15 +69,15 @@ CLAUDE_JSON_CONFIG = {
         "contracts": "contracts/",
         "hooks": "hooks/",
         "macros": "macros/",
-        "skills": "skills/"
+        "skills": "skills/",
     },
     "rules": {
         "task_md_readonly": True,
         "require_write_zone_update": False,
         "no_secrets_in_output": True,
         "minimal_diffs_only": False,
-        "scorecard_must_pass": False
-    }
+        "scorecard_must_pass": False,
+    },
 }
 
 # task.md template

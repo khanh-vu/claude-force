@@ -20,7 +20,6 @@ SENSITIVE_FILE_PATTERNS = {
     r"\.env$": "Environment variables",
     r"\.env\..*": "Environment variables (specific environment)",
     r"env\..*": "Environment variables",
-
     # Credentials and secrets
     r"credentials\.json$": "GCP/AWS credentials",
     r"credentials\.ya?ml$": "Credentials file",
@@ -28,7 +27,6 @@ SENSITIVE_FILE_PATTERNS = {
     r"secrets\.json$": "Secrets file",
     r"secrets\.ya?ml$": "Secrets file",
     r"\.secrets$": "Secrets file",
-
     # Private keys and certificates
     r".*\.pem$": "PEM certificate/key",
     r".*\.key$": "Private key",
@@ -40,33 +38,27 @@ SENSITIVE_FILE_PATTERNS = {
     r"id_ed25519$": "SSH private key",
     r".*_rsa$": "RSA private key",
     r".*_dsa$": "DSA private key",
-
     # API keys and tokens
     r"\.?api[-_]?keys?\..*": "API keys",
     r"\.?auth[-_]?tokens?\..*": "Authentication tokens",
     r"\.npmrc$": "NPM credentials",
     r"\.pypirc$": "PyPI credentials",
-
     # Cloud provider configs
     r"\.aws/credentials$": "AWS credentials",
     r"\.aws/config$": "AWS config",
     r"\.gcp/credentials$": "GCP credentials",
     r"\.azure/credentials$": "Azure credentials",
-
     # Database configs
     r"database\.ya?ml$": "Database configuration",
     r"db\.ya?ml$": "Database configuration",
-
     # Password files
     r"passwords?\.txt$": "Password file",
     r"passwd$": "Password file",
     r"shadow$": "Shadow password file",
-
     # Backup files that might contain sensitive data
     r".*\.sql\.gz$": "Database dump",
     r".*\.sql$": "Database dump",
     r"backup.*\.tar\.gz$": "Backup archive",
-
     # Private notes and documents
     r"private.*\.txt$": "Private document",
     r"confidential.*": "Confidential document",
@@ -247,11 +239,13 @@ class SensitiveFileDetector:
                 reason = self.get_sensitivity_reason(path)
                 file_type = "directory" if path.is_dir() else "file"
 
-                sensitive_files.append({
-                    "path": str(path),
-                    "reason": reason,
-                    "type": file_type,
-                })
+                sensitive_files.append(
+                    {
+                        "path": str(path),
+                        "reason": reason,
+                        "type": file_type,
+                    }
+                )
 
         logger.info(f"Found {len(sensitive_files)} sensitive items in {directory}")
         return sensitive_files
@@ -336,13 +330,15 @@ class SensitiveFileDetector:
             for file in sorted(files):
                 report_lines.append(f"  - {file}")
 
-        report_lines.extend([
-            "",
-            "=" * 60,
-            f"Total: {len(skipped_files)} sensitive files protected",
-            "",
-            "These files were NOT read or analyzed for your privacy and security.",
-        ])
+        report_lines.extend(
+            [
+                "",
+                "=" * 60,
+                f"Total: {len(skipped_files)} sensitive files protected",
+                "",
+                "These files were NOT read or analyzed for your privacy and security.",
+            ]
+        )
 
         return "\n".join(report_lines)
 

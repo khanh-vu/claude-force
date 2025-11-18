@@ -114,6 +114,7 @@ class TechnologyDetector:
             if package_json.exists():
                 try:
                     import json
+
                     content = package_json.read_text()
                     data = json.loads(content)
 
@@ -211,6 +212,7 @@ class TechnologyDetector:
             if package_json.exists():
                 try:
                     import json
+
                     content = package_json.read_text()
                     data = json.loads(content)
                     deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}

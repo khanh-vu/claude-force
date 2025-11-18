@@ -111,7 +111,7 @@ class RestructureCommand:
         self,
         fix_plan: List[Dict],
         auto_approve: bool = False,
-        approval_callback: Optional[Callable[[Dict], bool]] = None
+        approval_callback: Optional[Callable[[Dict], bool]] = None,
     ) -> Dict:
         """
         Apply fixes from the fix plan.
@@ -157,11 +157,9 @@ class RestructureCommand:
 
             # Track for rollback
             if not existed_before:
-                self.changes_made.append({
-                    "action": "created_directory",
-                    "path": claude_path,
-                    "existed_before": False
-                })
+                self.changes_made.append(
+                    {"action": "created_directory", "path": claude_path, "existed_before": False}
+                )
 
         elif action == "create_directory":
             if path:
@@ -170,11 +168,9 @@ class RestructureCommand:
 
                 # Track for rollback
                 if not existed_before:
-                    self.changes_made.append({
-                        "action": "created_directory",
-                        "path": path,
-                        "existed_before": False
-                    })
+                    self.changes_made.append(
+                        {"action": "created_directory", "path": path, "existed_before": False}
+                    )
 
         elif action == "create_file":
             if path:
@@ -184,12 +180,14 @@ class RestructureCommand:
                 self._create_file_with_template(path)
 
                 # Track for rollback
-                self.changes_made.append({
-                    "action": "created_file",
-                    "path": path,
-                    "existed_before": existed_before,
-                    "original_content": original_content
-                })
+                self.changes_made.append(
+                    {
+                        "action": "created_file",
+                        "path": path,
+                        "existed_before": existed_before,
+                        "original_content": original_content,
+                    }
+                )
 
         elif action == "fix_config":
             # For now, just create minimal config if missing
@@ -200,12 +198,14 @@ class RestructureCommand:
                 self._create_minimal_claude_json(path)
 
                 # Track for rollback
-                self.changes_made.append({
-                    "action": "created_file",
-                    "path": path,
-                    "existed_before": existed_before,
-                    "original_content": original_content
-                })
+                self.changes_made.append(
+                    {
+                        "action": "created_file",
+                        "path": path,
+                        "existed_before": existed_before,
+                        "original_content": original_content,
+                    }
+                )
 
     def _rollback_changes(self):
         """
@@ -259,7 +259,7 @@ class RestructureCommand:
         import shutil
 
         if filepath.exists():
-            backup_path = filepath.with_suffix(filepath.suffix + '.bak')
+            backup_path = filepath.with_suffix(filepath.suffix + ".bak")
             # Use shutil.copy2 to preserve metadata (permissions, timestamps)
             shutil.copy2(filepath, backup_path)
 
@@ -305,7 +305,7 @@ class RestructureCommand:
         self,
         auto_approve: bool = False,
         show_progress: bool = True,
-        timeout: Optional[float] = None
+        timeout: Optional[float] = None,
     ) -> Dict:
         """
         Execute the full restructure workflow with error handling and rollback.
@@ -435,7 +435,9 @@ class RestructureCommand:
         validation = result.get("validation", {})
         lines.append("## Validation Results")
         lines.append("")
-        lines.append(f"- **Status**: {'✅ Valid' if validation.get('is_valid') else '⚠️ Issues Found'}")
+        lines.append(
+            f"- **Status**: {'✅ Valid' if validation.get('is_valid') else '⚠️ Issues Found'}"
+        )
         lines.append(f"- **Errors**: {validation.get('errors', 0)}")
         lines.append(f"- **Warnings**: {validation.get('warnings', 0)}")
         lines.append("")
