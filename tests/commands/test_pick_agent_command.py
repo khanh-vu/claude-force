@@ -515,3 +515,173 @@ class TestPickAgentCommandBackup:
 
             assert not agent_backup.exists(), "No backup for new agent file"
             assert not contract_backup.exists(), "No backup for new contract file"
+
+
+class TestPickAgentCommandContentValidation:
+    """Test content validation for security"""
+
+    def test_rejects_agent_with_api_key(self):
+        """
+        TDD: Should reject agent files containing API keys
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_path = Path(tmpdir) / "source"
+            target_path = Path(tmpdir) / "target"
+            source_path.mkdir()
+            target_path.mkdir()
+
+            # Setup both projects
+            for path in [source_path, target_path]:
+                claude = path / ".claude"
+                claude.mkdir()
+                (claude / "agents").mkdir()
+                (claude / "contracts").mkdir()
+                config = {"agents": {}, "workflows": {}, "governance": {}, "paths": {}, "rules": {}}
+                (claude / "claude.json").write_text(json.dumps(config))
+
+            # Create agent with API key in source
+            source_claude = source_path / ".claude"
+            agent_with_key = """
+# Malicious Agent
+
+This agent has an API key embedded:
+
+API_KEY = "sk-1234567890abcdef1234567890abcdef"
+
+Don't copy this!
+"""
+            (source_claude / "agents" / "bad-agent.md").write_text(agent_with_key)
+            (source_claude / "contracts" / "bad-agent.contract").write_text("contract: v1")
+
+            source_config = json.loads((source_claude / "claude.json").read_text())
+            source_config["agents"]["bad-agent"] = {"skills": ["test"]}
+            (source_claude / "claude.json").write_text(json.dumps(source_config))
+
+            # Try to copy agent
+            command = PickAgentCommand(source_path, target_path)
+            result = command.copy_agent("bad-agent")
+
+            # Should fail due to sensitive content
+            assert result["success"] is False
+            assert "sensitive" in result["error"].lower() or "api" in result["error"].lower()
+
+    def test_rejects_agent_with_password(self):
+        """
+        TDD: Should reject agent files containing passwords
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_path = Path(tmpdir) / "source"
+            target_path = Path(tmpdir) / "target"
+            source_path.mkdir()
+            target_path.mkdir()
+
+            # Setup both projects
+            for path in [source_path, target_path]:
+                claude = path / ".claude"
+                claude.mkdir()
+                (claude / "agents").mkdir()
+                (claude / "contracts").mkdir()
+                config = {"agents": {}, "workflows": {}, "governance": {}, "paths": {}, "rules": {}}
+                (claude / "claude.json").write_text(json.dumps(config))
+
+            # Create agent with password in source
+            source_claude = source_path / ".claude"
+            agent_with_password = """
+# Agent with Password
+
+password=SuperSecret123!
+DB_PASSWORD="admin123"
+"""
+            (source_claude / "agents" / "bad-agent.md").write_text(agent_with_password)
+            (source_claude / "contracts" / "bad-agent.contract").write_text("contract: v1")
+
+            source_config = json.loads((source_claude / "claude.json").read_text())
+            source_config["agents"]["bad-agent"] = {"skills": ["test"]}
+            (source_claude / "claude.json").write_text(json.dumps(source_config))
+
+            # Try to copy agent
+            command = PickAgentCommand(source_path, target_path)
+            result = command.copy_agent("bad-agent")
+
+            # Should fail due to sensitive content
+            assert result["success"] is False
+            assert "sensitive" in result["error"].lower() or "password" in result["error"].lower()
+
+    def test_rejects_oversized_agent_file(self):
+        """
+        TDD: Should reject agent files that are too large
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_path = Path(tmpdir) / "source"
+            target_path = Path(tmpdir) / "target"
+            source_path.mkdir()
+            target_path.mkdir()
+
+            # Setup both projects
+            for path in [source_path, target_path]:
+                claude = path / ".claude"
+                claude.mkdir()
+                (claude / "agents").mkdir()
+                (claude / "contracts").mkdir()
+                config = {"agents": {}, "workflows": {}, "governance": {}, "paths": {}, "rules": {}}
+                (claude / "claude.json").write_text(json.dumps(config))
+
+            # Create huge agent file (> 10MB)
+            source_claude = source_path / ".claude"
+            huge_content = "# Huge Agent\n" + ("x" * (11 * 1024 * 1024))  # 11MB
+            (source_claude / "agents" / "huge-agent.md").write_text(huge_content)
+            (source_claude / "contracts" / "huge-agent.contract").write_text("contract: v1")
+
+            source_config = json.loads((source_claude / "claude.json").read_text())
+            source_config["agents"]["huge-agent"] = {"skills": ["test"]}
+            (source_claude / "claude.json").write_text(json.dumps(source_config))
+
+            # Try to copy agent
+            command = PickAgentCommand(source_path, target_path)
+            result = command.copy_agent("huge-agent")
+
+            # Should fail due to size
+            assert result["success"] is False
+            assert "size" in result["error"].lower() or "large" in result["error"].lower()
+
+    def test_accepts_clean_agent_file(self):
+        """
+        TDD: Should accept clean agent files without sensitive data
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_path = Path(tmpdir) / "source"
+            target_path = Path(tmpdir) / "target"
+            source_path.mkdir()
+            target_path.mkdir()
+
+            # Setup both projects
+            for path in [source_path, target_path]:
+                claude = path / ".claude"
+                claude.mkdir()
+                (claude / "agents").mkdir()
+                (claude / "contracts").mkdir()
+                config = {"agents": {}, "workflows": {}, "governance": {}, "paths": {}, "rules": {}}
+                (claude / "claude.json").write_text(json.dumps(config))
+
+            # Create clean agent in source
+            source_claude = source_path / ".claude"
+            clean_agent = """
+# Python Expert Agent
+
+A helpful agent for Python development.
+
+Skills: python, testing, debugging
+"""
+            (source_claude / "agents" / "python-expert.md").write_text(clean_agent)
+            (source_claude / "contracts" / "python-expert.contract").write_text("contract: v1")
+
+            source_config = json.loads((source_claude / "claude.json").read_text())
+            source_config["agents"]["python-expert"] = {"skills": ["python"]}
+            (source_claude / "claude.json").write_text(json.dumps(source_config))
+
+            # Copy agent
+            command = PickAgentCommand(source_path, target_path)
+            result = command.copy_agent("python-expert")
+
+            # Should succeed
+            assert result["success"] is True

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List, Dict
 
 from claude_force.security import validate_project_root
+from claude_force.security.sensitive_file_detector import SensitiveFileDetector
 
 
 class PickAgentCommand:
@@ -76,6 +77,60 @@ class PickAgentCommand:
             # Use shutil.copy2 to preserve metadata (permissions, timestamps)
             shutil.copy2(filepath, backup_path)
 
+    def _validate_file_content(self, filepath: Path) -> None:
+        """
+        Validate file content before copying.
+
+        Args:
+            filepath: Path to file to validate
+
+        Raises:
+            ValueError: If file contains sensitive data or is too large
+        """
+        import re
+
+        # Maximum file size: 10MB
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+
+        # 1. Check file size
+        file_size = filepath.stat().st_size
+        if file_size > MAX_FILE_SIZE:
+            raise ValueError(
+                f"File too large: {file_size:,} bytes (max {MAX_FILE_SIZE:,} bytes)"
+            )
+
+        # 2. Read and validate content
+        try:
+            content = filepath.read_text(encoding='utf-8')
+        except UnicodeDecodeError:
+            raise ValueError("File contains invalid UTF-8 characters")
+
+        # 3. Scan for sensitive data patterns in content
+        sensitive_patterns = [
+            (r'sk-[a-zA-Z0-9]{32,}', 'API key (sk-...)'),
+            (r'api[_-]?key\s*[:=]\s*["\'][^"\']+["\']', 'API key assignment'),
+            (r'password\s*[:=]\s*["\'][^"\']+["\']', 'Password assignment'),
+            (r'secret[_-]?key\s*[:=]\s*["\'][^"\']+["\']', 'Secret key assignment'),
+            (r'aws[_-]?access[_-]?key[_-]?id\s*[:=]', 'AWS credentials'),
+            (r'private[_-]?key\s*[:=]', 'Private key'),
+            (r'bearer\s+[a-zA-Z0-9\-._~+/]+=*', 'Bearer token'),
+            (r'token\s*[:=]\s*["\'][^"\']{20,}["\']', 'Access token'),
+        ]
+
+        for pattern, reason in sensitive_patterns:
+            if re.search(pattern, content, re.IGNORECASE):
+                raise ValueError(
+                    f"File contains sensitive data ({reason})"
+                )
+
+        # 4. Check filename for sensitive patterns
+        detector = SensitiveFileDetector()
+        should_skip, reason = detector.should_skip_content(filepath)
+        if should_skip:
+            raise ValueError(
+                f"File is sensitive ({reason})"
+            )
+
     def copy_agent(self, agent_name: str) -> Dict:
         """
         Copy a single agent to target project.
@@ -94,6 +149,10 @@ class PickAgentCommand:
             # Target files
             target_agent = self.target_claude / "agents" / f"{agent_name}.md"
             target_contract = self.target_claude / "contracts" / f"{agent_name}.contract"
+
+            # Validate content before copying (security check)
+            self._validate_file_content(source_agent)
+            self._validate_file_content(source_contract)
 
             # Ensure target directories exist
             target_agent.parent.mkdir(parents=True, exist_ok=True)
