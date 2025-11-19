@@ -17,10 +17,47 @@ This ensures:
 import shlex
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TextIO
 from io import StringIO
 import contextlib
 import difflib
+
+
+class StreamingIO:
+    """
+    A stream wrapper that writes to both a buffer and the actual output stream.
+
+    This enables real-time output display while still capturing output for the result.
+    """
+
+    def __init__(self, buffer: StringIO, original_stream: TextIO):
+        """
+        Initialize streaming IO.
+
+        Args:
+            buffer: StringIO buffer to capture output
+            original_stream: Original stream (sys.stdout or sys.stderr) for real-time display
+        """
+        self.buffer = buffer
+        self.original_stream = original_stream
+
+    def write(self, text: str) -> int:
+        """Write to both buffer and original stream."""
+        # Write to buffer for capturing
+        self.buffer.write(text)
+        # Write to original stream for real-time display
+        self.original_stream.write(text)
+        self.original_stream.flush()
+        return len(text)
+
+    def flush(self):
+        """Flush both streams."""
+        self.buffer.flush()
+        self.original_stream.flush()
+
+    def getvalue(self) -> str:
+        """Get the buffered value."""
+        return self.buffer.getvalue()
 
 
 @dataclass
@@ -54,10 +91,16 @@ class CommandExecutor:
     with any CLI changes.
     """
 
-    def __init__(self):
-        """Initialize executor."""
+    def __init__(self, streaming: bool = True):
+        """
+        Initialize executor.
+
+        Args:
+            streaming: If True, stream output in real-time (default: True)
+        """
         self.history: List[Dict[str, Any]] = []
         self._parser = None  # Lazy-loaded from cli module
+        self.streaming = streaming  # Enable real-time output streaming
 
         # Common commands for "did you mean" suggestions
         self.all_commands = [
@@ -225,12 +268,21 @@ class CommandExecutor:
                     metadata={"no_handler": True, "suggestions": suggestions},
                 )
 
-            # Capture stdout to get command output
+            # Capture stdout/stderr - with optional real-time streaming
             output_buffer = StringIO()
             error_buffer = StringIO()
 
-            with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(
-                error_buffer
+            if self.streaming:
+                # Create streaming wrappers that write to both buffer and real output
+                stdout_stream = StreamingIO(output_buffer, sys.stdout)
+                stderr_stream = StreamingIO(error_buffer, sys.stderr)
+            else:
+                # Use simple buffers (no real-time output)
+                stdout_stream = output_buffer
+                stderr_stream = error_buffer
+
+            with contextlib.redirect_stdout(stdout_stream), contextlib.redirect_stderr(
+                stderr_stream
             ):
                 try:
                     # Execute the command function

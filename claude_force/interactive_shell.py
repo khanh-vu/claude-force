@@ -28,14 +28,15 @@ from .orchestrator import AgentOrchestrator
 
 class Colors:
     """ANSI color codes for terminal output."""
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    RESET = '\033[0m'
-    BOLD = '\033[1m'
-    DIM = '\033[2m'
+
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
 
     @staticmethod
     def success(text: str) -> str:
@@ -68,7 +69,7 @@ class ProgressSpinner:
 
     def __init__(self, message: str = "Working"):
         self.message = message
-        self.spinner_chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+        self.spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self._stop = False
         self._thread = None
 
@@ -76,11 +77,11 @@ class ProgressSpinner:
         """Spinner animation loop."""
         idx = 0
         while not self._stop:
-            sys.stderr.write(f'\r{self.spinner_chars[idx]} {self.message}...')
+            sys.stderr.write(f"\r{self.spinner_chars[idx]} {self.message}...")
             sys.stderr.flush()
             idx = (idx + 1) % len(self.spinner_chars)
             time.sleep(0.1)
-        sys.stderr.write('\r' + ' ' * (len(self.message) + 10) + '\r')
+        sys.stderr.write("\r" + " " * (len(self.message) + 10) + "\r")
         sys.stderr.flush()
 
     def start(self):
@@ -152,23 +153,23 @@ class InteractiveShell:
 
         # Command aliases for convenience
         self.command_aliases = {
-            'q': 'quit',
-            'h': 'help',
-            'ls': 'list',
-            '?': 'help',
-            'cls': 'clear',
+            "q": "quit",
+            "h": "help",
+            "ls": "list",
+            "?": "help",
+            "cls": "clear",
         }
 
         # Built-in commands (handled by shell, not CLI)
         self.builtin_commands = {
-            'exit': self._cmd_exit,
-            'quit': self._cmd_exit,
-            'help': self._cmd_help,
-            'clear': self._cmd_clear,
-            'history': self._cmd_history,
-            'meta-prompt': self._cmd_meta_prompt,
-            'reload': self._cmd_reload,
-            'version': self._cmd_version,
+            "exit": self._cmd_exit,
+            "quit": self._cmd_exit,
+            "help": self._cmd_help,
+            "clear": self._cmd_clear,
+            "history": self._cmd_history,
+            "meta-prompt": self._cmd_meta_prompt,
+            "reload": self._cmd_reload,
+            "version": self._cmd_version,
         }
 
     def start(self):
@@ -188,7 +189,7 @@ class InteractiveShell:
         while self.running:
             try:
                 # Get user input
-                command = self.session.prompt('claude-force> ')
+                command = self.session.prompt("claude-force> ")
 
                 # Execute command
                 self._execute_command(command)
@@ -221,7 +222,7 @@ class InteractiveShell:
             Tuple of (is_valid, error_message)
         """
         # Check for null bytes (security risk)
-        if '\x00' in command:
+        if "\x00" in command:
             return False, "Invalid input: null bytes not allowed"
 
         # Check maximum length (prevent memory issues)
@@ -231,8 +232,9 @@ class InteractiveShell:
 
         # Check for control characters (except common ones like \n, \t)
         import unicodedata
+
         for char in command:
-            if unicodedata.category(char) == 'Cc' and char not in '\n\t\r':
+            if unicodedata.category(char) == "Cc" and char not in "\n\t\r":
                 return False, f"Invalid control character in input"
 
         return True, ""
@@ -263,7 +265,7 @@ class InteractiveShell:
         self.command_count += 1
 
         # Check if this is a slash command (starts with /)
-        if command.startswith('/'):
+        if command.startswith("/"):
             # Remove the forward slash and execute as command
             command = command[1:].strip()
 
@@ -271,7 +273,7 @@ class InteractiveShell:
             cmd_parts = command.split(maxsplit=1)
             if cmd_parts and cmd_parts[0] in self.command_aliases:
                 alias_expanded = self.command_aliases[cmd_parts[0]]
-                command = alias_expanded + (' ' + cmd_parts[1] if len(cmd_parts) > 1 else '')
+                command = alias_expanded + (" " + cmd_parts[1] if len(cmd_parts) > 1 else "")
                 cmd_parts = command.split()
 
             # Check for built-in commands first
@@ -280,11 +282,21 @@ class InteractiveShell:
                 self.builtin_commands[cmd_parts[0]](cmd_parts[1:])
                 return
 
-            # Show spinner for potentially long-running commands
-            show_spinner = any(command.startswith(cmd) for cmd in [
-                'run agent', 'run workflow', 'recommend', 'marketplace install',
-                'import', 'export', 'compose', 'analyze'
-            ])
+            # Show spinner for potentially long-running commands (only if not streaming)
+            # When streaming is enabled, real-time output is shown instead
+            show_spinner = not self.executor.streaming and any(
+                command.startswith(cmd)
+                for cmd in [
+                    "run agent",
+                    "run workflow",
+                    "recommend",
+                    "marketplace install",
+                    "import",
+                    "export",
+                    "compose",
+                    "analyze",
+                ]
+            )
 
             spinner = None
             if show_spinner:
@@ -306,13 +318,16 @@ class InteractiveShell:
             # Display result with color coding
             if result.success:
                 self.success_count += 1
-                if result.output:
-                    print(result.output, end='')
+                # With streaming enabled, output is already displayed in real-time
+                # Only print if streaming is disabled OR if there's no output yet
+                if not self.executor.streaming and result.output:
+                    print(result.output, end="")
                 # Show elapsed time for longer commands (>1 second)
                 if elapsed_time > 1.0:
-                    print(Colors.dim(f"\n✓ Completed in {elapsed_time:.2f}s"))
+                    print(Colors.dim(f"✓ Completed in {elapsed_time:.2f}s"))
             else:
                 self.failure_count += 1
+                # Errors are not streamed, always print them
                 if result.error:
                     print(Colors.error(f"✗ {result.error}"), file=sys.stderr)
                 if elapsed_time > 0.5:
@@ -355,10 +370,10 @@ class InteractiveShell:
             prompt: User's prompt text
         """
         print(f"\n💡 Did you mean to run a command?")
-        print(f"   Your input: \"{prompt}\"\n")
+        print(f'   Your input: "{prompt}"\n')
         print(f"   To run commands, start with / like:")
-        print(f"   • /run agent <agent-name> --task \"{prompt}\"")
-        print(f"   • /recommend --task \"{prompt}\"")
+        print(f'   • /run agent <agent-name> --task "{prompt}"')
+        print(f'   • /recommend --task "{prompt}"')
         print(f"   • /help for all commands\n")
 
     # =========================================================================
@@ -380,12 +395,12 @@ class InteractiveShell:
             print("❌ Usage: /meta-prompt <your prompt here>")
             return
 
-        prompt = ' '.join(args)
+        prompt = " ".join(args)
         print(f"\n💡 Meta-prompt feature is planned for future release.")
-        print(f"   Your prompt: \"{prompt}\"\n")
+        print(f'   Your prompt: "{prompt}"\n')
         print(f"   Try these alternatives:")
-        print(f"   • /recommend --task \"{prompt}\" --explain")
-        print(f"   • /run agent <agent-name> --task \"{prompt}\"")
+        print(f'   • /recommend --task "{prompt}" --explain')
+        print(f'   • /run agent <agent-name> --task "{prompt}"')
         print(f"   • /list agents  (to see available agents)\n")
 
     def _cmd_help(self, args):
@@ -449,7 +464,7 @@ class InteractiveShell:
 
     def _cmd_clear(self, args):
         """Clear the screen."""
-        os.system('clear' if os.name != 'nt' else 'cls')
+        os.system("clear" if os.name != "nt" else "cls")
 
     def _cmd_reload(self, args):
         """
@@ -472,8 +487,8 @@ class InteractiveShell:
         """Show command history."""
         print("\nCommand History:\n")
         for i, entry in enumerate(self.executor.history[-20:], 1):
-            command = entry['command']
-            result = entry['result']
+            command = entry["command"]
+            result = entry["result"]
             status = "✓" if result.success else "✗"
             print(f"  {i}. {status} {command}")
         print()
