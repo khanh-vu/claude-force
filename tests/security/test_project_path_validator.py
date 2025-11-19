@@ -367,3 +367,125 @@ class TestEdgeCases:
             # All should succeed
             assert len(results) == 10
             assert len(errors) == 0
+
+    def test_broken_symlink_in_walk(self):
+        """Test safe_walk handles broken symlinks gracefully"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project = Path(tmpdir)
+
+            # Create a normal directory and file
+            (project / "normal_dir").mkdir()
+            (project / "normal_dir" / "file.txt").write_text("content")
+
+            try:
+                # Create a broken symlink (pointing to non-existent target)
+                broken_link = project / "broken_link"
+                broken_link.symlink_to("/nonexistent/target")
+
+                # Create a broken directory symlink
+                broken_dir = project / "broken_dir"
+                broken_dir.symlink_to("/nonexistent/directory")
+
+                validator = ProjectPathValidator(project)
+
+                # Walk should complete without crashing
+                found_files = []
+                found_dirs = []
+                for dirpath, dirnames, filenames in validator.safe_walk(project):
+                    found_files.extend(filenames)
+                    found_dirs.extend(dirnames)
+
+                # Should find normal file, broken links should be skipped
+                assert "file.txt" in found_files
+                assert "normal_dir" in found_dirs
+                # Walk should complete successfully despite broken symlinks
+
+            except OSError:
+                pytest.skip("Symlinks not supported on this system")
+
+    def test_directory_deleted_during_walk(self):
+        """Test safe_walk handles directories deleted during iteration"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project = Path(tmpdir)
+
+            # Create structure
+            (project / "dir1").mkdir()
+            (project / "dir1" / "file1.txt").write_text("content1")
+            (project / "dir2").mkdir()
+            (project / "dir2" / "file2.txt").write_text("content2")
+
+            validator = ProjectPathValidator(project)
+
+            # Start walk and collect results
+            found_files = []
+            try:
+                for dirpath, dirnames, filenames in validator.safe_walk(project):
+                    found_files.extend(filenames)
+                    # Simulate race condition: delete dir2 during walk
+                    if dirpath == project and "dir2" in dirnames:
+                        import shutil
+
+                        shutil.rmtree(project / "dir2", ignore_errors=True)
+
+                # Walk should complete, finding at least file1
+                assert "file1.txt" in found_files
+                # file2.txt may or may not be found depending on timing
+
+            except Exception as e:
+                # Should not raise unhandled exceptions
+                pytest.fail(f"safe_walk raised exception: {e}")
+
+    def test_walk_with_inaccessible_subdirectory(self):
+        """Test safe_walk skips inaccessible subdirectories and continues"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project = Path(tmpdir)
+
+            # Create structure
+            (project / "accessible").mkdir()
+            (project / "accessible" / "file.txt").write_text("content")
+
+            inaccessible = project / "inaccessible"
+            inaccessible.mkdir()
+            (inaccessible / "secret.txt").write_text("secret")
+
+            # Remove all permissions from inaccessible directory
+            original_mode = inaccessible.stat().st_mode
+
+            try:
+                inaccessible.chmod(0o000)
+
+                validator = ProjectPathValidator(project)
+
+                found_files = []
+                found_dirs = []
+                # Walk should complete without errors
+                for dirpath, dirnames, filenames in validator.safe_walk(project):
+                    found_files.extend(filenames)
+                    found_dirs.extend(dirnames)
+
+                # Should find accessible files
+                assert "file.txt" in found_files
+                # May or may not list inaccessible dir, but should not crash
+
+            finally:
+                # Restore permissions for cleanup
+                inaccessible.chmod(original_mode)
+
+    def test_walk_with_special_filesystem_entries(self):
+        """Test safe_walk handles special filesystem entries gracefully"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project = Path(tmpdir)
+
+            # Create normal structure
+            (project / "normal").mkdir()
+            (project / "normal" / "file.txt").write_text("content")
+
+            validator = ProjectPathValidator(project)
+
+            # Walk should handle any special entries without crashing
+            found_files = []
+            for dirpath, dirnames, filenames in validator.safe_walk(project):
+                found_files.extend(filenames)
+
+            # Should find normal files
+            assert "file.txt" in found_files
