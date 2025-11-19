@@ -34,6 +34,7 @@ class ExecutionResult:
         error: Error message if failed
         metadata: Additional metadata (execution time, etc.)
     """
+
     success: bool
     output: str = ""
     error: str = ""
@@ -60,15 +61,30 @@ class CommandExecutor:
 
         # Common commands for "did you mean" suggestions
         self.all_commands = [
-            'list agents', 'list workflows',
-            'info', 'recommend',
-            'run agent', 'run workflow',
-            'metrics summary', 'metrics agents', 'metrics costs',
-            'setup', 'init', 'shell',
-            'marketplace list', 'marketplace search', 'marketplace install',
-            'review', 'restructure', 'pick-agent',
-            'compose', 'analyze', 'diagnose',
-            'import', 'export', 'contribute',
+            "list agents",
+            "list workflows",
+            "info",
+            "recommend",
+            "run agent",
+            "run workflow",
+            "metrics summary",
+            "metrics agents",
+            "metrics costs",
+            "setup",
+            "init",
+            "shell",
+            "marketplace list",
+            "marketplace search",
+            "marketplace install",
+            "review",
+            "restructure",
+            "pick-agent",
+            "compose",
+            "analyze",
+            "diagnose",
+            "import",
+            "export",
+            "contribute",
         ]
 
     @property
@@ -81,6 +97,7 @@ class CommandExecutor:
         """
         if self._parser is None:
             from claude_force import cli
+
             # Create a fresh parser each time to avoid state issues
             self._parser = self._create_parser_from_cli()
         return self._parser
@@ -96,6 +113,7 @@ class CommandExecutor:
             argparse.ArgumentParser: Configured parser from cli module
         """
         from claude_force.cli import create_argument_parser
+
         return create_argument_parser()
 
     def _suggest_similar_commands(self, command: str, max_suggestions: int = 3) -> List[str]:
@@ -111,10 +129,7 @@ class CommandExecutor:
         """
         # Get close matches using difflib
         suggestions = difflib.get_close_matches(
-            command,
-            self.all_commands,
-            n=max_suggestions,
-            cutoff=0.6  # 60% similarity threshold
+            command, self.all_commands, n=max_suggestions, cutoff=0.6  # 60% similarity threshold
         )
         return suggestions
 
@@ -177,13 +192,13 @@ class CommandExecutor:
                 if e.code == 0:
                     # Exit code 0 means --help was called
                     return ExecutionResult(
-                        success=True,
-                        output="Help text displayed",
-                        metadata={"help": True}
+                        success=True, output="Help text displayed", metadata={"help": True}
                     )
                 else:
                     # Try to suggest similar commands even for parse errors
-                    suggestions = self._suggest_similar_commands(command.split()[0] if command.split() else command)
+                    suggestions = self._suggest_similar_commands(
+                        command.split()[0] if command.split() else command
+                    )
                     error_msg = f"Invalid command syntax. Try '/help' for usage."
                     if suggestions:
                         error_msg += f"\n\n💡 Did you mean:\n"
@@ -192,11 +207,11 @@ class CommandExecutor:
                     return ExecutionResult(
                         success=False,
                         error=error_msg,
-                        metadata={"parse_error": True, "suggestions": suggestions}
+                        metadata={"parse_error": True, "suggestions": suggestions},
                     )
 
             # Check if command has a handler function
-            if not hasattr(args, 'func'):
+            if not hasattr(args, "func"):
                 # Suggest similar commands
                 suggestions = self._suggest_similar_commands(command)
                 error_msg = f"Unknown command. Try '/help' for available commands."
@@ -207,15 +222,16 @@ class CommandExecutor:
                 return ExecutionResult(
                     success=False,
                     error=error_msg,
-                    metadata={"no_handler": True, "suggestions": suggestions}
+                    metadata={"no_handler": True, "suggestions": suggestions},
                 )
 
             # Capture stdout to get command output
             output_buffer = StringIO()
             error_buffer = StringIO()
 
-            with contextlib.redirect_stdout(output_buffer), \
-                 contextlib.redirect_stderr(error_buffer):
+            with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(
+                error_buffer
+            ):
                 try:
                     # Execute the command function
                     args.func(args)
@@ -228,14 +244,30 @@ class CommandExecutor:
                         success=True,
                         output=output,
                         error=errors if errors else "",
-                        metadata={"command": command}
+                        metadata={"command": command},
                     )
 
                 except KeyboardInterrupt:
                     result = ExecutionResult(
                         success=False,
                         error="Command interrupted by user (Ctrl+C)",
-                        metadata={"interrupted": True}
+                        metadata={"interrupted": True},
+                    )
+
+                except SystemExit as e:
+                    # CLI commands call sys.exit() on errors - catch this to keep shell running
+                    exit_code = e.code if e.code is not None else 1
+                    error_msg = f"Command failed with exit code {exit_code}"
+
+                    # Try to get more context from error buffer
+                    errors = error_buffer.getvalue()
+                    if errors:
+                        error_msg = errors.strip()
+
+                    result = ExecutionResult(
+                        success=False,
+                        error=error_msg,
+                        metadata={"exit_code": exit_code, "system_exit": True},
                     )
 
                 except Exception as e:
@@ -246,12 +278,16 @@ class CommandExecutor:
                     # Add recovery suggestions for common errors
                     if "API key" in str(e) or "ANTHROPIC_API_KEY" in str(e):
                         error_msg += "\n\n💡 Recovery suggestions:"
-                        error_msg += "\n   • Set your API key: export ANTHROPIC_API_KEY='your-key-here'"
+                        error_msg += (
+                            "\n   • Set your API key: export ANTHROPIC_API_KEY='your-key-here'"
+                        )
                         error_msg += "\n   • Or run: /setup to configure interactively"
                     elif "FileNotFoundError" in exception_type or "No such file" in str(e):
                         error_msg += "\n\n💡 Recovery suggestions:"
                         error_msg += "\n   • Check that the file path is correct"
-                        error_msg += "\n   • Use absolute paths or ensure you're in the right directory"
+                        error_msg += (
+                            "\n   • Use absolute paths or ensure you're in the right directory"
+                        )
                     elif "Agent not found" in str(e) or "agent" in str(e).lower():
                         error_msg += "\n\n💡 Recovery suggestions:"
                         error_msg += "\n   • Run: /list agents (to see available agents)"
@@ -272,16 +308,16 @@ class CommandExecutor:
                         error_msg += "\n   • Try again in a moment"
 
                     result = ExecutionResult(
-                        success=False,
-                        error=error_msg,
-                        metadata={"exception": exception_type}
+                        success=False, error=error_msg, metadata={"exception": exception_type}
                     )
 
             # Store in history
-            self.history.append({
-                "command": command,
-                "result": result,
-            })
+            self.history.append(
+                {
+                    "command": command,
+                    "result": result,
+                }
+            )
 
             # Limit history size
             if len(self.history) > 1000:
@@ -291,16 +327,12 @@ class CommandExecutor:
 
         except ValueError as e:
             # Parse error from shlex
-            return ExecutionResult(
-                success=False,
-                error=str(e),
-                metadata={"parse_error": True}
-            )
+            return ExecutionResult(success=False, error=str(e), metadata={"parse_error": True})
 
         except Exception as e:
             # Unexpected error
             return ExecutionResult(
                 success=False,
                 error=f"Unexpected error: {str(e)}",
-                metadata={"exception": type(e).__name__}
+                metadata={"exception": type(e).__name__},
             )

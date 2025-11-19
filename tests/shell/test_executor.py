@@ -23,6 +23,7 @@ from claude_force.shell.executor import CommandExecutor, ExecutionResult
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def mock_orchestrator():
     """Mock AgentOrchestrator."""
@@ -42,6 +43,7 @@ def executor():
 # =============================================================================
 # TEST CLASS: Argument Parsing
 # =============================================================================
+
 
 class TestArgumentParsing:
     """Test command string parsing."""
@@ -85,6 +87,7 @@ class TestArgumentParsing:
 # =============================================================================
 # TEST CLASS: Command Routing
 # =============================================================================
+
 
 class TestCommandRouting:
     """Test routing commands to correct handlers."""
@@ -132,6 +135,7 @@ class TestCommandRouting:
 # TEST CLASS: Argparse Integration
 # =============================================================================
 
+
 class TestArgparseIntegration:
     """Test integration with existing argparse CLI."""
 
@@ -170,31 +174,32 @@ class TestArgparseIntegration:
 # TEST CLASS: Execution Results
 # =============================================================================
 
+
 class TestExecutionResults:
     """Test ExecutionResult object."""
 
     def test_result_has_success_field(self, executor):
         """Test result has success boolean."""
         result = executor.execute("list agents")
-        assert hasattr(result, 'success')
+        assert hasattr(result, "success")
         assert isinstance(result.success, bool)
 
     def test_result_has_output_field(self, executor):
         """Test result has output string."""
         result = executor.execute("list agents")
-        assert hasattr(result, 'output')
+        assert hasattr(result, "output")
         assert isinstance(result.output, str)
 
     def test_result_has_error_field(self, executor):
         """Test result has error string."""
         result = executor.execute("invalid command")
-        assert hasattr(result, 'error')
+        assert hasattr(result, "error")
         assert isinstance(result.error, str)
 
     def test_result_has_metadata_field(self, executor):
         """Test result has metadata dict."""
         result = executor.execute("list agents")
-        assert hasattr(result, 'metadata')
+        assert hasattr(result, "metadata")
         assert isinstance(result.metadata, dict)
 
     def test_failed_result_has_error_message(self, executor):
@@ -207,6 +212,7 @@ class TestExecutionResults:
 # =============================================================================
 # TEST CLASS: State Management
 # =============================================================================
+
 
 class TestStateManagement:
     """Test executor state management."""
@@ -221,9 +227,9 @@ class TestStateManagement:
         """Test history stores command and result."""
         executor.execute("list agents")
         entry = executor.history[-1]  # Get last entry
-        assert 'command' in entry
-        assert 'result' in entry
-        assert entry['command'] == "list agents"
+        assert "command" in entry
+        assert "result" in entry
+        assert entry["command"] == "list agents"
 
     def test_history_limited_to_max_size(self, executor):
         """Test history doesn't grow unbounded."""
@@ -236,6 +242,7 @@ class TestStateManagement:
 # =============================================================================
 # TEST CLASS: Error Handling
 # =============================================================================
+
 
 class TestErrorHandling:
     """Test error handling in executor."""
@@ -256,12 +263,36 @@ class TestErrorHandling:
         """Test handles empty command gracefully."""
         result = executor.execute("")
         assert result.success == True  # Empty command should succeed with no-op
-        assert result.metadata.get('empty') == True
+        assert result.metadata.get("empty") == True
+
+    def test_handles_system_exit(self, executor):
+        """Test handles SystemExit from CLI commands without terminating shell."""
+        # Create a simple test that will trigger SystemExit
+        # We'll patch the actual command function to raise SystemExit
+        from unittest.mock import patch
+
+        # Mock a CLI command function that calls sys.exit(1)
+        def mock_command_that_exits(args):
+            raise SystemExit(1)
+
+        # Patch one of the CLI command functions
+        with patch("claude_force.cli.cmd_list_agents", mock_command_that_exits):
+            # Execute command that will trigger SystemExit
+            result = executor.execute("list agents")
+
+            # Shell should remain running - SystemExit should be caught
+            assert result is not None, "Result should not be None - shell should keep running"
+            assert result.success == False, "Command should fail when sys.exit() is called"
+            assert (
+                result.metadata.get("system_exit") == True
+            ), "Metadata should indicate SystemExit was caught"
+            assert result.metadata.get("exit_code") == 1, "Should capture exit code 1"
 
 
 # =============================================================================
 # TEST CLASS: Performance
 # =============================================================================
+
 
 class TestPerformance:
     """Test executor performance."""
@@ -290,6 +321,7 @@ class TestPerformance:
 # TEST CLASS: Edge Cases
 # =============================================================================
 
+
 class TestEdgeCases:
     """Test edge cases in command execution."""
 
@@ -302,7 +334,7 @@ class TestEdgeCases:
 
     def test_command_with_unicode(self, executor):
         """Test command with Unicode characters."""
-        result = executor.execute('list agents')
+        result = executor.execute("list agents")
         # Should handle gracefully without crashing
         assert result is not None
         assert isinstance(result, ExecutionResult)
