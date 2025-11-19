@@ -79,13 +79,8 @@ class TestCommandCompletion:
         completions = list(completer.get_completions(doc, None))
         assert any(c.text == "list" for c in completions)
 
-    def test_complete_workflow_command(self, completer):
-        """Test completing 'work' to 'workflow'."""
-        doc = create_document("work")
-        completions = list(completer.get_completions(doc, None))
-        # Note: 'workflow' is not in top-level commands, only subcommands
-        # This test may need adjustment based on actual command structure
-        pass
+    # Note: 'workflow' is not a top-level command, only a subcommand after 'run'
+    # This test has been removed as it tested incorrect behavior
 
     def test_complete_help_command(self, completer):
         """Test completing 'hel' to 'help'."""
@@ -128,8 +123,16 @@ class TestAgentCompletion:
         doc = create_document("run agent ")
         completions = list(completer.get_completions(doc, None))
         completion_texts = [c.text for c in completions]
-        assert "code-reviewer" in completion_texts
-        assert "frontend-architect" in completion_texts
+
+        # Exact match - should return all mocked agents
+        expected = ["code-reviewer", "frontend-architect", "backend-architect",
+                    "python-expert", "bug-investigator"]
+        assert completion_texts == expected, \
+            f"Expected exactly {expected}, got {completion_texts}"
+
+        # Verify all have correct metadata
+        assert all(c.display_meta is not None for c in completions), \
+            "All completions should have display_meta set"
 
     def test_complete_partial_agent_name(self, completer):
         """Test partial agent name completion."""
@@ -169,8 +172,11 @@ class TestWorkflowCompletion:
         doc = create_document("run workflow ")
         completions = list(completer.get_completions(doc, None))
         completion_texts = [c.text for c in completions]
-        assert "full-stack-feature" in completion_texts
-        assert "bug-fix" in completion_texts
+
+        # Exact match - should return all mocked workflows
+        expected = ["full-stack-feature", "frontend-only", "bug-fix", "documentation"]
+        assert completion_texts == expected, \
+            f"Expected exactly {expected}, got {completion_texts}"
 
     def test_complete_partial_workflow_name(self, completer):
         """Test partial workflow name completion."""
@@ -236,33 +242,37 @@ class TestFlagCompletion:
 class TestFilePathCompletion:
     """Test completion of file paths."""
 
+    @pytest.mark.skip(reason="File path completion not yet implemented")
     def test_complete_task_file_path(self, completer, tmp_path):
         """Test file path completion for --task-file."""
-        # # Create test files
-        # (tmp_path / "task1.txt").touch()
-        # (tmp_path / "task2.txt").touch()
-        #
-        # doc = create_document(f'run agent code-reviewer --task-file "{tmp_path}/task')
-        # completions = list(completer.get_completions(doc, None))
-        # assert any("task1.txt" in c.text for c in completions)
-        # assert any("task2.txt" in c.text for c in completions)
-        pass
+        # Create test files
+        (tmp_path / "task1.txt").touch()
+        (tmp_path / "task2.txt").touch()
 
+        doc = create_document(f'run agent code-reviewer --task-file "{tmp_path}/task')
+        completions = list(completer.get_completions(doc, None))
+        assert any("task1.txt" in c.text for c in completions), \
+            f"Expected task1.txt in completions, got: {[c.text for c in completions]}"
+        assert any("task2.txt" in c.text for c in completions), \
+            f"Expected task2.txt in completions, got: {[c.text for c in completions]}"
+
+    @pytest.mark.skip(reason="File path completion not yet implemented")
     def test_complete_directory_path(self, completer, tmp_path):
         """Test directory path completion."""
-        # (tmp_path / "subdir").mkdir()
-        # doc = create_document(f'run agent code-reviewer --task-file "{tmp_path}/sub')
-        # completions = list(completer.get_completions(doc, None))
-        # assert any("subdir" in c.text for c in completions)
-        pass
+        (tmp_path / "subdir").mkdir()
+        doc = create_document(f'run agent code-reviewer --task-file "{tmp_path}/sub')
+        completions = list(completer.get_completions(doc, None))
+        assert any("subdir" in c.text for c in completions), \
+            f"Expected subdir in completions, got: {[c.text for c in completions]}"
 
+    @pytest.mark.skip(reason="File path completion not yet implemented")
     def test_complete_path_with_spaces(self, completer, tmp_path):
         """Test path completion with spaces in filename."""
-        # (tmp_path / "task file.txt").touch()
-        # doc = create_document(f'run agent code-reviewer --task-file "{tmp_path}/task')
-        # completions = list(completer.get_completions(doc, None))
-        # assert any("task file.txt" in c.text for c in completions)
-        pass
+        (tmp_path / "task file.txt").touch()
+        doc = create_document(f'run agent code-reviewer --task-file "{tmp_path}/task')
+        completions = list(completer.get_completions(doc, None))
+        assert any("task file.txt" in c.text for c in completions), \
+            f"Expected 'task file.txt' in completions, got: {[c.text for c in completions]}"
 
 
 # =============================================================================
@@ -283,8 +293,11 @@ class TestContextAwareness:
         doc = create_document("list ")
         completions = list(completer.get_completions(doc, None))
         completion_texts = [c.text for c in completions]
-        assert "agents" in completion_texts
-        assert "workflows" in completion_texts
+
+        # Exact match - should return only list subcommands
+        expected = ["agents", "workflows"]
+        assert completion_texts == expected, \
+            f"Expected exactly {expected}, got {completion_texts}"
 
     def test_no_completions_after_task_value(self, completer):
         """Test no inappropriate completions after --task value."""
@@ -293,14 +306,16 @@ class TestContextAwareness:
         # Should suggest additional flags, not agent names
         assert not any(c.text == "frontend-architect" for c in completions)
 
+    @pytest.mark.skip(reason="Cursor position awareness not yet implemented - completer only completes at end of line")
     def test_cursor_position_affects_completion(self, completer):
         """Test cursor position determines completion context."""
         # Cursor in middle of command
         doc = create_document("run agent code-reviewer --task Test", cursor_position=4)
         completions = list(completer.get_completions(doc, None))
         # Should complete 'run', not agents
-        # This is a more advanced feature that may not be fully implemented yet
-        pass
+        completion_texts = [c.text for c in completions]
+        assert any("run" in c for c in completion_texts), \
+            f"Expected 'run' completions with cursor at position 4, got: {completion_texts}"
 
 
 # =============================================================================
@@ -312,33 +327,50 @@ class TestCompletionMetadata:
 
     def test_completion_has_display_text(self, completer):
         """Test completions have display text."""
-        # doc = create_document("run agent ")
-        # completions = list(completer.get_completions(doc, None))
-        # for completion in completions:
-        #     assert hasattr(completion, 'text')
-        #     assert hasattr(completion, 'display')
-        pass
+        doc = create_document("run agent ")
+        completions = list(completer.get_completions(doc, None))
+
+        assert len(completions) > 0, "Should have at least one completion"
+        for completion in completions:
+            assert hasattr(completion, 'text'), \
+                f"Completion should have 'text' attribute"
+            assert isinstance(completion.text, str), \
+                f"Completion text should be string, got: {type(completion.text)}"
+            assert len(completion.text) > 0, \
+                f"Completion text should not be empty"
 
     def test_completion_has_display_meta(self, completer):
         """Test completions have metadata descriptions."""
-        # doc = create_document("run agent ")
-        # completions = list(completer.get_completions(doc, None))
-        # # Agent completions should have descriptions
-        # code_reviewer = next((c for c in completions if c.text == "code-reviewer"), None)
-        # assert code_reviewer is not None
-        # assert hasattr(code_reviewer, 'display_meta')
-        # assert len(code_reviewer.display_meta) > 0  # Has description
-        pass
+        doc = create_document("run agent ")
+        completions = list(completer.get_completions(doc, None))
+
+        # Agent completions should have display_meta
+        code_reviewer = next((c for c in completions if c.text == "code-reviewer"), None)
+        assert code_reviewer is not None, \
+            f"Expected 'code-reviewer' in completions, got: {[c.text for c in completions]}"
+        assert hasattr(code_reviewer, 'display_meta'), \
+            "Completion should have 'display_meta' attribute"
+
+        # display_meta can be either a string or FormattedText
+        meta_str = str(code_reviewer.display_meta)
+        assert "agent" in meta_str, \
+            f"Expected 'agent' in display_meta, got: '{meta_str}'"
 
     def test_completion_start_position_correct(self, completer):
         """Test completion start_position is correct."""
-        # doc = create_document("run agent code-")
-        # completions = list(completer.get_completions(doc, None))
-        # for completion in completions:
-        #     assert hasattr(completion, 'start_position')
-        #     # start_position should be negative (relative to cursor)
-        #     assert completion.start_position <= 0
-        pass
+        doc = create_document("run agent code-")
+        completions = list(completer.get_completions(doc, None))
+
+        assert len(completions) > 0, "Should have at least one completion"
+        for completion in completions:
+            assert hasattr(completion, 'start_position'), \
+                f"Completion should have 'start_position' attribute"
+            # start_position should be negative (relative to cursor)
+            assert completion.start_position <= 0, \
+                f"start_position should be ≤ 0 (relative to cursor), got: {completion.start_position}"
+            # For "code-" the start position should be -5 (length of "code-")
+            assert completion.start_position == -5, \
+                f"Expected start_position=-5 for 'code-' prefix, got: {completion.start_position}"
 
 
 # =============================================================================
@@ -348,25 +380,25 @@ class TestCompletionMetadata:
 class TestPerformance:
     """Test completion performance."""
 
+    @pytest.mark.skip(reason="Timing tests are flaky in CI environments - performance verified manually")
     def test_completion_fast_for_empty_input(self, completer):
         """Test completion is fast for empty input."""
-        # import time
-        # doc = create_document("")
-        # start = time.time()
-        # list(completer.get_completions(doc, None))
-        # elapsed = time.time() - start
-        # assert elapsed < 0.1  # <100ms
-        pass
+        import time
+        doc = create_document("")
+        start = time.time()
+        list(completer.get_completions(doc, None))
+        elapsed = time.time() - start
+        assert elapsed < 0.1, f"Completion took {elapsed}s (expected <100ms)"
 
+    @pytest.mark.skip(reason="Timing tests are flaky in CI environments - performance verified manually")
     def test_completion_fast_for_partial_agent(self, completer):
         """Test completion is fast for partial agent name."""
-        # import time
-        # doc = create_document("run agent code-")
-        # start = time.time()
-        # list(completer.get_completions(doc, None))
-        # elapsed = time.time() - start
-        # assert elapsed < 0.1  # <100ms
-        pass
+        import time
+        doc = create_document("run agent code-")
+        start = time.time()
+        list(completer.get_completions(doc, None))
+        elapsed = time.time() - start
+        assert elapsed < 0.1, f"Completion took {elapsed}s (expected <100ms)"
 
     def test_completion_caches_agent_list(self, completer, mock_orchestrator):
         """Test completer caches agent list for performance."""
@@ -390,7 +422,20 @@ class TestEdgeCases:
         doc = create_document("run agent   ")
         completions = list(completer.get_completions(doc, None))
         # Should still complete agent names
-        assert len(completions) > 0
+        assert len(completions) > 0, \
+            "Should complete agent names even with trailing spaces"
+
+    def test_completion_with_multiple_consecutive_spaces(self, completer):
+        """Test completion with multiple consecutive spaces between words."""
+        doc = create_document("run  agent  ")  # Double spaces
+        completions = list(completer.get_completions(doc, None))
+        completion_texts = [c.text for c in completions]
+
+        # Should still complete agent names
+        assert len(completions) > 0, \
+            "Should handle multiple consecutive spaces gracefully"
+        assert "code-reviewer" in completion_texts, \
+            f"Expected agent completions with multiple spaces, got: {completion_texts}"
 
     def test_completion_with_mixed_case(self, completer):
         """Test completion with mixed case input."""
@@ -407,28 +452,149 @@ class TestEdgeCases:
 
     def test_completion_with_very_long_input(self, completer):
         """Test completion with very long input."""
-        # long_input = "run agent code-reviewer --task " + ("x" * 10000)
-        # doc = create_document(long_input)
-        # completions = list(completer.get_completions(doc, None))
-        # # Should handle gracefully
-        pass
+        long_input = "run agent code-reviewer --task " + ("x" * 10000)
+        doc = create_document(long_input)
+
+        # Should handle gracefully without crashing
+        try:
+            completions = list(completer.get_completions(doc, None))
+            # Should return flag completions or empty list, not crash
+            assert isinstance(completions, list), \
+                f"Expected list of completions, got: {type(completions)}"
+        except Exception as e:
+            pytest.fail(f"Completer crashed on very long input: {e}")
 
     def test_completion_with_unicode(self, completer):
         """Test completion with Unicode characters."""
-        # doc = create_document("run agent 🚀")
-        # completions = list(completer.get_completions(doc, None))
-        # # Should handle gracefully
-        pass
+        doc = create_document("run agent 🚀")
+
+        # Should handle gracefully without crashing
+        try:
+            completions = list(completer.get_completions(doc, None))
+            assert isinstance(completions, list), \
+                f"Expected list of completions, got: {type(completions)}"
+        except Exception as e:
+            pytest.fail(f"Completer crashed on Unicode input: {e}")
 
     def test_completion_empty_agent_list(self):
         """Test completion when no agents available."""
-        # mock_orch = Mock()
-        # mock_orch.list_agents.return_value = []
-        # completer = ClaudeForceCompleter(orchestrator=mock_orch)
-        # doc = create_document("run agent ")
-        # completions = list(completer.get_completions(doc, None))
-        # assert len(completions) == 0
-        pass
+        mock_orch = Mock()
+        mock_orch.list_agents.return_value = []
+        mock_orch.list_workflows.return_value = []
+        completer = ClaudeForceCompleter(orchestrator=mock_orch)
+
+        doc = create_document("run agent ")
+        completions = list(completer.get_completions(doc, None))
+
+        assert len(completions) == 0, \
+            f"Expected 0 completions with empty agent list, got {len(completions)}: {[c.text for c in completions]}"
+
+
+# =============================================================================
+# TEST CLASS: Error Handling
+# =============================================================================
+
+class TestErrorHandling:
+    """Test error handling in completion."""
+
+    def test_get_agents_handles_exception_gracefully(self):
+        """Test completer handles exception when listing agents."""
+        mock_orch = Mock()
+        mock_orch.list_agents.side_effect = Exception("API error")
+        mock_orch.list_workflows.return_value = []
+        completer = ClaudeForceCompleter(orchestrator=mock_orch)
+
+        doc = create_document("run agent ")
+        completions = list(completer.get_completions(doc, None))
+
+        # Should return empty list, not crash
+        assert completions == [], \
+            f"Expected empty list when agent listing fails, got: {[c.text for c in completions]}"
+
+    def test_get_workflows_handles_exception_gracefully(self):
+        """Test completer handles exception when listing workflows."""
+        mock_orch = Mock()
+        mock_orch.list_agents.return_value = []
+        mock_orch.list_workflows.side_effect = Exception("API error")
+        completer = ClaudeForceCompleter(orchestrator=mock_orch)
+
+        doc = create_document("run workflow ")
+        completions = list(completer.get_completions(doc, None))
+
+        # Should return empty list, not crash
+        assert completions == [], \
+            f"Expected empty list when workflow listing fails, got: {[c.text for c in completions]}"
+
+    def test_completes_with_none_orchestrator(self):
+        """Test completer works without orchestrator."""
+        completer = ClaudeForceCompleter(orchestrator=None)
+
+        # Should complete commands
+        doc = create_document("ru")
+        completions = list(completer.get_completions(doc, None))
+        assert any(c.text == "run" for c in completions), \
+            f"Expected 'run' in completions without orchestrator, got: {[c.text for c in completions]}"
+
+        # Should return empty for agent completions
+        doc = create_document("run agent ")
+        completions = list(completer.get_completions(doc, None))
+        assert completions == [], \
+            f"Expected no agent completions without orchestrator, got: {[c.text for c in completions]}"
+
+
+# =============================================================================
+# TEST CLASS: Cache Management
+# =============================================================================
+
+class TestCacheManagement:
+    """Test cache invalidation and management."""
+
+    def test_invalidate_cache_clears_agent_cache(self, mock_orchestrator):
+        """Test invalidate_cache clears agent cache."""
+        completer = ClaudeForceCompleter(orchestrator=mock_orchestrator)
+
+        # First call - fetches agents
+        doc = create_document("run agent ")
+        list(completer.get_completions(doc, None))
+        assert mock_orchestrator.list_agents.call_count == 1
+
+        # Invalidate cache
+        completer.invalidate_cache()
+
+        # Second call - should fetch again
+        list(completer.get_completions(doc, None))
+        assert mock_orchestrator.list_agents.call_count == 2, \
+            "Cache invalidation should trigger new fetch"
+
+    def test_invalidate_cache_clears_workflow_cache(self, mock_orchestrator):
+        """Test invalidate_cache clears workflow cache."""
+        completer = ClaudeForceCompleter(orchestrator=mock_orchestrator)
+
+        # First call - fetches workflows
+        doc = create_document("run workflow ")
+        list(completer.get_completions(doc, None))
+        assert mock_orchestrator.list_workflows.call_count == 1
+
+        # Invalidate cache
+        completer.invalidate_cache()
+
+        # Second call - should fetch again
+        list(completer.get_completions(doc, None))
+        assert mock_orchestrator.list_workflows.call_count == 2, \
+            "Cache invalidation should trigger new fetch"
+
+    def test_workflow_list_cached(self, mock_orchestrator):
+        """Test workflow list is cached after first fetch."""
+        completer = ClaudeForceCompleter(orchestrator=mock_orchestrator)
+
+        doc = create_document("run workflow ")
+        list(completer.get_completions(doc, None))
+        list(completer.get_completions(doc, None))
+        list(completer.get_completions(doc, None))
+
+        # Should only call list_workflows once (cached)
+        assert mock_orchestrator.list_workflows.call_count == 1, \
+            f"Expected 1 call to list_workflows (cached), got {mock_orchestrator.list_workflows.call_count}"
 
 
 if __name__ == "__main__":
