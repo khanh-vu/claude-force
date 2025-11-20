@@ -126,12 +126,19 @@ class TestDependencyIntegration:
         """Test rich and prompt-toolkit work together."""
         from rich.console import Console
         from prompt_toolkit import PromptSession
+        from unittest.mock import patch, MagicMock
+        import io
 
-        console = Console()
-        session = PromptSession()
+        # Console can use StringIO (doesn't need real terminal)
+        console = Console(file=io.StringIO())
 
-        assert console is not None
-        assert session is not None
+        # Mock the output creation to avoid needing a real console
+        with patch("prompt_toolkit.output.defaults.create_output") as mock_create_output:
+            mock_create_output.return_value = MagicMock()
+            session = PromptSession()
+
+            assert console is not None
+            assert session is not None
 
     def test_anthropic_client_importable(self):
         """Test Anthropic client can be imported."""

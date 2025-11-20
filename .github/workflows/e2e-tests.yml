@@ -91,5 +91,5 @@ jobs:
     - name: Run E2E tests
       timeout-minutes: 5
       run: |
-        pip install pytest
+        pip install pytest pytest-cov
         pytest tests/e2e/ -v --tb=short

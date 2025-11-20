@@ -84,10 +84,14 @@ class TestInteractiveShellLaunch:
     def test_interactive_shell_instantiable(self):
         """Test interactive shell can be instantiated."""
         from claude_force.interactive_shell import InteractiveShell
+        from unittest.mock import patch, MagicMock
 
-        shell = InteractiveShell()
+        # Mock PromptSession to avoid needing a real console
+        with patch("claude_force.interactive_shell.PromptSession") as mock_session:
+            mock_session.return_value = MagicMock()
+            shell = InteractiveShell()
 
-        assert shell is not None
+            assert shell is not None
 
 
 if __name__ == "__main__":
