@@ -57,10 +57,13 @@ source "$VENV_DIR/bin/activate"
 echo -e "${GREEN}✓ Virtual environment created${NC}"
 echo
 
-# Step 2: Upgrade pip
+# Step 2: Upgrade pip (optional, don't fail if it doesn't work)
 echo -e "${YELLOW}Step 2: Upgrading pip...${NC}"
-pip install --quiet --upgrade pip setuptools wheel
-echo -e "${GREEN}✓ Pip upgraded${NC}"
+if pip install --quiet --upgrade pip setuptools wheel 2>/dev/null; then
+    echo -e "${GREEN}✓ Pip upgraded${NC}"
+else
+    echo -e "${YELLOW}  Pip upgrade skipped (not critical)${NC}"
+fi
 echo
 
 # Step 3: Install package in fresh environment

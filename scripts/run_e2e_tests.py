@@ -155,15 +155,16 @@ def main():
             print_step("Step 1: Using current Python environment")
             print()
 
-        # Step 2: Upgrade pip
+        # Step 2: Upgrade pip (optional, don't fail if it doesn't work)
         print_step("Step 2: Upgrading pip...")
         returncode, _, _ = run_command(
-            f"{python_exe} -m pip install --quiet --upgrade pip setuptools wheel"
+            f"{python_exe} -m pip install --quiet --upgrade pip setuptools wheel",
+            check=False
         )
-        if returncode != 0:
-            print_error("Pip upgrade failed")
-            return 1
-        print_success("Pip upgraded")
+        if returncode == 0:
+            print_success("Pip upgraded")
+        else:
+            print_step("  Pip upgrade skipped (not critical)")
         print()
 
         # Step 3: Install package

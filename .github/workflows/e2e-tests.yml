@@ -36,27 +36,32 @@ jobs:
 
     - name: Run E2E Tests (Unix)
       if: runner.os != 'Windows'
+      timeout-minutes: 15
       run: |
         python scripts/run_e2e_tests.py --clean
+      continue-on-error: false
 
     - name: Run E2E Tests (Windows)
       if: runner.os == 'Windows'
+      timeout-minutes: 15
       run: |
         python scripts/run_e2e_tests.py --clean
+      continue-on-error: false
 
     - name: Upload test results
-      if: always()
+      if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: e2e-test-results-${{ matrix.os }}-${{ matrix.python-version }}
+        name: e2e-test-logs-${{ matrix.os }}-${{ matrix.python-version }}
         path: |
-          htmlcov/
-          .coverage
-        retention-days: 30
+          .venv-e2e-test/**/*.log
+        if-no-files-found: ignore
+        retention-days: 7
 
   e2e-quick-test:
     name: Quick E2E Test (Latest Python)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - name: Checkout code
@@ -68,21 +73,23 @@ jobs:
         python-version: "3.11"
 
     - name: Install package
+      timeout-minutes: 5
       run: |
         pip install -e .
 
     - name: Verify installation
       run: |
-        python -c "from claude_force.interactive_shell import InteractiveShell; print('✓ InteractiveShell')"
-        python -c "from claude_force.shell.ui import TaskProgress, ErrorFormatter; print('✓ UI Components')"
-        python -c "from claude_force.shell.executor import CommandExecutor; print('✓ Executor')"
-        python -c "from claude_force.shell.completer import ClaudeForceCompleter; print('✓ Completer')"
+        python -c "from claude_force.interactive_shell import InteractiveShell; print('OK InteractiveShell')"
+        python -c "from claude_force.shell.ui import TaskProgress, ErrorFormatter; print('OK UI Components')"
+        python -c "from claude_force.shell.executor import CommandExecutor; print('OK Executor')"
+        python -c "from claude_force.shell.completer import ClaudeForceCompleter; print('OK Completer')"
 
     - name: Test CLI
       run: |
         python -m claude_force --help || python -m claude_force --version || true
 
     - name: Run E2E tests
+      timeout-minutes: 5
       run: |
         pip install pytest
         pytest tests/e2e/ -v --tb=short --no-cov
