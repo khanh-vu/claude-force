@@ -5,6 +5,34 @@ All notable changes to claude-force will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2025-11-20
+
+### Features
+
+- **Enhanced Interactive Shell** - Complete shell UI overhaul with rich features
+  - Intelligent autocomplete with descriptions and context
+  - Real-time output streaming for long-running commands
+  - Rich UI with colors, tables, and progress indicators
+  - Slash command completion support
+  - Comprehensive end-to-end test suite
+
+### Improvements
+
+- Enhanced shell autocomplete with rich UI and descriptions
+- Comprehensive E2E test pipeline robustness improvements
+- Better Windows encoding support for Unicode characters
+- Python 3.8 compatibility maintained
+
+### Bug Fixes
+
+- Handle Windows encoding for Unicode characters in E2E test script
+- Resolve E2E test failures in CI environment
+- Remove duplicate --no-cov flags causing pytest errors
+- Disable coverage requirements for E2E tests
+- Update GitHub Actions to use non-deprecated artifact actions
+
+---
+
 ## [1.3.1] - 2025-11-20
 
 ### Bug Fixes
