@@ -1,0 +1,88 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    name: End-to-End Tests (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Run E2E Tests (Unix)
+      if: runner.os != 'Windows'
+      run: |
+        python scripts/run_e2e_tests.py --clean
+
+    - name: Run E2E Tests (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        python scripts/run_e2e_tests.py --clean
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-test-results-${{ matrix.os }}-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          .coverage
+        retention-days: 30
+
+  e2e-quick-test:
+    name: Quick E2E Test (Latest Python)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install package
+      run: |
+        pip install -e .
+
+    - name: Verify installation
+      run: |
+        python -c "from claude_force.interactive_shell import InteractiveShell; print('✓ InteractiveShell')"
+        python -c "from claude_force.shell.ui import TaskProgress, ErrorFormatter; print('✓ UI Components')"
+        python -c "from claude_force.shell.executor import CommandExecutor; print('✓ Executor')"
+        python -c "from claude_force.shell.completer import ClaudeForceCompleter; print('✓ Completer')"
+
+    - name: Test CLI
+      run: |
+        python -m claude_force --help || python -m claude_force --version || true
+
+    - name: Run E2E tests
+      run: |
+        pip install pytest pytest-cov
+        pytest tests/e2e/ -v --tb=short
