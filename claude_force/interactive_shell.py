@@ -17,7 +17,7 @@ import sys
 import time
 import threading
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
@@ -229,7 +229,7 @@ class InteractiveShell:
 
         self._print_goodbye()
 
-    def _validate_input(self, command: str) -> tuple[bool, str]:
+    def _validate_input(self, command: str) -> Tuple[bool, str]:
         """
         Validate and sanitize user input.
 
