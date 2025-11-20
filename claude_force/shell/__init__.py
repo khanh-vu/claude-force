@@ -10,4 +10,4 @@ Components:
 
 from .executor import CommandExecutor, ExecutionResult
 
-__all__ = ['CommandExecutor', 'ExecutionResult']
+__all__ = ["CommandExecutor", "ExecutionResult"]
