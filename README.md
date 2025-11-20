@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-331%20passing-brightgreen)](https://github.com/khanh-vu/claude-force/actions)
 [![Status](https://img.shields.io/badge/status-production--ready-blue)](https://github.com/khanh-vu/claude-force)
-[![Version](https://img.shields.io/badge/version-1.2.4-blue)](https://github.com/khanh-vu/claude-force)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue)](https://github.com/khanh-vu/claude-force)
 
 ## Overview
 
@@ -680,7 +680,7 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**Version**: 1.2.4
+**Version**: 1.3.0
 **Status**: Production-Ready ✅
 **Tests**: 331/331 Passing ✅
 **Marketplace**: Integrated ✅
