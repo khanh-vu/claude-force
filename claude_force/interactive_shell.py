@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.styles import Style
 
 from .shell.executor import CommandExecutor, ExecutionResult
 from .shell.completer import ClaudeForceCompleter
@@ -162,10 +163,31 @@ class InteractiveShell:
         ]
         self.suggester = CommandSuggester(all_commands)
 
+        # Create custom style for rich completions
+        completion_style = Style.from_dict({
+            # Completion menu styling
+            'completion-menu': 'bg:#1e1e1e #ffffff',
+            'completion-menu.completion': 'bg:#1e1e1e #ffffff',
+            'completion-menu.completion.current': 'bg:#0078d4 #ffffff bold',
+            'completion-menu.meta.completion': 'bg:#1e1e1e #888888',
+            'completion-menu.meta.completion.current': 'bg:#0078d4 #ffffff',
+
+            # Command completion styling
+            'completion-command': '#4ec9b0 bold',  # Teal for commands
+            'completion-meta': '#888888 italic',    # Gray for descriptions
+
+            # Scrollbar styling
+            'scrollbar.background': 'bg:#1e1e1e',
+            'scrollbar.button': 'bg:#555555',
+        })
+
         self.session = PromptSession(
             history=FileHistory(str(history_file)),
             completer=self.completer,
-            complete_while_typing=False,  # Only complete on TAB
+            complete_while_typing=True,  # Show completions while typing (like Claude!)
+            style=completion_style,
+            # Make completion menu larger and more visible
+            reserve_space_for_menu=10,  # Reserve space for completion menu
         )
 
         # Command aliases for convenience

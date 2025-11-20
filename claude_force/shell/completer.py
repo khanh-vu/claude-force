@@ -9,9 +9,10 @@ Provides context-aware tab completion for:
 - File paths (for --task-file, --output, etc.)
 """
 
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Dict, Tuple
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.document import Document
+from prompt_toolkit.formatted_text import FormattedText
 
 
 class ClaudeForceCompleter(Completer):
@@ -37,35 +38,82 @@ class ClaudeForceCompleter(Completer):
         self._agent_cache = None
         self._workflow_cache = None
 
-        # Top-level commands
-        self.commands = [
-            "list",
-            "info",
-            "recommend",
-            "run",
-            "metrics",
-            "setup",
-            "init",
-            "marketplace",
-            "review",
-            "restructure",
-            "pick-agent",
-            "compose",
-            "analyze",
-            "help",
-            "exit",
-            "quit",
-            "clear",
-            "history",
-        ]
+        # Command metadata: (description, category, emoji)
+        self.command_metadata = {
+            "list": ("List available agents or workflows", "📋 Query", "📋"),
+            "info": ("Show detailed information about an agent", "📋 Query", "ℹ️"),
+            "recommend": ("Get agent recommendations for a task", "🤖 Agent", "💡"),
+            "run": ("Execute an agent or workflow", "🤖 Agent", "▶️"),
+            "metrics": ("View execution metrics and costs", "📊 Metrics", "📊"),
+            "setup": ("Initialize Claude Force in current directory", "⚙️ Setup", "🔧"),
+            "init": ("Create a new Claude Force project", "⚙️ Setup", "🆕"),
+            "marketplace": ("Browse and install agent packs", "🏪 Marketplace", "🛒"),
+            "review": ("Review project for Claude Force integration", "📋 Query", "🔍"),
+            "restructure": ("Validate and fix .claude folder structure", "⚙️ Setup", "🔨"),
+            "pick-agent": ("Copy agents from another project", "🤖 Agent", "📥"),
+            "compose": ("Create custom workflows", "🔄 Workflow", "✨"),
+            "analyze": ("Analyze agents and workflows", "📊 Metrics", "🔬"),
+            "help": ("Show help information", "❓ Help", "❓"),
+            "exit": ("Exit the interactive shell", "❓ Help", "🚪"),
+            "quit": ("Exit the interactive shell", "❓ Help", "🚪"),
+            "clear": ("Clear the terminal screen", "❓ Help", "🧹"),
+            "history": ("Show command history", "❓ Help", "📜"),
+        }
 
-        # Subcommands
-        self.subcommands = {
-            "list": ["agents", "workflows"],
-            "run": ["agent", "workflow"],
-            "metrics": ["summary", "agents", "costs", "export", "analyze"],
-            "marketplace": ["list", "search", "install", "uninstall"],
-            "analyze": ["compare", "recommend"],
+        # Top-level commands
+        self.commands = list(self.command_metadata.keys())
+
+        # Subcommands with descriptions
+        self.subcommand_metadata = {
+            "list": {
+                "agents": "List all available agents",
+                "workflows": "List all available workflows",
+            },
+            "run": {
+                "agent": "Run a single agent",
+                "workflow": "Run a complete workflow",
+            },
+            "metrics": {
+                "summary": "Show execution summary",
+                "agents": "Show agent usage metrics",
+                "costs": "Show cost breakdown",
+                "export": "Export metrics to file",
+                "analyze": "Analyze metric trends",
+            },
+            "marketplace": {
+                "list": "List available agent packs",
+                "search": "Search for agent packs",
+                "install": "Install an agent pack",
+                "uninstall": "Remove an agent pack",
+            },
+            "analyze": {
+                "compare": "Compare agent performance",
+                "recommend": "Get optimization recommendations",
+            },
+        }
+
+        # Subcommands (simple list for compatibility)
+        self.subcommands = {k: list(v.keys()) for k, v in self.subcommand_metadata.items()}
+
+        # Flag descriptions
+        self.flag_metadata = {
+            "--task": "Task description or prompt",
+            "--task-file": "Path to task file",
+            "--output": "Output file path",
+            "--json": "Output in JSON format",
+            "--quiet": "Suppress output",
+            "--format": "Output format (table, json, yaml)",
+            "--help": "Show help message",
+            "--config": "Path to config file",
+            "--demo": "Run in demo mode",
+            "--verbose": "Verbose output",
+            "--model": "AI model to use",
+            "--max-tokens": "Maximum tokens for response",
+            "--temperature": "Sampling temperature (0.0-1.0)",
+            "--auto-select-model": "Automatically select optimal model",
+            "--estimate-cost": "Estimate cost before running",
+            "--cost-threshold": "Maximum allowed cost",
+            "--yes": "Auto-confirm prompts",
         }
 
         # Common flags
@@ -125,6 +173,12 @@ class ClaudeForceCompleter(Completer):
                 self._workflow_cache = []
         return self._workflow_cache or []
 
+    def _format_display_meta(self, text: str, style: str = "") -> FormattedText:
+        """Format display metadata with styling."""
+        if style:
+            return FormattedText([(style, text)])
+        return FormattedText([("", text)])
+
     def get_completions(self, document: Document, complete_event) -> Iterable[Completion]:
         """
         Generate completions based on current input.
@@ -143,16 +197,36 @@ class ClaudeForceCompleter(Completer):
         text_without_slash = text[1:] if has_slash else text
         words = text_without_slash.split()
 
-        # Just "/" typed - show all commands with slash prefix
+        # Just "/" typed - show all commands with slash prefix and descriptions
         if text == "/":
             for cmd in self.commands:
-                yield Completion("/" + cmd, start_position=-1, display_meta="command")
+                description, category, emoji = self.command_metadata.get(cmd, ("", "", ""))
+                # Create rich display with emoji and description
+                display_meta = self._format_display_meta(
+                    f"{emoji} {description}" if emoji else description,
+                    "class:completion-meta"
+                )
+                yield Completion(
+                    "/" + cmd,
+                    start_position=-1,
+                    display=FormattedText([
+                        ("class:completion-command", "/" + cmd),
+                        ("", "  "),
+                        ("class:completion-meta", f"{emoji} {description}" if emoji else description),
+                    ]),
+                    display_meta=f"{emoji} {description}" if emoji else description,
+                )
             return
 
-        # Empty input (no slash) - show all commands without slash
+        # Empty input (no slash) - show all commands without slash and descriptions
         if not words and not has_slash:
             for cmd in self.commands:
-                yield Completion(cmd, start_position=0)
+                description, category, emoji = self.command_metadata.get(cmd, ("", "", ""))
+                yield Completion(
+                    cmd,
+                    start_position=0,
+                    display_meta=f"{emoji} {description}" if emoji else description,
+                )
             return
 
         # Get current word being completed
@@ -162,11 +236,12 @@ class ClaudeForceCompleter(Completer):
         if len(words) == 1 and not text_without_slash.endswith(" "):
             for cmd in self.commands:
                 if cmd.startswith(current_word.lower()):
+                    description, category, emoji = self.command_metadata.get(cmd, ("", "", ""))
                     completion_text = ("/" + cmd) if has_slash else cmd
                     yield Completion(
                         completion_text,
                         start_position=-len(current_word) - (1 if has_slash else 0),
-                        display_meta="command",
+                        display_meta=f"{emoji} {description}" if emoji else description,
                     )
             return
 
@@ -179,8 +254,12 @@ class ClaudeForceCompleter(Completer):
             if first_word in self.subcommands:
                 for subcmd in self.subcommands[first_word]:
                     if subcmd.startswith(current_word.lower()):
+                        # Get description for subcommand
+                        description = self.subcommand_metadata.get(first_word, {}).get(subcmd, "")
                         yield Completion(
-                            subcmd, start_position=-len(current_word), display_meta="subcommand"
+                            subcmd,
+                            start_position=-len(current_word),
+                            display_meta=description or "subcommand",
                         )
                 return
 
@@ -202,8 +281,9 @@ class ClaudeForceCompleter(Completer):
                 else:
                     for flag in self.common_flags + self.agent_flags:
                         if flag.startswith(current_word):
+                            description = self.flag_metadata.get(flag, "option")
                             yield Completion(
-                                flag, start_position=-len(current_word), display_meta="option"
+                                flag, start_position=-len(current_word), display_meta=description
                             )
                     return
 
@@ -220,8 +300,9 @@ class ClaudeForceCompleter(Completer):
                 else:
                     for flag in self.common_flags:
                         if flag.startswith(current_word):
+                            description = self.flag_metadata.get(flag, "option")
                             yield Completion(
-                                flag, start_position=-len(current_word), display_meta="option"
+                                flag, start_position=-len(current_word), display_meta=description
                             )
                     return
 
@@ -229,4 +310,5 @@ class ClaudeForceCompleter(Completer):
         if current_word.startswith("--"):
             for flag in self.common_flags:
                 if flag.startswith(current_word):
-                    yield Completion(flag, start_position=-len(current_word), display_meta="option")
+                    description = self.flag_metadata.get(flag, "option")
+                    yield Completion(flag, start_position=-len(current_word), display_meta=description)
