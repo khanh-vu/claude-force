@@ -4,6 +4,11 @@
 # Core
 anthropic>=0.40.0          # Anthropic Claude API client
 PyYAML>=6.0.0              # YAML parsing for templates and configuration
+python-dotenv>=1.0.0       # Environment variable management
+
+# Interactive Shell
+prompt-toolkit>=3.0.0,<4.0.0  # Interactive shell with completion and history
+rich>=13.0.0               # Rich text formatting and beautiful UI
 
 # Performance optimization (async & caching)
 tenacity>=8.0.0            # Retry logic for transient failures
@@ -13,9 +18,10 @@ aiofiles>=23.0.0           # Async file I/O (optional, for large files)
 sentence-transformers>=2.2.2  # For embeddings-based agent matching
 numpy>=1.24.0              # Required for vector operations
 
-# For development/testing (optional)
+# Development/testing dependencies (not installed in production)
 pytest>=8.0.0              # Testing framework
 pytest-cov>=4.1.0          # Test coverage
+pytest-asyncio>=0.23.0     # Async test support
 black>=24.0.0              # Code formatting
 pylint>=3.0.0              # Code linting
 mypy>=1.8.0                # Type checking

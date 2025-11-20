@@ -17,25 +17,35 @@ import sys
 import time
 import threading
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from .shell.executor import CommandExecutor, ExecutionResult
 from .shell.completer import ClaudeForceCompleter
+from .shell.ui import (
+    console,
+    ErrorFormatter,
+    ErrorContext,
+    CommandSuggester,
+    RichFormatter,
+    InteractivePrompt,
+    SuccessFormatter,
+)
 from .orchestrator import AgentOrchestrator
 
 
 class Colors:
     """ANSI color codes for terminal output."""
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    RESET = '\033[0m'
-    BOLD = '\033[1m'
-    DIM = '\033[2m'
+
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
 
     @staticmethod
     def success(text: str) -> str:
@@ -68,7 +78,7 @@ class ProgressSpinner:
 
     def __init__(self, message: str = "Working"):
         self.message = message
-        self.spinner_chars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+        self.spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self._stop = False
         self._thread = None
 
@@ -76,11 +86,11 @@ class ProgressSpinner:
         """Spinner animation loop."""
         idx = 0
         while not self._stop:
-            sys.stderr.write(f'\r{self.spinner_chars[idx]} {self.message}...')
+            sys.stderr.write(f"\r{self.spinner_chars[idx]} {self.message}...")
             sys.stderr.flush()
             idx = (idx + 1) % len(self.spinner_chars)
             time.sleep(0.1)
-        sys.stderr.write('\r' + ' ' * (len(self.message) + 10) + '\r')
+        sys.stderr.write("\r" + " " * (len(self.message) + 10) + "\r")
         sys.stderr.flush()
 
     def start(self):
@@ -144,6 +154,14 @@ class InteractiveShell:
         # Create completer
         self.completer = ClaudeForceCompleter(orchestrator=orchestrator)
 
+        # Create command suggester for typo detection
+        all_commands = self.completer.commands + [
+            f"{cmd} {subcmd}"
+            for cmd, subcmds in self.completer.subcommands.items()
+            for subcmd in subcmds
+        ]
+        self.suggester = CommandSuggester(all_commands)
+
         self.session = PromptSession(
             history=FileHistory(str(history_file)),
             completer=self.completer,
@@ -152,23 +170,24 @@ class InteractiveShell:
 
         # Command aliases for convenience
         self.command_aliases = {
-            'q': 'quit',
-            'h': 'help',
-            'ls': 'list',
-            '?': 'help',
-            'cls': 'clear',
+            "q": "quit",
+            "h": "help",
+            "ls": "list",
+            "?": "help",
+            "cls": "clear",
         }
 
         # Built-in commands (handled by shell, not CLI)
         self.builtin_commands = {
-            'exit': self._cmd_exit,
-            'quit': self._cmd_exit,
-            'help': self._cmd_help,
-            'clear': self._cmd_clear,
-            'history': self._cmd_history,
-            'meta-prompt': self._cmd_meta_prompt,
-            'reload': self._cmd_reload,
-            'version': self._cmd_version,
+            "exit": self._cmd_exit,
+            "quit": self._cmd_exit,
+            "help": self._cmd_help,
+            "clear": self._cmd_clear,
+            "history": self._cmd_history,
+            "meta-prompt": self._cmd_meta_prompt,
+            "reload": self._cmd_reload,
+            "version": self._cmd_version,
+            "interactive-demo": self._cmd_interactive_demo,
         }
 
     def start(self):
@@ -188,7 +207,7 @@ class InteractiveShell:
         while self.running:
             try:
                 # Get user input
-                command = self.session.prompt('claude-force> ')
+                command = self.session.prompt("claude-force> ")
 
                 # Execute command
                 self._execute_command(command)
@@ -210,7 +229,7 @@ class InteractiveShell:
 
         self._print_goodbye()
 
-    def _validate_input(self, command: str) -> tuple[bool, str]:
+    def _validate_input(self, command: str) -> Tuple[bool, str]:
         """
         Validate and sanitize user input.
 
@@ -221,7 +240,7 @@ class InteractiveShell:
             Tuple of (is_valid, error_message)
         """
         # Check for null bytes (security risk)
-        if '\x00' in command:
+        if "\x00" in command:
             return False, "Invalid input: null bytes not allowed"
 
         # Check maximum length (prevent memory issues)
@@ -231,8 +250,9 @@ class InteractiveShell:
 
         # Check for control characters (except common ones like \n, \t)
         import unicodedata
+
         for char in command:
-            if unicodedata.category(char) == 'Cc' and char not in '\n\t\r':
+            if unicodedata.category(char) == "Cc" and char not in "\n\t\r":
                 return False, f"Invalid control character in input"
 
         return True, ""
@@ -263,7 +283,7 @@ class InteractiveShell:
         self.command_count += 1
 
         # Check if this is a slash command (starts with /)
-        if command.startswith('/'):
+        if command.startswith("/"):
             # Remove the forward slash and execute as command
             command = command[1:].strip()
 
@@ -271,7 +291,7 @@ class InteractiveShell:
             cmd_parts = command.split(maxsplit=1)
             if cmd_parts and cmd_parts[0] in self.command_aliases:
                 alias_expanded = self.command_aliases[cmd_parts[0]]
-                command = alias_expanded + (' ' + cmd_parts[1] if len(cmd_parts) > 1 else '')
+                command = alias_expanded + (" " + cmd_parts[1] if len(cmd_parts) > 1 else "")
                 cmd_parts = command.split()
 
             # Check for built-in commands first
@@ -280,11 +300,21 @@ class InteractiveShell:
                 self.builtin_commands[cmd_parts[0]](cmd_parts[1:])
                 return
 
-            # Show spinner for potentially long-running commands
-            show_spinner = any(command.startswith(cmd) for cmd in [
-                'run agent', 'run workflow', 'recommend', 'marketplace install',
-                'import', 'export', 'compose', 'analyze'
-            ])
+            # Show spinner for potentially long-running commands (only if not streaming)
+            # When streaming is enabled, real-time output is shown instead
+            show_spinner = not self.executor.streaming and any(
+                command.startswith(cmd)
+                for cmd in [
+                    "run agent",
+                    "run workflow",
+                    "recommend",
+                    "marketplace install",
+                    "import",
+                    "export",
+                    "compose",
+                    "analyze",
+                ]
+            )
 
             spinner = None
             if show_spinner:
@@ -303,18 +333,34 @@ class InteractiveShell:
 
             elapsed_time = time.time() - start_time
 
-            # Display result with color coding
+            # Display result with rich formatting
             if result.success:
                 self.success_count += 1
-                if result.output:
-                    print(result.output, end='')
+                # With streaming enabled, output is already displayed in real-time
+                # Only print if streaming is disabled OR if there's no output yet
+                if not self.executor.streaming and result.output:
+                    print(result.output, end="")
                 # Show elapsed time for longer commands (>1 second)
                 if elapsed_time > 1.0:
-                    print(Colors.dim(f"\n✓ Completed in {elapsed_time:.2f}s"))
+                    SuccessFormatter.format_success(f"Completed in {elapsed_time:.2f}s")
             else:
                 self.failure_count += 1
+                # Handle errors with better formatting
                 if result.error:
-                    print(Colors.error(f"✗ {result.error}"), file=sys.stderr)
+                    # Check if this is a command not found error
+                    if result.metadata.get("no_handler") or result.metadata.get("parse_error"):
+                        # Extract command from error for suggestions
+                        cmd_parts = command.split()
+                        if cmd_parts:
+                            suggestions = self.suggester.suggest(cmd_parts[0])
+                            if suggestions:
+                                self.suggester.display_suggestions(cmd_parts[0], suggestions)
+                            else:
+                                ErrorFormatter.format_simple_error(result.error)
+                    else:
+                        # Regular error
+                        ErrorFormatter.format_simple_error(result.error)
+
                 if elapsed_time > 0.5:
                     print(Colors.dim(f"Failed after {elapsed_time:.2f}s"), file=sys.stderr)
         else:
@@ -334,15 +380,18 @@ class InteractiveShell:
         print()
 
     def _print_goodbye(self):
-        """Print goodbye message with session statistics."""
-        print()
-        print(Colors.info("Goodbye! 👋"))
-        print()
-        print("Session statistics:")
-        print(f"  Commands executed: {self.command_count}")
-        print(f"  {Colors.success('✓ Successful')}: {self.success_count}")
-        print(f"  {Colors.error('✗ Failed')}: {self.failure_count}")
-        print()
+        """Print goodbye message with session statistics using rich formatting."""
+        console.print("\n[bold blue]Goodbye! 👋[/bold blue]\n")
+
+        # Display session statistics in a nice table
+        stats_data = {
+            "Commands executed": str(self.command_count),
+            "✓ Successful": f"[green]{self.success_count}[/green]",
+            "✗ Failed": f"[red]{self.failure_count}[/red]",
+        }
+
+        RichFormatter.format_key_value(stats_data, title="Session Statistics")
+        console.print()
 
     def _handle_prompt(self, prompt: str):
         """
@@ -355,10 +404,10 @@ class InteractiveShell:
             prompt: User's prompt text
         """
         print(f"\n💡 Did you mean to run a command?")
-        print(f"   Your input: \"{prompt}\"\n")
+        print(f'   Your input: "{prompt}"\n')
         print(f"   To run commands, start with / like:")
-        print(f"   • /run agent <agent-name> --task \"{prompt}\"")
-        print(f"   • /recommend --task \"{prompt}\"")
+        print(f'   • /run agent <agent-name> --task "{prompt}"')
+        print(f'   • /recommend --task "{prompt}"')
         print(f"   • /help for all commands\n")
 
     # =========================================================================
@@ -380,43 +429,52 @@ class InteractiveShell:
             print("❌ Usage: /meta-prompt <your prompt here>")
             return
 
-        prompt = ' '.join(args)
+        prompt = " ".join(args)
         print(f"\n💡 Meta-prompt feature is planned for future release.")
-        print(f"   Your prompt: \"{prompt}\"\n")
+        print(f'   Your prompt: "{prompt}"\n')
         print(f"   Try these alternatives:")
-        print(f"   • /recommend --task \"{prompt}\" --explain")
-        print(f"   • /run agent <agent-name> --task \"{prompt}\"")
+        print(f'   • /recommend --task "{prompt}" --explain')
+        print(f'   • /run agent <agent-name> --task "{prompt}"')
         print(f"   • /list agents  (to see available agents)\n")
 
     def _cmd_help(self, args):
-        """Show help for commands."""
+        """Show help for commands with rich formatting."""
         if args:
             # Help for specific command
             command = args[0]
-            print(f"\nHelp for '/{command}':")
-            print(f"  (Detailed help to be implemented)")
-            print()
+            console.print(f"\n[bold cyan]Help for /{command}[/bold cyan]")
+            console.print("  (Detailed help to be implemented)\n")
         else:
-            # General help
-            print("\nClaude Force Interactive Shell - Available Commands\n")
-            print("💡 Usage:")
-            print("  • All commands start with / (forward slash)")
-            print("  • Press Tab for auto-completion")
-            print("  • Use arrow keys to navigate command history")
-            print()
-            print("Built-in Commands:")
-            print("  /help [command]      Show this help or help for specific command")
-            print("  /exit, /quit         Exit the shell (alias: /q)")
-            print("  /clear               Clear the screen (alias: /cls)")
-            print("  /history             Show command history")
-            print("  /reload              Refresh agent/workflow lists")
-            print("  /version             Show version information")
-            print()
-            print("Command Aliases:")
-            print("  /h, /?    →  /help")
-            print("  /q        →  /quit")
-            print("  /ls       →  /list")
-            print("  /cls      →  /clear")
+            # General help with rich table
+            console.print(
+                "\n[bold cyan]Claude Force Interactive Shell - Available Commands[/bold cyan]\n"
+            )
+
+            console.print("💡 [bold]Usage:[/bold]")
+            console.print("  • All commands start with / (forward slash)")
+            console.print("  • Press [cyan]Tab[/cyan] for auto-completion")
+            console.print("  • Use arrow keys to navigate command history\n")
+
+            # Built-in commands table
+            RichFormatter.format_table(
+                title="Built-in Commands",
+                columns=["Command", "Description"],
+                rows=[
+                    ["/help [command]", "Show this help or help for specific command"],
+                    ["/exit, /quit", "Exit the shell (alias: /q)"],
+                    ["/clear", "Clear the screen (alias: /cls)"],
+                    ["/history", "Show command history"],
+                    ["/reload", "Refresh agent/workflow lists"],
+                    ["/version", "Show version information"],
+                ],
+                show_lines=False,
+            )
+
+            console.print("\n[bold]Command Aliases:[/bold]")
+            console.print("  /h, /?    →  /help")
+            console.print("  /q        →  /quit")
+            console.print("  /ls       →  /list")
+            console.print("  /cls      →  /clear")
             print()
             print("Keyboard Shortcuts:")
             print("  Tab              Auto-complete commands/agents/workflows")
@@ -449,7 +507,7 @@ class InteractiveShell:
 
     def _cmd_clear(self, args):
         """Clear the screen."""
-        os.system('clear' if os.name != 'nt' else 'cls')
+        os.system("clear" if os.name != "nt" else "cls")
 
     def _cmd_reload(self, args):
         """
@@ -472,11 +530,60 @@ class InteractiveShell:
         """Show command history."""
         print("\nCommand History:\n")
         for i, entry in enumerate(self.executor.history[-20:], 1):
-            command = entry['command']
-            result = entry['result']
+            command = entry["command"]
+            result = entry["result"]
             status = "✓" if result.success else "✗"
             print(f"  {i}. {status} {command}")
         print()
+
+    def _cmd_interactive_demo(self, args):
+        """
+        Demonstrate interactive multi-step command capabilities.
+
+        This is an example of how to create interactive commands that
+        prompt users for input step by step.
+        """
+        console.print("\n[bold cyan]Interactive Command Demo[/bold cyan]\n")
+        console.print("This demonstrates the interactive multi-step command feature.\n")
+
+        # Define multi-step prompts
+        steps = [
+            {
+                "name": "task_type",
+                "question": "What type of task do you want to run?",
+                "type": "choice",
+                "choices": ["agent", "workflow", "analysis"],
+                "default": "agent",
+            },
+            {
+                "name": "task_description",
+                "question": "Describe your task",
+                "type": "text",
+            },
+            {
+                "name": "enable_verbose",
+                "question": "Enable verbose output?",
+                "type": "confirm",
+                "default": False,
+            },
+        ]
+
+        # Run interactive prompts
+        results = InteractivePrompt.multi_step(steps)
+
+        # Display results
+        console.print("[bold green]✓ Configuration Complete![/bold green]\n")
+
+        RichFormatter.format_key_value(
+            {
+                "Task Type": results["task_type"],
+                "Description": results["task_description"],
+                "Verbose Mode": "Enabled" if results["enable_verbose"] else "Disabled",
+            },
+            title="Your Configuration",
+        )
+
+        console.print("\n[dim]This is a demo - no actual task was executed.[/dim]\n")
 
 
 def run_interactive_shell(config_path: Optional[Path] = None):

@@ -2853,7 +2853,7 @@ For more information: https://github.com/khanh-vu/claude-force
     shell_parser = subparsers.add_parser(
         "shell",
         help="Start interactive shell mode (REPL)",
-        description="Enter interactive shell mode where you can run commands without typing 'claude-force' each time."
+        description="Enter interactive shell mode where you can run commands without typing 'claude-force' each time.",
     )
     shell_parser.set_defaults(func=lambda args: _run_shell(args))
 

@@ -340,5 +340,60 @@ class TestEdgeCases:
         assert isinstance(result, ExecutionResult)
 
 
+# =============================================================================
+# TEST CLASS: Streaming Output
+# =============================================================================
+
+
+class TestStreamingOutput:
+    """Test real-time output streaming feature."""
+
+    def test_executor_has_streaming_attribute(self):
+        """Test executor has streaming attribute."""
+        executor = CommandExecutor(streaming=True)
+        assert hasattr(executor, "streaming")
+        assert executor.streaming == True
+
+    def test_executor_streaming_defaults_to_true(self):
+        """Test executor streaming defaults to True."""
+        executor = CommandExecutor()
+        assert executor.streaming == True
+
+    def test_executor_can_disable_streaming(self):
+        """Test executor can disable streaming."""
+        executor = CommandExecutor(streaming=False)
+        assert executor.streaming == False
+
+    def test_streaming_io_writes_to_both_buffer_and_stream(self):
+        """Test StreamingIO writes to both buffer and original stream."""
+        from io import StringIO
+        from claude_force.shell.executor import StreamingIO
+
+        buffer = StringIO()
+        original = StringIO()
+        stream = StreamingIO(buffer, original)
+
+        stream.write("test output")
+        stream.flush()
+
+        # Should write to both
+        assert buffer.getvalue() == "test output"
+        assert original.getvalue() == "test output"
+
+    def test_streaming_io_getvalue_returns_buffer_content(self):
+        """Test StreamingIO getvalue returns buffer content."""
+        from io import StringIO
+        from claude_force.shell.executor import StreamingIO
+
+        buffer = StringIO()
+        original = StringIO()
+        stream = StreamingIO(buffer, original)
+
+        stream.write("hello")
+        stream.write(" world")
+
+        assert stream.getvalue() == "hello world"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
