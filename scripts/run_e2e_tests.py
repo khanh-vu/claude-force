@@ -215,7 +215,7 @@ def main():
         print_step("Step 6: Running E2E tests...")
         print("-" * 50)
         returncode, stdout, stderr = run_command(
-            f"{python_exe} -m pytest tests/e2e/ -v --tb=short --no-cov",
+            f"{python_exe} -m pytest tests/e2e/ -v --tb=short",
             check=False,
         )
         print("-" * 50)

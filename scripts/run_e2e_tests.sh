@@ -107,7 +107,7 @@ echo
 # Step 6: Run E2E tests
 echo -e "${YELLOW}Step 6: Running E2E tests...${NC}"
 echo "----------------------------------------"
-pytest tests/e2e/ -v --tb=short --no-cov
+pytest tests/e2e/ -v --tb=short
 
 TEST_RESULT=$?
 echo "----------------------------------------"

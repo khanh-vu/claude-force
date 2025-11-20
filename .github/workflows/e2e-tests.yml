@@ -92,4 +92,4 @@ jobs:
       timeout-minutes: 5
       run: |
         pip install pytest
-        pytest tests/e2e/ -v --tb=short --no-cov
+        pytest tests/e2e/ -v --tb=short
