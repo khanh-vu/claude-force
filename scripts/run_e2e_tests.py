@@ -20,6 +20,7 @@ import shutil
 import argparse
 from pathlib import Path
 import venv
+import locale
 
 
 # ANSI color codes (work on most terminals)
@@ -31,24 +32,50 @@ class Colors:
     NC = "\033[0m"  # No Color
 
 
+# Detect if we can use Unicode characters
+def supports_unicode():
+    """Check if the terminal supports Unicode."""
+    try:
+        # Try to encode a checkmark
+        "✓".encode(sys.stdout.encoding or 'utf-8')
+        return True
+    except (UnicodeEncodeError, AttributeError):
+        return False
+
+
+# Use Unicode or ASCII based on terminal support
+UNICODE_SUPPORTED = supports_unicode()
+CHECK_MARK = "✓" if UNICODE_SUPPORTED else "OK"
+CROSS_MARK = "✗" if UNICODE_SUPPORTED else "X"
+
+
+def safe_print(text):
+    """Print text, handling encoding errors gracefully."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        # Fallback to ASCII
+        print(text.encode('ascii', errors='replace').decode('ascii'))
+
+
 def print_step(msg, color=Colors.YELLOW):
     """Print a step message."""
-    print(f"{color}{msg}{Colors.NC}")
+    safe_print(f"{color}{msg}{Colors.NC}")
 
 
 def print_success(msg):
     """Print a success message."""
-    print(f"{Colors.GREEN}✓ {msg}{Colors.NC}")
+    safe_print(f"{Colors.GREEN}{CHECK_MARK} {msg}{Colors.NC}")
 
 
 def print_error(msg):
     """Print an error message."""
-    print(f"{Colors.RED}✗ {msg}{Colors.NC}")
+    safe_print(f"{Colors.RED}{CROSS_MARK} {msg}{Colors.NC}")
 
 
 def print_info(msg):
     """Print an info message."""
-    print(f"{Colors.BLUE}{msg}{Colors.NC}")
+    safe_print(f"{Colors.BLUE}{msg}{Colors.NC}")
 
 
 def run_command(cmd, check=True, capture=False, cwd=None):
@@ -161,9 +188,9 @@ def main():
                 f'{python_exe} -c "import {dep}"', check=False, capture=True
             )
             if returncode == 0:
-                print(f"  {Colors.GREEN}✓{Colors.NC} {dep}")
+                safe_print(f"  {Colors.GREEN}{CHECK_MARK}{Colors.NC} {dep}")
             else:
-                print(f"  {Colors.RED}✗{Colors.NC} {dep} (MISSING)")
+                safe_print(f"  {Colors.RED}{CROSS_MARK}{Colors.NC} {dep} (MISSING)")
                 all_deps_ok = False
 
         if not all_deps_ok:
@@ -207,7 +234,7 @@ from claude_force.interactive_shell import InteractiveShell
 from claude_force.shell.ui import TaskProgress, ErrorFormatter, CommandSuggester
 from claude_force.shell.executor import CommandExecutor
 from claude_force.shell.completer import ClaudeForceCompleter
-print('  ✓ All critical imports successful')
+print('All critical imports successful')
 """
         returncode, stdout, stderr = run_command(
             f'{python_exe} -c "{import_test}"', check=False, capture=True
@@ -215,7 +242,7 @@ print('  ✓ All critical imports successful')
         if returncode != 0:
             print_error(f"Import test failed: {stderr}")
             return 1
-        print(stdout)
+        safe_print(f"  {stdout.strip()}")
         print_success("Import test passed")
         print()
 
@@ -228,9 +255,9 @@ print('  ✓ All critical imports successful')
         # Summary
         print_info("=" * 50)
         if test_result == 0:
-            print_success("  E2E TEST SUITE: PASSED ✓")
+            print_success("  E2E TEST SUITE: PASSED")
         else:
-            print_error("  E2E TEST SUITE: FAILED ✗")
+            print_error("  E2E TEST SUITE: FAILED")
         print_info("=" * 50)
         print()
 
