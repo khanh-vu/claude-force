@@ -80,6 +80,77 @@ claude-force init my-project --interactive
 
 See [QUICK_START.md](QUICK_START.md) for the 5-minute getting started guide.
 
+### Interactive Shell 🎯
+
+Run commands without typing `claude-force` each time:
+
+```bash
+# Start the shell
+claude-force shell
+
+# Now use commands directly with /
+claude-force> /list agents
+claude-force> /run agent code-reviewer --task "Review this code"
+claude-force> /help
+```
+
+**Features:**
+- ✅ **Tab completion** for commands, agents, and workflows
+- ✅ **Command history** with arrow keys (↑/↓)
+- ✅ **Color-coded output** - Green for success, red for errors
+- ✅ **Progress indicators** for long-running commands
+- ✅ **Fuzzy suggestions** - "Did you mean...?" for typos
+- ✅ **Smart aliases** - `/q` for quit, `/h` for help, `/ls` for list
+- ✅ **Elapsed time** display for slow commands
+- ✅ **Secure history** - Command history saved with proper permissions
+
+**Quick Reference:**
+```bash
+# Built-in commands
+/help              # Show help
+/quit, /q          # Exit (or Ctrl+D)
+/clear, /cls       # Clear screen
+/history           # Show recent commands
+/reload            # Refresh agent lists
+/version           # Show version
+
+# Aliases save typing
+/ls agents         # Same as /list agents
+/h                 # Same as /help
+/?                 # Same as /help
+
+# Tab completion
+/list <TAB>        # Shows: agents, workflows
+/run agent <TAB>   # Shows all available agents
+/info code-<TAB>   # Completes to code-reviewer
+
+# Keyboard shortcuts
+Tab                # Auto-complete
+↑/↓                # Navigate history
+Ctrl+C             # Cancel input
+Ctrl+D             # Exit shell
+```
+
+**Error Recovery:**
+The shell provides helpful suggestions for common errors:
+
+```bash
+# Typo? Get suggestions
+claude-force> /lst agents
+✗ Unknown command. Try '/help' for available commands.
+
+💡 Did you mean:
+   • list agents
+   • list workflows
+
+# Missing API key? Get exact fix
+✗ Error: API key not found
+
+💡 Recovery suggestions:
+   • Set your API key: export ANTHROPIC_API_KEY='your-key-here'
+   • Or run: /setup to configure interactively
+```
+
 ## Core Concepts
 
 ### Agents
@@ -435,6 +506,154 @@ See [benchmarks/](benchmarks/) for detailed metrics.
 - **Tests**: 331 (100% passing)
 - **CLI Commands**: 35+
 - **Code**: ~30,000 lines (20K production + 8K tests + 2K docs)
+
+## Troubleshooting
+
+### Interactive Shell Issues
+
+**Q: Tab completion not working**
+```bash
+# Solution: Reload agent/workflow lists
+claude-force> /reload
+✓ Cache cleared. Tab completion will refresh on next use.
+```
+
+**Q: Command history lost between sessions**
+```bash
+# History is stored in .claude/.shell-history
+# Check permissions:
+ls -la .claude/.shell-history
+
+# Should show: -rw------- (owner read/write only)
+# If not, the shell will fix it automatically on next run
+```
+
+**Q: Colors not showing up**
+```bash
+# Some terminals don't support ANSI colors
+# Colors work in: iTerm2, Terminal.app, GNOME Terminal, Konsole, Windows Terminal
+# Try updating your terminal or use --no-color flag (if available)
+```
+
+**Q: Spinner animation looks broken**
+```bash
+# Unicode spinners require UTF-8 support
+# Check terminal encoding:
+echo $LANG  # Should show something with UTF-8
+
+# If needed, set encoding:
+export LANG=en_US.UTF-8
+```
+
+### API Key Issues
+
+**Q: "API key not found" error**
+```bash
+# Set your API key:
+export ANTHROPIC_API_KEY='your-api-key-here'
+
+# Or use .env file:
+echo 'ANTHROPIC_API_KEY=your-api-key-here' > .env
+
+# Or run setup wizard:
+claude-force setup
+```
+
+**Q: "Invalid API key" error**
+```bash
+# Verify your key:
+echo $ANTHROPIC_API_KEY
+
+# Get a new key from: https://console.anthropic.com/
+```
+
+### Agent/Workflow Issues
+
+**Q: Agent not found**
+```bash
+# List available agents:
+claude-force list agents
+
+# Search marketplace:
+claude-force marketplace search <query>
+
+# Refresh cache in shell:
+claude-force> /reload
+```
+
+**Q: Workflow fails partway through**
+```bash
+# Check individual agent status:
+claude-force metrics agents
+
+# View detailed logs:
+claude-force --verbose run workflow <name> --task "..."
+
+# Try running agents individually:
+claude-force run agent <agent-name> --task "..."
+```
+
+### Performance Issues
+
+**Q: Commands are slow**
+```bash
+# Enable cost optimization:
+claude-force run agent <name> --task "..." --auto-select-model
+
+# Use faster model:
+claude-force run agent <name> --task "..." --model claude-3-haiku-20240307
+
+# Check network:
+ping api.anthropic.com
+```
+
+**Q: High API costs**
+```bash
+# View cost breakdown:
+claude-force metrics costs --breakdown
+
+# Enable cost threshold:
+claude-force run agent <name> --task "..." --cost-threshold 0.50
+
+# Use Haiku for simple tasks:
+claude-force run agent <name> --task "..." --model claude-3-haiku-20240307
+```
+
+### Installation Issues
+
+**Q: Command not found after installation**
+```bash
+# Ensure pip installed to correct location:
+pip install --user claude-force
+
+# Add to PATH (Linux/Mac):
+export PATH="$HOME/.local/bin:$PATH"
+
+# Add to PATH (Windows):
+# Add %USERPROFILE%\AppData\Local\Programs\Python\Python3X\Scripts to PATH
+```
+
+**Q: Import errors**
+```bash
+# Reinstall with dependencies:
+pip install --force-reinstall claude-force
+
+# Check Python version (requires 3.8+):
+python --version
+```
+
+### Getting Help
+
+Still having issues?
+
+1. **Check verbose output**: `claude-force --verbose <command>`
+2. **Run diagnostics**: `claude-force diagnose`
+3. **Search issues**: https://github.com/khanh-vu/claude-force/issues
+4. **Ask for help**: Create a new GitHub issue with:
+   - Your command
+   - Error message
+   - Output of `claude-force diagnose --verbose`
+   - Python version (`python --version`)
 
 ## Contributing
 

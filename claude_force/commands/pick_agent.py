@@ -1,7 +1,7 @@
 """
 Pick Agent Command
 
-Copies agent packs from source project to target project.
+Copies agent packs from built-in claude-force agents to target project.
 Minimal implementation following TDD.
 """
 
@@ -16,6 +16,167 @@ from claude_force.security import validate_project_root
 from claude_force.security.sensitive_file_detector import SensitiveFileDetector
 
 logger = logging.getLogger(__name__)
+
+
+def _is_builtin_agents_dir(claude_dir: Path) -> bool:
+    """
+    Verify that a .claude directory contains built-in claude-force agents.
+
+    This prevents selecting a user's project .claude folder by checking
+    for known built-in agents that ship with claude-force.
+
+    Args:
+        claude_dir: Path to .claude directory to check
+
+    Returns:
+        True if this contains built-in agents from claude-force
+    """
+    if not claude_dir.exists():
+        logger.debug(f"Validation failed: {claude_dir} does not exist")
+        return False
+
+    agents_dir = claude_dir / "agents"
+    if not agents_dir.exists():
+        logger.debug(f"Validation failed: {agents_dir} does not exist")
+        return False
+
+    # Check for known built-in agents that ship with claude-force
+    # These are unlikely to exist in user projects with the same names
+    builtin_markers = [
+        "code-reviewer.md",
+        "python-expert.md",
+        "qc-automation-expert.md",
+    ]
+
+    found_markers_list = [marker for marker in builtin_markers if (agents_dir / marker).exists()]
+    found_markers = len(found_markers_list)
+
+    logger.debug(
+        f"Validation check for {claude_dir}: found {found_markers}/3 markers: {found_markers_list}"
+    )
+
+    # Require at least 2 of the 3 marker agents
+    # This prevents false positives while being resilient to changes
+    is_valid = found_markers >= 2
+    if not is_valid:
+        logger.debug(f"Validation failed: only {found_markers}/3 markers found (need at least 2)")
+    return is_valid
+
+
+def get_builtin_agents_path() -> Optional[Path]:
+    """
+    Find the built-in agents directory from claude-force installation.
+
+    Returns:
+        Path to built-in agents directory, or None if not found
+    """
+    import claude_force
+
+    package_dir = Path(claude_force.__file__).parent
+    logger.debug(f"Searching for built-in agents, package_dir: {package_dir}")
+
+    # Try 0: Package templates directory (pip installed package)
+    # This is where agents are stored when installed via pip
+    templates_dir = package_dir / "templates"
+    logger.debug(f"Try 0: Checking {templates_dir}")
+    if _is_builtin_agents_dir(templates_dir):
+        logger.info(f"Found built-in agents at: {templates_dir}")
+        return templates_dir
+    logger.debug(f"Try 0: Not found at {templates_dir}")
+
+    # Try 1: Package directory (alternative package data location)
+    claude_dir = package_dir / ".claude"
+    logger.debug(f"Try 1: Checking {claude_dir}")
+    if _is_builtin_agents_dir(claude_dir):
+        logger.info(f"Found built-in agents at: {claude_dir}")
+        return claude_dir
+    logger.debug(f"Try 1: Not found at {claude_dir}")
+
+    # Try 2: Parent directory (development mode with editable install)
+    dev_claude_dir = package_dir.parent / ".claude"
+    logger.debug(f"Try 2: Checking {dev_claude_dir}")
+    if _is_builtin_agents_dir(dev_claude_dir):
+        logger.info(f"Found built-in agents at: {dev_claude_dir}")
+        return dev_claude_dir
+    logger.debug(f"Try 2: Not found at {dev_claude_dir}")
+
+    # Try 3: Site-packages parallel directory (some pip install scenarios)
+    # /path/to/site-packages/claude_force -> /path/to/site-packages/.claude
+    site_packages_claude = package_dir.parent / ".claude"
+    if site_packages_claude != dev_claude_dir:
+        logger.debug(f"Try 3: Checking {site_packages_claude}")
+        if _is_builtin_agents_dir(site_packages_claude):
+            logger.info(f"Found built-in agents at: {site_packages_claude}")
+            return site_packages_claude
+        logger.debug(f"Try 3: Not found at {site_packages_claude}")
+
+    # Try 4: Check if package is in claude-force git repo (development)
+    # Only use git if the package_dir is actually inside the repo
+    try:
+        import subprocess
+
+        logger.debug("Try 4: Attempting git fallback")
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=package_dir,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode == 0:
+            repo_root = Path(result.stdout.strip())
+            logger.debug(f"Try 4: Git repo root: {repo_root}")
+
+            # CRITICAL: Only use this if package_dir is inside the repo
+            # This prevents selecting user's project .claude folder
+            try:
+                package_dir.relative_to(repo_root)
+                # If we get here, package is inside the repo
+                logger.debug(f"Try 4: Package is inside repo, checking {repo_root}/.claude")
+                repo_claude_dir = repo_root / ".claude"
+                if _is_builtin_agents_dir(repo_claude_dir):
+                    logger.info(f"Found built-in agents at: {repo_claude_dir}")
+                    return repo_claude_dir
+                logger.debug(f"Try 4: Not found at {repo_claude_dir}")
+            except ValueError:
+                # package_dir is not inside repo_root, skip this fallback
+                logger.debug(f"Try 4: Package {package_dir} not inside repo {repo_root}, skipping")
+        else:
+            logger.debug(f"Try 4: Git command failed with code {result.returncode}")
+    except Exception as e:
+        logger.debug(f"Try 4: Git fallback failed: {e}")
+
+    logger.warning("Built-in agents not found in any known location")
+    return None
+
+
+def list_builtin_agents() -> List[str]:
+    """
+    List all built-in agents from claude-force.
+
+    Returns:
+        List of agent names (without .md extension)
+    """
+    claude_dir = get_builtin_agents_path()
+    if not claude_dir:
+        return []
+
+    agents = []
+    agents_dir = claude_dir / "agents"
+    contracts_dir = claude_dir / "contracts"
+
+    # Find all agent files that have matching contracts
+    for agent_file in agents_dir.glob("*.md"):
+        agent_name = agent_file.stem
+
+        # Check if contract also exists (either .md or .contract extension)
+        contract_md = contracts_dir / f"{agent_name}.md"
+        contract_file = contracts_dir / f"{agent_name}.contract"
+
+        if contract_md.exists() or contract_file.exists():
+            agents.append(agent_name)
+
+    return sorted(agents)
 
 
 class PickAgentCommand:
@@ -48,7 +209,32 @@ class PickAgentCommand:
         if self.source_project.resolve() == self.target_project.resolve():
             raise ValueError("Source and target must be different directories")
 
-        self.source_claude = self.source_project / ".claude"
+        # Detect source structure:
+        # - If source has agents/ and contracts/ directly (templates structure), use it as-is
+        # - Otherwise, assume standard project structure with .claude/ subdirectory
+        source_has_agents = (self.source_project / "agents").exists()
+        source_has_contracts = (self.source_project / "contracts").exists()
+
+        if source_has_agents and source_has_contracts:
+            # Templates structure: agents/ and contracts/ are directly under source
+            self.source_claude = self.source_project
+            # For templates, check if there's a .claude directory with claude.json
+            # Try parent's sibling first: /path/to/templates -> /path/to/.claude/claude.json
+            # Then try grandparent's child: /path/to/package/templates -> /path/to/.claude/claude.json
+            sibling_claude = self.source_project.parent / ".claude"
+            grandparent_claude = self.source_project.parent.parent / ".claude"
+
+            if (sibling_claude / "claude.json").exists():
+                self.source_config_dir = sibling_claude
+            elif (grandparent_claude / "claude.json").exists():
+                self.source_config_dir = grandparent_claude
+            else:
+                self.source_config_dir = None
+        else:
+            # Standard project structure: agents/ and contracts/ are under .claude/
+            self.source_claude = self.source_project / ".claude"
+            self.source_config_dir = self.source_claude
+
         self.target_claude = self.target_project / ".claude"
 
     def list_available_agents(self) -> List[str]:
@@ -256,9 +442,19 @@ class PickAgentCommand:
 
         try:
             # Load source config to get agent definitions
-            source_config_path = self.source_claude / "claude.json"
+            # Use source_config_dir if available (for templates), otherwise use source_claude
+            if self.source_config_dir:
+                source_config_path = self.source_config_dir / "claude.json"
+            else:
+                source_config_path = self.source_claude / "claude.json"
+
             if not source_config_path.exists():
-                return {"success": False, "error": "Source claude.json not found"}
+                # If no source config found, we can still succeed but won't add metadata
+                # This allows copying agents without configuration metadata
+                logger.warning(
+                    f"Source claude.json not found at {source_config_path}, skipping config metadata"
+                )
+                return {"success": True, "agents_added": 0}
 
             with open(source_config_path, "r") as f:
                 source_config = json.load(f)

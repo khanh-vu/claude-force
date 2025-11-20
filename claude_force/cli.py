@@ -2138,52 +2138,123 @@ def cmd_restructure(args):
 
 
 def cmd_pick_agent(args):
-    """Copy agent packs from source to target project"""
+    """Copy built-in agents to current project (interactive)"""
     try:
         from pathlib import Path
-        from .commands.pick_agent import PickAgentCommand
+        from .commands.pick_agent import (
+            PickAgentCommand,
+            list_builtin_agents,
+            get_builtin_agents_path,
+        )
+        from .commands.restructure import RestructureCommand
 
-        # Determine source and target paths
-        source_path = Path(args.source if args.source else ".")
-        target_path = Path(args.target if args.target else ".")
-
-        # Create command
-        command = PickAgentCommand(source_path, target_path)
-
-        # Handle --list option
-        if args.list:
-            # Check for conflicting usage: --list with agent names
-            if args.agents:
-                print("❌ Error: Cannot use --list with agent names", file=sys.stderr)
-                print("   Use either: pick-agent --list", file=sys.stderr)
-                print("          or: pick-agent <agent-names...>", file=sys.stderr)
-                sys.exit(1)
-
-            available = command.list_available_agents()
-            print(f"\n📋 Available Agents ({len(available)} total)\n")
-            for agent in available:
-                print(f"  • {agent}")
-            print()
-            return
-
-        # Get agent names from positional arguments
-        agent_names = args.agents
-
-        if not agent_names:
+        # Get built-in agents
+        builtin_agents = list_builtin_agents()
+        if not builtin_agents:
             print(
-                "❌ Error: No agents specified. Use --list to see available agents.",
+                "❌ Error: No built-in agents found in claude-force installation", file=sys.stderr
+            )
+            print("", file=sys.stderr)
+            print(
+                "This might be a broken installation. Please reinstall claude-force.",
                 file=sys.stderr,
             )
             sys.exit(1)
 
-        # Execute copy
-        result = command.execute(agent_names)
+        # Determine target project (current directory or --target)
+        target_path = Path(args.target if args.target else ".")
+        target_path = target_path.resolve()
 
-        # Output based on format
-        if args.format == "json":
-            print(command.format_json(result))
+        # Interactive mode: show agents and let user select
+        if not args.agents:
+            print("\n✨ Pick Agents from claude-force\n")
+            print(f"📂 Target: {target_path}\n")
+
+            # Display numbered list
+            for idx, agent in enumerate(builtin_agents, 1):
+                print(f"  {idx:2d}. {agent}")
+
+            print(f"\nTotal: {len(builtin_agents)} agents available")
+            print("\n💡 Enter numbers separated by spaces (e.g., 1 3 5)")
+            print("   Or 'all' to select all agents")
+            print("   Or 'q' to quit\n")
+
+            # Get user selection
+            selection = input("Select agents: ").strip()
+
+            if selection.lower() == "q":
+                print("Cancelled.")
+                return
+
+            if selection.lower() == "all":
+                selected_agents = builtin_agents
+            else:
+                try:
+                    indices = [int(x.strip()) for x in selection.split()]
+                    selected_agents = []
+                    for idx in indices:
+                        if 1 <= idx <= len(builtin_agents):
+                            selected_agents.append(builtin_agents[idx - 1])
+                        else:
+                            print(f"⚠ Warning: Ignoring invalid number: {idx}")
+                except ValueError:
+                    print(
+                        "❌ Error: Invalid input. Please enter numbers separated by spaces.",
+                        file=sys.stderr,
+                    )
+                    sys.exit(1)
+
+            if not selected_agents:
+                print("No agents selected. Cancelled.")
+                return
+
+            print(f"\n✅ Selected {len(selected_agents)} agent(s):")
+            for agent in selected_agents:
+                print(f"   • {agent}")
+            print()
         else:
-            print(command.format_markdown(result))
+            # Direct mode: agents specified as arguments
+            selected_agents = args.agents
+            print(f"\n📦 Copying {len(selected_agents)} agent(s) to {target_path}...\n")
+
+        # Check if .claude folder exists, create if needed
+        target_claude = target_path / ".claude"
+        if not target_claude.exists():
+            print(f"⚙️  No .claude folder found. Creating...")
+
+            # Create .claude structure
+            restructure = RestructureCommand(target_path)
+            result = restructure.execute(auto_approve=True, show_progress=False)
+
+            if result["success"]:
+                print(f"✅ Created .claude folder structure")
+            else:
+                print(f"❌ Failed to create .claude folder", file=sys.stderr)
+                sys.exit(1)
+
+        # Get source path (built-in agents)
+        source_path = get_builtin_agents_path()
+
+        # Create command and copy agents
+        command = PickAgentCommand(source_path, target_path)
+
+        # Execute copy
+        result = command.execute(selected_agents, show_progress=True)
+
+        # Show results
+        print()
+        if result.get("success"):
+            print(f"✅ Successfully copied {result['agents_copied']} agent(s)")
+            if result.get("config_updated"):
+                print(
+                    f"✅ Configuration updated ({result.get('agents_added_to_config', 0)} agents added)"
+                )
+        else:
+            print(f"❌ Failed to copy agents", file=sys.stderr)
+            if result.get("errors"):
+                print(f"\nErrors:", file=sys.stderr)
+                for error in result["errors"]:
+                    print(f"  • {error.get('agent')}: {error.get('error')}", file=sys.stderr)
 
         # Exit with error code if not successful
         if not result.get("success"):
@@ -2207,8 +2278,29 @@ def cmd_pick_agent(args):
 # Functions: main()
 
 
-def main():
-    """Main CLI entry point"""
+def _run_shell(args):
+    """
+    Run interactive shell mode.
+
+    Args:
+        args: Parsed arguments (with config, api-key, demo flags)
+    """
+    from .interactive_shell import run_interactive_shell
+
+    # TODO: Pass config_path from args if needed
+    run_interactive_shell()
+
+
+def create_argument_parser():
+    """
+    Create and configure the argument parser.
+
+    This function is shared between the main CLI and the interactive shell
+    to ensure consistent argument parsing without code duplication.
+
+    Returns:
+        argparse.ArgumentParser: Configured argument parser
+    """
     parser = argparse.ArgumentParser(
         prog="claude-force",
         description="Multi-Agent Orchestration System for Claude",
@@ -2689,22 +2781,16 @@ For more information: https://github.com/khanh-vu/claude-force
 
     # Pick-agent command (existing project support)
     pick_agent_parser = subparsers.add_parser(
-        "pick-agent", help="Copy agent packs from source to target project"
+        "pick-agent", help="Copy built-in agents to current project (interactive)"
     )
     pick_agent_parser.add_argument(
-        "agents", nargs="*", help="Agent names to copy (e.g., python-expert code-reviewer)"
+        "agents",
+        nargs="*",
+        help="Agent names to copy (omit for interactive selection)",
     )
     pick_agent_parser.add_argument(
-        "--source", help="Source project path (default: current directory)"
-    )
-    pick_agent_parser.add_argument(
-        "--target", help="Target project path (default: current directory)"
-    )
-    pick_agent_parser.add_argument(
-        "--list", action="store_true", help="List available agents from source"
-    )
-    pick_agent_parser.add_argument(
-        "--format", choices=["markdown", "json"], default="markdown", help="Output format"
+        "--target",
+        help="Target project path (default: current directory)",
     )
     pick_agent_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Verbose error output"
@@ -2762,6 +2848,21 @@ For more information: https://github.com/khanh-vu/claude-force
         "--verbose", "-v", action="store_true", help="Verbose error output"
     )
     recommend_parser_analytics.set_defaults(func=cmd_analyze_recommend)
+
+    # Shell command (Interactive REPL mode)
+    shell_parser = subparsers.add_parser(
+        "shell",
+        help="Start interactive shell mode (REPL)",
+        description="Enter interactive shell mode where you can run commands without typing 'claude-force' each time.",
+    )
+    shell_parser.set_defaults(func=lambda args: _run_shell(args))
+
+    return parser
+
+
+def main():
+    """Main CLI entry point"""
+    parser = create_argument_parser()
 
     # Parse arguments
     args = parser.parse_args()
