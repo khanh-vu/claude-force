@@ -451,7 +451,9 @@ class PickAgentCommand:
             if not source_config_path.exists():
                 # If no source config found, we can still succeed but won't add metadata
                 # This allows copying agents without configuration metadata
-                logger.warning(f"Source claude.json not found at {source_config_path}, skipping config metadata")
+                logger.warning(
+                    f"Source claude.json not found at {source_config_path}, skipping config metadata"
+                )
                 return {"success": True, "agents_added": 0}
 
             with open(source_config_path, "r") as f:
