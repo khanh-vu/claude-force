@@ -59,14 +59,15 @@ Tests that verify CLI commands work:
 Run tests in your current Python environment:
 
 ```bash
-# Run all E2E tests
-pytest tests/e2e/ -v
+# Run all E2E tests (without coverage requirement)
+pytest tests/e2e/ -v --no-cov
 
 # Run specific test file
-pytest tests/e2e/test_fresh_install.py -v
+pytest tests/e2e/test_fresh_install.py -v --no-cov
 
-# Run with coverage
-pytest tests/e2e/ -v --cov=claude_force
+# Note: E2E tests run with --no-cov because they test user workflows,
+# not code coverage. They naturally achieve low coverage (~6%) since
+# they verify end-to-end functionality, not individual code paths.
 ```
 
 ### Full E2E Test Suite (Fresh Install Simulation)

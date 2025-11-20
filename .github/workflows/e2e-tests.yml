@@ -84,5 +84,5 @@ jobs:
 
     - name: Run E2E tests
       run: |
-        pip install pytest pytest-cov
-        pytest tests/e2e/ -v --tb=short
+        pip install pytest
+        pytest tests/e2e/ -v --tb=short --no-cov
