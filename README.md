@@ -45,6 +45,24 @@ Seamlessly integrate claude-force with your existing projects:
 
 See [EXISTING_PROJECT_SUPPORT.md](EXISTING_PROJECT_SUPPORT.md) for full details.
 
+### 🆕 Enhanced Shell Autocomplete (v1.3.2)
+
+The interactive shell now features a rich autocomplete UI with descriptions:
+
+- **Categorized Completions** - Commands, agents, and workflows displayed in organized groups
+- **Inline Descriptions** - See what each option does before selecting it
+- **Visual Enhancements** - Color-coded suggestions for better readability
+
+```bash
+claude-force> /run agent <TAB>
+┌─────────────────────────────────────────────────────────────┐
+│ code-reviewer        - Review code for quality and issues   │
+│ security-specialist  - Security analysis and vulnerability  │
+│ backend-architect    - Design backend architecture          │
+│ ...                                                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## Quick Start
 
 ### Installation
@@ -95,7 +113,7 @@ claude-force> /help
 ```
 
 **Features:**
-- ✅ **Tab completion** for commands, agents, and workflows
+- ✅ **Rich Tab Completion** with descriptions and categorized UI (v1.3.2)
 - ✅ **Command history** with arrow keys (↑/↓)
 - ✅ **Color-coded output** - Green for success, red for errors
 - ✅ **Progress indicators** for long-running commands
@@ -119,9 +137,9 @@ claude-force> /help
 /h                 # Same as /help
 /?                 # Same as /help
 
-# Tab completion
-/list <TAB>        # Shows: agents, workflows
-/run agent <TAB>   # Shows all available agents
+# Tab completion (rich UI with descriptions)
+/list <TAB>        # Shows: agents, workflows with descriptions
+/run agent <TAB>   # Shows agents with role descriptions
 /info code-<TAB>   # Completes to code-reviewer
 
 # Keyboard shortcuts
